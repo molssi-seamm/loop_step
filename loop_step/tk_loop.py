@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """The graphical part of a Loop step"""
 
+import logging
 import molssi_workflow
 import molssi_util.molssi_widgets as mw
 import loop_step
@@ -8,6 +9,8 @@ import Pmw
 import pprint  # nopep8
 import tkinter as tk
 import tkinter.ttk as ttk
+
+logger = logging.getLogger(__name__)
 
 
 class TkLoop(molssi_workflow.TkNode):
@@ -18,7 +21,7 @@ class TkLoop(molssi_workflow.TkNode):
     node_class = loop_step.Loop
 
     def __init__(self, tk_workflow=None, node=None, canvas=None,
-                 x=None, y=None, w=None, h=None):
+                 x=120, y=20, w=200, h=50):
         '''Initialize a node
 
         Keyword arguments:
@@ -46,28 +49,44 @@ class TkLoop(molssi_workflow.TkNode):
         frame = ttk.Frame(self.dialog.interior())
         frame.pack(expand=tk.YES, fill=tk.BOTH)
         w['frame'] = frame
-        # Set the first parameter -- which will be exactly matched
-        method_label = ttk.Label(
-            frame, text='Example value'
+
+        # The type of loop
+        loop_type = ttk.Combobox(
+            frame, state='readonly',
+            values=['For',
+                    'Foreach',
+                    'For rows in table',
+                    'While'
+            ],
+            justify=tk.LEFT, width=15
         )
-        w['method_label'] = method_label
+        loop_type.set(self.node.loop_type)
+        w['loop_type'] = loop_type
 
-        method = ttk.Combobox(
-            frame, state='readonly', values=['is', 'from variable'],
-            justify=tk.RIGHT, width=15
-        )
-        method.set(self.node.method)
-        w['method'] = method
+        # Loop variable
+        w['variable_label'] = ttk.Label(frame, text='Variable:')
+        w['variable'] = ttk.Entry(frame, width=15)
+        w['variable'].insert(0, self.node.variable)
 
-        # Unit entry field for example
-        example = mw.UnitEntry(frame, width=15)
-        example.set(self.node.example)
-        w['example'] = example
+        # First value
+        w['first_value_label'] = ttk.Label(frame, text='from')
+        w['first_value'] = ttk.Entry(frame, width=15)
+        w['first_value'].insert(0, self.node.first_value)
 
-        # Variable for example
-        example_variable = ttk.Entry(frame, width=15)
-        example_variable.insert(0, self.node.example_variable)
-        w['example_variable'] = example_variable
+        # Last value
+        w['last_value_label'] = ttk.Label(frame, text='to')
+        w['last_value'] = ttk.Entry(frame, width=15)
+        w['last_value'].insert(0, self.node.last_value)
+
+        # Increment, putting units here
+        w['increment'] = mw.UnitEntry(frame, width=15, labeltext='by')
+        w['increment'].set(self.node.increment)
+
+        # Table name
+        w['tablename'] = ttk.Entry(frame, width=15)
+        w['tablename'].insert(0, self.node.tablename)
+
+        w['loop_type'].bind("<<ComboboxSelected>>", self.reset_dialog)
 
         self.reset_dialog()
 
@@ -77,7 +96,8 @@ class TkLoop(molssi_workflow.TkNode):
 
         # and get the method, which in this example controls
         # how the widgets are laid out.
-        method = w['method'].get()
+        loop_type = w['loop_type'].get()
+        logger.debug('Updating edit loop dialog: {}'.format(loop_type))
 
         # Remove any widgets previously packed
         frame = w['frame']
@@ -87,15 +107,23 @@ class TkLoop(molssi_workflow.TkNode):
         # keep track of the row in a variable, so that the layout is flexible
         # if e.g. rows are skipped to control such as 'method' here
         row = 0
-        w['method_label'].grid(row=row, column=0, sticky=tk.E)
-        w['method'].grid(row=row, column=1, sticky=tk.EW)
-        if method == 'is':
-            w['example'].grid(row=row, column=2, sticky=tk.W)
-        elif 'variable' in method:
-            w['example_variable'].grid(row=row, column=1, sticky=tk.W)
+        w['loop_type'].grid(row=row, column=0, sticky=tk.W)
+        row += 1
+        if loop_type == 'For':
+            w['variable_label'].grid(row=row, column=2, sticky=tk.W)
+            w['variable'].grid(row=row, column=3, sticky=tk.W)
+            w['first_value_label'].grid(row=row, column=4, sticky=tk.W)
+            w['first_value'].grid(row=row, column=5, sticky=tk.W)
+            w['last_value_label'].grid(row=row, column=6, sticky=tk.W)
+            w['last_value'].grid(row=row, column=7, sticky=tk.W)
+            w['increment'].grid(row=row, column=8, sticky=tk.W)
+        elif loop_type == 'Foreach':
+            pass
+        elif loop_type == 'For rows in table':
+            w['tablename'].grid(row=row, column=2, sticky=tk.W)
         else:
             raise RuntimeError(
-                "Don't recognize the method {}".format(method))
+                "Don't recognize the loop_type {}".format(loop_type))
         row += 1
 
     def right_click(self, event):
@@ -116,7 +144,7 @@ class TkLoop(molssi_workflow.TkNode):
         self.dialog.activate(geometry='centerscreenfirst')
 
     def handle_dialog(self, result):
-        if result == 'Cancel':
+        if result is None or result == 'Cancel':
             self.dialog.deactivate(result)
             return
 
@@ -136,17 +164,55 @@ class TkLoop(molssi_workflow.TkNode):
         # and get the method, which in this example tells
         # whether to use the value ditrectly or get it from
         # a variable in the workflow
-        method = w['method'].get()
 
-        self.node.method = method
-        if method == 'is':
-            self.node.example = w['example'].get()
-        elif 'variable' in method:
-            self.node.example_variable = w['example_variable'].get()
+        loop_type = w['loop_type'].get()
+        logger.debug('Updating loop stage from dialog: {}'.format(loop_type))
+
+        self.node.loop_type = loop_type
+        if loop_type == 'For':
+            self.node.variable = w['variable'].get()
+            self.node.first_value = w['first_value'].get()
+            self.node.last_value = w['last_value'].get()
+            self.node.increment = w['increment'].get()
+        elif loop_type == 'Foreach':
+            pass
+        elif loop_type == 'For rows in table':
+            self.node.tablename = w['tablename'].get()
+            logger.debug('  tablename <== {}'.format(self.node.tablename))
         else:
             raise RuntimeError(
-                "Don't recognize the method {}".format(method))
+                "Don't recognize the type of loop {}".format(loop_type))
 
     def handle_help(self):
         """Not implemented yet ... you'll need to fill this out!"""
         print('Help!')
+
+    def default_edge_label(self):
+        """Return the default label of the edge. Usually this is 'exit'
+        but for nodes with two or more edges leaving them, such as a loop, this
+        method will return an appropriate default for the current edge. For
+        example, by default the first edge emanating from a loop-node is the
+        'loop' edge; the second, the 'exit' edge.
+
+        A return value of 'too many' indicates that the node exceeds the number
+        of allowed exit edges.
+        """
+
+        logger.debug("seeing what super node says!")
+        n_edges = super().default_edge_label()
+        logger.debug('super.default_edge_label, n_edges = {}'.format(n_edges))
+
+        # how many outgoing edges are there?
+        n_edges = len(self.tk_workflow.edges(self, direction='out'))
+
+        print('printing all edges')
+        self.tk_workflow.print_edges()
+
+        logger.debug('loop.default_edge_label, n_edges = {}'.format(n_edges))
+
+        if n_edges == 0:
+            return "loop"
+        elif n_edges == 1:
+            return "exit"
+        else:
+            return "too many"

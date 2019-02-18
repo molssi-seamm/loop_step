@@ -11,7 +11,7 @@ class LoopStep(object):
     my_description = {
         'description':
         'An interface for Loop',
-        'group': 'Simulations',
+        'group': 'Control',
         'name': 'Loop'
     }
 
