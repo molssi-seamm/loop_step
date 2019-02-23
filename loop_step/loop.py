@@ -45,45 +45,62 @@ class Loop(molssi_workflow.Node):
 
         if self.loop_type == 'For':
             if self._loop_value is None:
-                print('For {} from {} to {} by {}'.format(
-                    self.variable, self.first_value,
-                    self.last_value, self.increment))
                 logger.info('For {} from {} to {} by {}'.format(
                     self.variable, self.first_value,
                     self.last_value, self.increment))
                 logger.info('Initializing loop')
                 self._loop_value = self.first_value
-                molssi_workflow.workflow_variables[self.variable] = \
-                    self._loop_value
+                self.set_variable(self.variable, self._loop_value)
+                if self.variable_exists('_loop_indices'):
+                    tmp = self.get_variable('_loop_indices')
+                    self.set_variable(
+                        '_loop_indices', (*tmp, self._loop_value)
+                    )
+                else:
+                    self.set_variable('_loop_indices', (self._loop_value,))
+                    self.set_variable('_loop_index', self._loop_value)
             else:
                 self._loop_value += self.increment
-                molssi_workflow.workflow_variables[self.variable] = \
-                    self._loop_value
+                self.set_variable(self.variable, self._loop_value)
+
+                # Set up the index variables
+                tmp = self.get_variable('_loop_indices')
+                self.set_variable(
+                    '_loop_indices', (*tmp[0:-1], self._loop_value,)
+                )
+                self.set_variable('_loop_index', self._loop_value)
+
+                # See if we are at the end of loop
                 if self._loop_value > self.last_value:
                     self._loop_value = None
+
+                    # Revert the loop index variables to the next outer loop
+                    # if there is one, or remove them.
+                    tmp = self.get_variable('_loop_indices')
+
+                    if len(tmp) <= 1:
+                        self.delete_variable('_loop_indices')
+                        self.delete_variable('_loop_index')
+                    else:
+                        self.set_variable('_loop_indices', tmp[0:-1])
+                        self.set_variable('_loop_index', tmp[-2])
+
                     logger.info('The loop over {} from {} to {} by {}'.format(
                         self.variable, self.first_value,
                         self.last_value, self.increment) +
                           ' finished successfully'
                     )
-                    logger.info('Exiting loop')
-                    # return the next node after the loop
-                    for edge in self.workflow.edges(self, direction='out'):
-                        if edge['label'] == 'exit':
-                            logger.debug('Loop, next node is: {}'
-                                         .format(edge.node2))
-                            return edge.node2
-                    # loop is the last node in the workflow
-                    logger.debug('Reached the end of the workflow')
-                    return None
+                    return self.exit_node()
+
             logger.info('    Loop value = {}'.format(self._loop_value))
+
         elif self.loop_type == 'Foreach':
             print('Foreach {}'.format(self.variable))
             logger.info('Foreach {}'.format(self.variable))
         elif self.loop_type == 'For rows in table':
             if self._loop_value is None:
-                self.table = \
-                    molssi_workflow.workflow_variables[self.tablename]['table']
+                self.table = self.get_variable(self.tablename)['table']
+
                 logger.info(
                     'Initialize loop over {} rows in table {}'
                     .format(self.table.shape[0], self.tablename)
@@ -98,29 +115,47 @@ class Loop(molssi_workflow.Node):
                                  .format(column, column_variable))
                     self.column_to_variable[column] = column_variable
                     self.variable_to_column[column_variable] = column
+                if self.variable_exists('_loop_indices'):
+                    tmp = self.get_variable('_loop_indices')
+                    self.set_variable('_loop_indices', (*tmp, None,))
+                else:
+                    self.set_variable('_loop_indices', (None,))
             self._loop_value += 1
             if self._loop_value >= self.table.shape[0]:
                 self._loop_value = None
-                logger.info('The loop over table ' +
-                            self.tablename +
-                            ' finished successfully'
+
+                # Revert the loop index variables to the next outer loop
+                # if there is one, or remove them.
+                tmp = self.get_variable('_loop_indices')
+                if len(tmp) <= 1:
+                    self.delete_variable('_loop_indices')
+                    self.delete_variable('_loop_index')
+                else:
+                    self.set_variable('_loop_indices', tmp[0:-1])
+                    self.set_variable('_loop_index', tmp[-2])
+                logger.info(
+                    'The loop over table ' + self.tablename +
+                    ' finished successfully'
                 )
-                logger.info('Exiting loop')
+
                 # return the next node after the loop
-                for edge in self.workflow.edges(self, direction='out'):
-                    if edge['label'] == 'exit':
-                        logger.debug('Loop, next node is: {}'
-                                     .format(edge.node2))
-                        return edge.node2
-                    # loop is the last node in the workflow
-                logger.debug('Reached the end of the workflow')
-                return None
-                
+                return self.exit_node()
+
+            # Set up the index variables
+            tmp = self.get_variable('_loop_indices')
+            self.set_variable(
+                '_loop_indices',
+                (*tmp[0:-1], self.table.index[self._loop_value])
+            )
+            self.set_variable(
+                '_loop_index', self.table.index[self._loop_value]
+            )
+            
             row = self.table.iloc[self._loop_value]
             for column in self.table.columns:
                 value = row[column]
                 variable = self.column_to_variable[column]
-                molssi_workflow.workflow_variables[variable] = value
+                self.set_variable(variable, value)
                 logger.debug('  {} = {}'.format(variable, value))
             
         for edge in self.workflow.edges(self, direction='out'):
@@ -157,9 +192,6 @@ class Loop(molssi_workflow.Node):
         # how many outgoing edges are there?
         n_edges = len(self.workflow.edges(self, direction='out'))
 
-        print('printing all edges')
-        self.workflow.print_edges()
-
         logger.debug('loop.default_edge_label, n_edges = {}'.format(n_edges))
 
         if n_edges == 0:
@@ -175,9 +207,7 @@ class Loop(molssi_workflow.Node):
         so that it can be written out by the controller as appropriate.
         """
 
-        self.visited = True
-        self.job_output('Step ' + '.'.join(str(e) for e in self._id) +
-                        ': ' + self.title)
+        super().describe(indent, json_dict)
 
         # Print the body of the loop
         indent = indent + '    '
@@ -189,11 +219,7 @@ class Loop(molssi_workflow.Node):
                 while next_node and not next_node.visited:
                     next_node = next_node.describe(indent)
 
-        next_node = self.next()
-        if not next_node or next_node.visited:
-            return None
-        else:
-            return next_node
+        return self.exit_node()
 
     def set_id(self, node_id=()):
         """Sequentially number the loop subnodes"""
@@ -204,6 +230,7 @@ class Loop(molssi_workflow.Node):
             self.visited = True
             self._id = node_id
             self.set_subids(self._id)
+            return self.exit_node()
 
     def set_subids(self, node_id=()):
         """Set the ids of the nodes in the loop"""
@@ -216,6 +243,18 @@ class Loop(molssi_workflow.Node):
                 while next_node and next_node != self:
                     next_node = next_node.set_id((*node_id, str(n)))
                     n += 1
-        logger.debug('end of loop')
-        return self.next()
 
+        logger.debug('end of loop')
+
+    def exit_node(self):
+        """The next node after the loop, if any"""
+
+        for edge in self.workflow.edges(self, direction='out'):
+            if edge['label'] == 'exit':
+                logger.debug('Loop, node after loop is: {}'
+                             .format(edge.node2))
+                return edge.node2
+
+        # loop is the last node in the workflow
+        logger.debug('There is no node after the loop')
+        return None
