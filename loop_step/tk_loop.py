@@ -71,16 +71,16 @@ class TkLoop(molssi_workflow.TkNode):
         # First value
         w['first_value_label'] = ttk.Label(frame, text='from')
         w['first_value'] = ttk.Entry(frame, width=15)
-        w['first_value'].insert(0, self.node.first_value)
+        w['first_value'].insert(0, str(self.node.first_value))
 
         # Last value
         w['last_value_label'] = ttk.Label(frame, text='to')
         w['last_value'] = ttk.Entry(frame, width=15)
-        w['last_value'].insert(0, self.node.last_value)
+        w['last_value'].insert(0, str(self.node.last_value))
 
         # Increment, putting units here
         w['increment'] = mw.UnitEntry(frame, width=15, labeltext='by')
-        w['increment'].set(self.node.increment)
+        w['increment'].set(str(self.node.increment))
 
         # Table name
         w['tablename'] = ttk.Entry(frame, width=15)
@@ -171,9 +171,9 @@ class TkLoop(molssi_workflow.TkNode):
         self.node.loop_type = loop_type
         if loop_type == 'For':
             self.node.variable = w['variable'].get()
-            self.node.first_value = w['first_value'].get()
-            self.node.last_value = w['last_value'].get()
-            self.node.increment = w['increment'].get()
+            self.node.first_value = int(w['first_value'].get())
+            self.node.last_value = int(w['last_value'].get())
+            self.node.increment = int(w['increment'].get())
         elif loop_type == 'Foreach':
             pass
         elif loop_type == 'For rows in table':
