@@ -205,9 +205,6 @@ class TkLoop(molssi_workflow.TkNode):
         # how many outgoing edges are there?
         n_edges = len(self.tk_workflow.edges(self, direction='out'))
 
-        print('printing all edges')
-        self.tk_workflow.print_edges()
-
         logger.debug('loop.default_edge_label, n_edges = {}'.format(n_edges))
 
         if n_edges == 0:
@@ -216,3 +213,18 @@ class TkLoop(molssi_workflow.TkNode):
             return "exit"
         else:
             return "too many"
+
+    def next_anchor(self):
+        """Return where the next node should be positioned. The default is
+        <gap> below the 's' anchor point.
+        """
+
+        # how many outgoing edges are there?
+        n_edges = len(self.tk_workflow.edges(self, direction='out'))
+
+        if n_edges == 0:
+            return "e"
+        elif n_edges == 1:
+            return "s"
+        else:
+            return "sw"
