@@ -174,8 +174,8 @@ class Loop(molssi_workflow.Node):
         # No loop body? just go on?
         return super().run()
 
-    def default_edge_label(self):
-        """Return the default label of the edge. Usually this is ''
+    def default_edge_subtype(self):
+        """Return the default subtype of the edge. Usually this is 'next'
         but for nodes with two or more edges leaving them, such as a loop, this
         method will return an appropriate default for the current edge. For
         example, by default the first edge emanating from a loop-node is the
@@ -184,10 +184,6 @@ class Loop(molssi_workflow.Node):
         A return value of 'too many' indicates that the node exceeds the number
         of allowed exit edges.
         """
-
-        logger.debug("seeing what super node says!")
-        n_edges = super().default_edge_label()
-        logger.debug('super.default_edge_label, n_edges = {}'.format(n_edges))
 
         # how many outgoing edges are there?
         n_edges = len(self.workflow.edges(self, direction='out'))
@@ -212,7 +208,7 @@ class Loop(molssi_workflow.Node):
         # Print the body of the loop
         indent = indent + '    '
         for edge in self.workflow.edges(self, direction='out'):
-            if edge['label'] == 'loop':
+            if edge.edge_subtype == 'loop':
                 logger.debug('Loop, first node of loop is: {}'
                              .format(edge.node2))
                 next_node = edge.node2
@@ -235,7 +231,7 @@ class Loop(molssi_workflow.Node):
     def set_subids(self, node_id=()):
         """Set the ids of the nodes in the loop"""
         for edge in self.workflow.edges(self, direction='out'):
-            if edge['label'] == 'loop':
+            if edge.edge_subtype == 'loop':
                 logger.debug('Loop, first node of loop is: {}'
                              .format(edge.node2))
                 next_node = edge.node2
@@ -250,7 +246,7 @@ class Loop(molssi_workflow.Node):
         """The next node after the loop, if any"""
 
         for edge in self.workflow.edges(self, direction='out'):
-            if edge['label'] == 'exit':
+            if edge.edge_subtype == 'exit':
                 logger.debug('Loop, node after loop is: {}'
                              .format(edge.node2))
                 return edge.node2
