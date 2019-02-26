@@ -187,8 +187,8 @@ class TkLoop(molssi_workflow.TkNode):
         """Not implemented yet ... you'll need to fill this out!"""
         print('Help!')
 
-    def default_edge_label(self):
-        """Return the default label of the edge. Usually this is 'exit'
+    def default_edge_subtype(self):
+        """Return the default subtype of the edge. Usually this is 'next'
         but for nodes with two or more edges leaving them, such as a loop, this
         method will return an appropriate default for the current edge. For
         example, by default the first edge emanating from a loop-node is the
@@ -198,17 +198,10 @@ class TkLoop(molssi_workflow.TkNode):
         of allowed exit edges.
         """
 
-        logger.debug("seeing what super node says!")
-        n_edges = super().default_edge_label()
-        logger.debug('super.default_edge_label, n_edges = {}'.format(n_edges))
-
         # how many outgoing edges are there?
         n_edges = len(self.tk_workflow.edges(self, direction='out'))
 
-        print('printing all edges')
-        self.tk_workflow.print_edges()
-
-        logger.debug('loop.default_edge_label, n_edges = {}'.format(n_edges))
+        logger.debug('loop.default_edge_subtype, n_edges = {}'.format(n_edges))
 
         if n_edges == 0:
             return "loop"
@@ -216,3 +209,18 @@ class TkLoop(molssi_workflow.TkNode):
             return "exit"
         else:
             return "too many"
+
+    def next_anchor(self):
+        """Return where the next node should be positioned. The default is
+        <gap> below the 's' anchor point.
+        """
+
+        # how many outgoing edges are there?
+        n_edges = len(self.tk_workflow.edges(self, direction='out'))
+
+        if n_edges == 0:
+            return "e"
+        elif n_edges == 1:
+            return "s"
+        else:
+            return "sw"
