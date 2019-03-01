@@ -12,9 +12,11 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
+    'logging',
     'molssi_workflow>=0.1',
-    'molssi_util>=0.1'
-    # TODO: put any other package requirements here
+    'molssi_util>=0.1',
+    'Pmw',
+    'pprint',
 ]
 
 setup_requirements = [
@@ -56,6 +58,7 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
     test_suite='tests',
     tests_require=test_requirements,
