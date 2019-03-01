@@ -159,7 +159,7 @@ class Loop(molssi_workflow.Node):
                 logger.debug('  {} = {}'.format(variable, value))
             
         for edge in self.workflow.edges(self, direction='out'):
-            if edge['label'] == 'loop':
+            if edge.edge_subtype == 'loop':
                 logger.debug('Loop, first node of loop is: {}'
                              .format(edge.node2))
                 # Add the iteration to the ids so the directory structure is
@@ -188,7 +188,7 @@ class Loop(molssi_workflow.Node):
         # how many outgoing edges are there?
         n_edges = len(self.workflow.edges(self, direction='out'))
 
-        logger.debug('loop.default_edge_label, n_edges = {}'.format(n_edges))
+        logger.debug('loop.default_edge_subtype, n_edges = {}'.format(n_edges))
 
         if n_edges == 0:
             return "loop"
