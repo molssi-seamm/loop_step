@@ -3,7 +3,7 @@
 
 import logging
 import molssi_workflow
-from molssi_workflow import units, Q_, data  # nopep8
+from molssi_workflow import ureg, Q_, data  # nopep8
 from molssi_util import variable_names
 
 logger = logging.getLogger(__name__)
