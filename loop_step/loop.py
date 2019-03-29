@@ -2,11 +2,16 @@
 """Non-graphical part of the Loop step in a MolSSI workflow"""
 
 import logging
+import loop_step
 import molssi_workflow
 from molssi_workflow import ureg, Q_, data  # nopep8
 from molssi_util import variable_names
+import molssi_util.printing as printing
+from molssi_util.printing import FormattedText as __
 
 logger = logging.getLogger(__name__)
+job = printing.getPrinter()
+printer = printing.getPrinter('from_smiles')
 
 
 class Loop(molssi_workflow.Node):
@@ -20,37 +25,61 @@ class Loop(molssi_workflow.Node):
         '''
         logger.debug('Creating Loop {}'.format(self))
 
-        self.loop_type = 'For'
-        self.variable = 'i'
-        self.values = []
-        self.first_value = 1
-        self.last_value = 10
-        self.increment = 1
-        self.units = ''
-        self.tablename = 'table1'
         self.table = None
         self.column_to_variable = None
         self.variable_to_column = None
-
         self._loop_value = None
+        self._loop_length = None
 
         super().__init__(
             workflow=workflow,
             title='Loop',
             extension=extension)
 
+        # This needs to be after initializing subclasses...
+        self.parameters = loop_step.LoopParameters()
+
+    def description(self, P):
+        """Prepare information about what this node will do
+        """
+        text = ''
+
+        return text
+
+    def describe(self, indent='', json_dict=None):
+        """Write out information about what this node will do
+        If json_dict is passed in, add information to that dictionary
+        so that it can be written out by the controller as appropriate.
+        """
+
+        next_node = super().describe(indent, json_dict)
+
+        P = self.parameters.values_to_dict()
+
+        text = self.description(P)
+
+        job.job(__(text, **P, indent=self.indent+'    '))
+
+        return next_node
+
     def run(self):
         """Run a Loop step.
         """
 
-        if self.loop_type == 'For':
+        P = self.parameters.current_values_to_dict(
+            context=molssi_workflow.workflow_variables._data
+        )
+
+        if P['type'] == 'For':
             if self._loop_value is None:
-                logger.info('For {} from {} to {} by {}'.format(
-                    self.variable, self.first_value,
-                    self.last_value, self.increment))
+                logger.info(
+                    'For {} from {} to {} by {}'.format(
+                    P['variable'], P['start'], P['end'], P['step'])
+                )
+
                 logger.info('Initializing loop')
-                self._loop_value = self.first_value
-                self.set_variable(self.variable, self._loop_value)
+                self._loop_value = P['start']
+                self.set_variable(P['variable'], self._loop_value)
                 if self.variable_exists('_loop_indices'):
                     tmp = self.get_variable('_loop_indices')
                     self.set_variable(
@@ -60,8 +89,8 @@ class Loop(molssi_workflow.Node):
                     self.set_variable('_loop_indices', (self._loop_value,))
                     self.set_variable('_loop_index', self._loop_value)
             else:
-                self._loop_value += self.increment
-                self.set_variable(self.variable, self._loop_value)
+                self._loop_value += P['step']
+                self.set_variable(P['variable'], self._loop_value)
 
                 # Set up the index variables
                 tmp = self.get_variable('_loop_indices')
@@ -71,7 +100,7 @@ class Loop(molssi_workflow.Node):
                 self.set_variable('_loop_index', self._loop_value)
 
                 # See if we are at the end of loop
-                if self._loop_value > self.last_value:
+                if self._loop_value > P['end']:
                     self._loop_value = None
 
                     # Revert the loop index variables to the next outer loop
@@ -85,25 +114,64 @@ class Loop(molssi_workflow.Node):
                         self.set_variable('_loop_indices', tmp[0:-1])
                         self.set_variable('_loop_index', tmp[-2])
 
-                    logger.info('The loop over {} from {} to {} by {}'.format(
-                        self.variable, self.first_value,
-                        self.last_value, self.increment) +
-                          ' finished successfully'
+                    logger.info(
+                        ('The loop over {} from {} to {} by {}'
+                         ' finished successfully').format(
+                        P['variable'], P['start'], P['end'], P['step'])
                     )
                     return self.exit_node()
 
             logger.info('    Loop value = {}'.format(self._loop_value))
-
-        elif self.loop_type == 'Foreach':
-            print('Foreach {}'.format(self.variable))
-            logger.info('Foreach {}'.format(self.variable))
-        elif self.loop_type == 'For rows in table':
+        elif P['type'] == 'Foreach':
+            logger.info('Foreach {}'.format(P['variable']))
             if self._loop_value is None:
-                self.table = self.get_variable(self.tablename)['table']
+                self._loop_value = -1
+                self._loop_length = len(P['values'])
+                if self.variable_exists('_loop_indices'):
+                    tmp = self.get_variable('_loop_indices')
+                    self.set_variable('_loop_indices', (*tmp, None,))
+                else:
+                    self.set_variable('_loop_indices', (None,))
+
+            self._loop_value += 1
+
+            if self._loop_value >= self._loop_length:
+                self._loop_value = None
+                self._loop_length = None
+
+                # Revert the loop index variables to the next outer loop
+                # if there is one, or remove them.
+                tmp = self.get_variable('_loop_indices')
+                if len(tmp) <= 1:
+                    self.delete_variable('_loop_indices')
+                    self.delete_variable('_loop_index')
+                else:
+                    self.set_variable('_loop_indices', tmp[0:-1])
+                    self.set_variable('_loop_index', tmp[-2])
+                logger.info(
+                    'The loop over value finished successfully'
+                )
+
+                # return the next node after the loop
+                return self.exit_node()
+
+            value = P['values'][self._loop_value]
+            self.set_variable(P['variable'], value)
+
+            # Set up the index variables
+            tmp = self.get_variable('_loop_indices')
+            self.set_variable(
+                '_loop_indices', (*tmp[0:-1], self._loop_value,)
+            )
+            self.set_variable('_loop_index', self._loop_value)
+            logger.info('    Loop value = {}'.format(value))
+        elif P['type'] == 'For rows in table':
+            if self._loop_value is None:
+                self.table = self.get_variable(P['table'])['table']
 
                 logger.info(
                     'Initialize loop over {} rows in table {}'
-                    .format(self.table.shape[0], self.tablename)
+                    .format(self.table.shape[0], P['table'])
                 )
                 self._loop_value = -1
                 self.variable_to_column = {}

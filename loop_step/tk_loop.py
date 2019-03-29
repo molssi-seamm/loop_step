@@ -36,91 +36,53 @@ class TkLoop(molssi_workflow.TkNode):
         self.dialog = Pmw.Dialog(
             self.toplevel,
             buttons=('OK', 'Help', 'Cancel'),
-            defaultbutton='OK',
             master=self.toplevel,
             title='Edit Loop step',
             command=self.handle_dialog)
         self.dialog.withdraw()
 
-        # self._widget, which is inherited from the base class, is
-        # a place to store the pointers to the widgets so that we can access
-        # them later. We'll set up a short hand 'w' just to keep lines short
-        w = self._widget
+        # Create a frame to hold everything
         frame = ttk.Frame(self.dialog.interior())
         frame.pack(expand=tk.YES, fill=tk.BOTH)
-        w['frame'] = frame
+        self['frame'] = frame
 
-        # The type of loop
-        loop_type = ttk.Combobox(
-            frame, state='readonly',
-            values=['For',
-                    'Foreach',
-                    'For rows in table',
-                    'While'
-            ],
-            justify=tk.LEFT, width=15
-        )
-        loop_type.set(self.node.loop_type)
-        w['loop_type'] = loop_type
+        # Create the widgets and grid them in
+        P = self.node.parameters
+        for key in P:
+            self[key] = P[key].widget(frame)
 
-        # Loop variable
-        w['variable_label'] = ttk.Label(frame, text='Variable:')
-        w['variable'] = ttk.Entry(frame, width=15)
-        w['variable'].insert(0, self.node.variable)
-
-        # First value
-        w['first_value_label'] = ttk.Label(frame, text='from')
-        w['first_value'] = ttk.Entry(frame, width=15)
-        w['first_value'].insert(0, str(self.node.first_value))
-
-        # Last value
-        w['last_value_label'] = ttk.Label(frame, text='to')
-        w['last_value'] = ttk.Entry(frame, width=15)
-        w['last_value'].insert(0, str(self.node.last_value))
-
-        # Increment, putting units here
-        w['increment'] = mw.UnitEntry(frame, width=15, labeltext='by')
-        w['increment'].set(str(self.node.increment))
-
-        # Table name
-        w['tablename'] = ttk.Entry(frame, width=15)
-        w['tablename'].insert(0, self.node.tablename)
-
-        w['loop_type'].bind("<<ComboboxSelected>>", self.reset_dialog)
+        self['type'].combobox.bind("<<ComboboxSelected>>", self.reset_dialog)
 
         self.reset_dialog()
 
     def reset_dialog(self, widget=None):
-        # set up our shorthand for the widgets
-        w = self._widget
 
         # and get the method, which in this example controls
         # how the widgets are laid out.
-        loop_type = w['loop_type'].get()
+        loop_type = self['type'].get()
+
         logger.debug('Updating edit loop dialog: {}'.format(loop_type))
 
         # Remove any widgets previously packed
-        frame = w['frame']
+        frame = self['frame']
         for slave in frame.grid_slaves():
             slave.grid_forget()
 
         # keep track of the row in a variable, so that the layout is flexible
         # if e.g. rows are skipped to control such as 'method' here
         row = 0
-        w['loop_type'].grid(row=row, column=0, sticky=tk.W)
-        row += 1
+        self['type'].grid(row=row, column=0, sticky=tk.W)
         if loop_type == 'For':
-            w['variable_label'].grid(row=row, column=2, sticky=tk.W)
-            w['variable'].grid(row=row, column=3, sticky=tk.W)
-            w['first_value_label'].grid(row=row, column=4, sticky=tk.W)
-            w['first_value'].grid(row=row, column=5, sticky=tk.W)
-            w['last_value_label'].grid(row=row, column=6, sticky=tk.W)
-            w['last_value'].grid(row=row, column=7, sticky=tk.W)
-            w['increment'].grid(row=row, column=8, sticky=tk.W)
+            self['variable'].grid(row=row, column=2, sticky=tk.W)
+            self['start'].grid(row=row, column=3, sticky=tk.W)
+            self['end'].grid(row=row, column=4, sticky=tk.W)
+            self['step'].grid(row=row, column=5, sticky=tk.W)
         elif loop_type == 'Foreach':
-            pass
+            self['variable'].grid(row=row, column=2, sticky=tk.W)
+            self['values'].grid(row=row, column=3, sticky=tk.W)
         elif loop_type == 'For rows in table':
-            w['tablename'].grid(row=row, column=2, sticky=tk.W)
+            self['tablename'].grid(row=row, column=2, sticky=tk.W)
+            self['variable'].grid(row=row, column=3, sticky=tk.W)
         else:
             raise RuntimeError(
                 "Don't recognize the loop_type {}".format(loop_type))
@@ -159,29 +121,11 @@ class TkLoop(molssi_workflow.TkNode):
 
         self.dialog.deactivate(result)
 
-        # set up our shorthand for the widgets
-        w = self._widget
-        # and get the method, which in this example tells
-        # whether to use the value ditrectly or get it from
-        # a variable in the workflow
+        # Shortcut for parameters
+        P = self.node.parameters
 
-        loop_type = w['loop_type'].get()
-        logger.debug('Updating loop stage from dialog: {}'.format(loop_type))
-
-        self.node.loop_type = loop_type
-        if loop_type == 'For':
-            self.node.variable = w['variable'].get()
-            self.node.first_value = int(w['first_value'].get())
-            self.node.last_value = int(w['last_value'].get())
-            self.node.increment = int(w['increment'].get())
-        elif loop_type == 'Foreach':
-            pass
-        elif loop_type == 'For rows in table':
-            self.node.tablename = w['tablename'].get()
-            logger.debug('  tablename <== {}'.format(self.node.tablename))
-        else:
-            raise RuntimeError(
-                "Don't recognize the type of loop {}".format(loop_type))
+        for key in P:
+            P[key].set_from_widget()
 
     def handle_help(self):
         """Not implemented yet ... you'll need to fill this out!"""

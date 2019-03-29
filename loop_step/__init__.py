@@ -10,5 +10,6 @@ __version__ = '0.1.0'
 # the loop_step package.
 
 from loop_step.loop import Loop  # nopep8
+from loop_step.loop_parameters import LoopParameters  # nopep8
 from loop_step.loop_step import LoopStep  # nopep8
 from loop_step.tk_loop import TkLoop  # nopep8
