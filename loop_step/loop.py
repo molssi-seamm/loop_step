@@ -25,9 +25,8 @@ class Loop(molssi_workflow.Node):
         '''
         logger.debug('Creating Loop {}'.format(self))
 
+        self.table_handle = None
         self.table = None
-        self.column_to_variable = None
-        self.variable_to_column = None
         self._loop_value = None
         self._loop_length = None
 
@@ -74,7 +73,7 @@ class Loop(molssi_workflow.Node):
             if self._loop_value is None:
                 logger.info(
                     'For {} from {} to {} by {}'.format(
-                    P['variable'], P['start'], P['end'], P['step'])
+                        P['variable'], P['start'], P['end'], P['step'])
                 )
 
                 logger.info('Initializing loop')
@@ -117,7 +116,7 @@ class Loop(molssi_workflow.Node):
                     logger.info(
                         ('The loop over {} from {} to {} by {}'
                          ' finished successfully').format(
-                        P['variable'], P['start'], P['end'], P['step'])
+                             P['variable'], P['start'], P['end'], P['step'])
                     )
                     return self.exit_node()
 
@@ -167,22 +166,15 @@ class Loop(molssi_workflow.Node):
             logger.info('    Loop value = {}'.format(value))
         elif P['type'] == 'For rows in table':
             if self._loop_value is None:
-                self.table = self.get_variable(P['table'])['table']
+                self.table_handle = self.get_variable(P['table'])
+                self.table = self.table_handle['table']
+                self.table_handle['loop index'] = True
 
                 logger.info(
                     'Initialize loop over {} rows in table {}'
                     .format(self.table.shape[0], P['table'])
                 )
                 self._loop_value = -1
-                self.variable_to_column = {}
-                self.column_to_variable = {}
-                for column in self.table.columns:
-                    # make a nice Python variable by removing e.g. blanks
-                    column_variable = variable_names.clean(column)
-                    logger.debug('  column {} --> {}'
-                                 .format(column, column_variable))
-                    self.column_to_variable[column] = column_variable
-                    self.variable_to_column[column_variable] = column
                 if self.variable_exists('_loop_indices'):
                     tmp = self.get_variable('_loop_indices')
                     self.set_variable('_loop_indices', (*tmp, None,))
@@ -192,6 +184,7 @@ class Loop(molssi_workflow.Node):
             if self._loop_value >= self.table.shape[0]:
                 self._loop_value = None
 
+                self.delete_variable('_row')
                 # Revert the loop index variables to the next outer loop
                 # if there is one, or remove them.
                 tmp = self.get_variable('_loop_indices')
@@ -201,8 +194,15 @@ class Loop(molssi_workflow.Node):
                 else:
                     self.set_variable('_loop_indices', tmp[0:-1])
                     self.set_variable('_loop_index', tmp[-2])
+
+                # and the other info in the table handle
+                self.table_handle['loop index'] = False
+
+                self.table = None
+                self.table_handle = None
+
                 logger.info(
-                    'The loop over table ' + self.tablename +
+                    'The loop over table ' + self.parameters['table'].value +
                     ' finished successfully'
                 )
 
@@ -218,13 +218,12 @@ class Loop(molssi_workflow.Node):
             self.set_variable(
                 '_loop_index', self.table.index[self._loop_value]
             )
+            self.table_handle['current index'] = (
+                self.table.index[self._loop_value]
+            )
             
             row = self.table.iloc[self._loop_value]
-            for column in self.table.columns:
-                value = row[column]
-                variable = self.column_to_variable[column]
-                self.set_variable(variable, value)
-                logger.debug('  {} = {}'.format(variable, value))
+            self.set_variable('_row', row)
             
         for edge in self.workflow.edges(self, direction='out'):
             if edge.edge_subtype == 'loop':
