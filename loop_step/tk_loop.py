@@ -81,7 +81,7 @@ class TkLoop(molssi_workflow.TkNode):
             self['variable'].grid(row=row, column=2, sticky=tk.W)
             self['values'].grid(row=row, column=3, sticky=tk.W)
         elif loop_type == 'For rows in table':
-            self['tablename'].grid(row=row, column=2, sticky=tk.W)
+            self['table'].grid(row=row, column=2, sticky=tk.W)
             self['variable'].grid(row=row, column=3, sticky=tk.W)
         else:
             raise RuntimeError(
