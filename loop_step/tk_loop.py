@@ -31,6 +31,8 @@ class TkLoop(molssi_workflow.TkNode):
         super().__init__(tk_workflow=tk_workflow, node=node,
                          canvas=canvas, x=x, y=y, w=w, h=h)
 
+        self.node_type = 'loop'
+
     def create_dialog(self):
         """Create the dialog!"""
         self.dialog = Pmw.Dialog(
