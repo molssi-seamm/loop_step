@@ -65,6 +65,9 @@ class Loop(molssi_workflow.Node):
         """Run a Loop step.
         """
 
+        # Set up the directory, etc.
+        super().run()
+
         P = self.parameters.current_values_to_dict(
             context=molssi_workflow.workflow_variables._data
         )
@@ -227,7 +230,7 @@ class Loop(molssi_workflow.Node):
             
         for edge in self.workflow.edges(self, direction='out'):
             if edge.edge_subtype == 'loop':
-                logger.debug('Loop, first node of loop is: {}'
+                logger.info('Loop, first node of loop is: {}'
                              .format(edge.node2))
                 # Add the iteration to the ids so the directory structure is
                 # reasonable
@@ -239,7 +242,7 @@ class Loop(molssi_workflow.Node):
                 return edge.node2
 
         # No loop body? just go on?
-        return super().run()
+        return self.exit_node()
 
     def default_edge_subtype(self):
         """Return the default subtype of the edge. Usually this is 'next'
