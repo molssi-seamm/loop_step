@@ -3,13 +3,13 @@
 """
 
 import logging
-import molssi_workflow
+import seamm
 import pprint
 
 logger = logging.getLogger(__name__)
 
 
-class LoopParameters(molssi_workflow.Parameters):
+class LoopParameters(seamm.Parameters):
     """The control parameters for loops"""
 
     parameters = {

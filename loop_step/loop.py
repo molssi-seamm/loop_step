@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-"""Non-graphical part of the Loop step in a MolSSI workflow"""
+"""Non-graphical part of the Loop step in a SEAMM flowchart"""
 
 import logging
 import loop_step
-import molssi_workflow
-from molssi_workflow import ureg, Q_, data  # nopep8
+import seamm
+from seamm import ureg, Q_, data  # nopep8
 from molssi_util import variable_names
 import molssi_util.printing as printing
 from molssi_util.printing import FormattedText as __
@@ -14,12 +14,12 @@ job = printing.getPrinter()
 printer = printing.getPrinter('from_smiles')
 
 
-class Loop(molssi_workflow.Node):
+class Loop(seamm.Node):
     def __init__(self,
-                 workflow=None,
+                 flowchart=None,
                  extension=None):
         '''Setup the non-graphical part of the Loop step in a
-        MolSSI workflow.
+        SEAMM flowchart.
 
         Keyword arguments:
         '''
@@ -31,7 +31,7 @@ class Loop(molssi_workflow.Node):
         self._loop_length = None
 
         super().__init__(
-            workflow=workflow,
+            flowchart=flowchart,
             title='Loop',
             extension=extension)
 
@@ -69,7 +69,7 @@ class Loop(molssi_workflow.Node):
         super().run()
 
         P = self.parameters.current_values_to_dict(
-            context=molssi_workflow.workflow_variables._data
+            context=seamm.flowchart_variables._data
         )
 
         if P['type'] == 'For':
@@ -228,13 +228,13 @@ class Loop(molssi_workflow.Node):
             row = self.table.iloc[self._loop_value]
             self.set_variable('_row', row)
             
-        for edge in self.workflow.edges(self, direction='out'):
+        for edge in self.flowchart.edges(self, direction='out'):
             if edge.edge_subtype == 'loop':
                 logger.info('Loop, first node of loop is: {}'
                              .format(edge.node2))
                 # Add the iteration to the ids so the directory structure is
                 # reasonable
-                self.workflow.reset_visited()
+                self.flowchart.reset_visited()
                 self.set_subids(
                     (*self._id, 'iter_{}'.format(self._loop_value))
                 )
@@ -256,7 +256,7 @@ class Loop(molssi_workflow.Node):
         """
 
         # how many outgoing edges are there?
-        n_edges = len(self.workflow.edges(self, direction='out'))
+        n_edges = len(self.flowchart.edges(self, direction='out'))
 
         logger.debug('loop.default_edge_subtype, n_edges = {}'.format(n_edges))
 
@@ -277,7 +277,7 @@ class Loop(molssi_workflow.Node):
 
         # Print the body of the loop
         indent = indent + '    '
-        for edge in self.workflow.edges(self, direction='out'):
+        for edge in self.flowchart.edges(self, direction='out'):
             if edge.edge_subtype == 'loop':
                 logger.debug('Loop, first node of loop is: {}'
                              .format(edge.node2))
@@ -300,7 +300,7 @@ class Loop(molssi_workflow.Node):
 
     def set_subids(self, node_id=()):
         """Set the ids of the nodes in the loop"""
-        for edge in self.workflow.edges(self, direction='out'):
+        for edge in self.flowchart.edges(self, direction='out'):
             if edge.edge_subtype == 'loop':
                 logger.debug('Loop, first node of loop is: {}'
                              .format(edge.node2))
@@ -315,12 +315,12 @@ class Loop(molssi_workflow.Node):
     def exit_node(self):
         """The next node after the loop, if any"""
 
-        for edge in self.workflow.edges(self, direction='out'):
+        for edge in self.flowchart.edges(self, direction='out'):
             if edge.edge_subtype == 'exit':
                 logger.debug('Loop, node after loop is: {}'
                              .format(edge.node2))
                 return edge.node2
 
-        # loop is the last node in the workflow
+        # loop is the last node in the flowchart
         logger.debug('There is no node after the loop')
         return None
