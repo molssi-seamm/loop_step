@@ -5,9 +5,9 @@ import logging
 import loop_step
 import seamm
 from seamm import ureg, Q_, data  # nopep8
-from molssi_util import variable_names
-import molssi_util.printing as printing
-from molssi_util.printing import FormattedText as __
+from seamm_util import variable_names
+import seamm_util.printing as printing
+from seamm_util.printing import FormattedText as __
 
 logger = logging.getLogger(__name__)
 job = printing.getPrinter()
