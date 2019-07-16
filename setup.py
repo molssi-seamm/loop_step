@@ -13,14 +13,14 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'logging',
-    'molssi_workflow>=0.1',
-    'molssi_util>=0.1',
+    'seamm>=0.1',
+    'seamm_util>=0.1',
     'Pmw',
     'pprint',
 ]
 
 setup_requirements = [
-    'pytest-runner',
+    # 'pytest-runner',
     # TODO(paulsaxe): put setup requirements (distutils extensions, etc.) here
 ]
 
@@ -36,7 +36,7 @@ setup(
     long_description=readme + '\n\n' + history,
     author="Paul Saxe",
     author_email='psaxe@molssi.org',
-    url='https://github.com/paulsaxe/loop_step',
+    url='https://github.com/molssi-seamm/loop_step',
     packages=find_packages(include=['loop_step']),
     include_package_data=True,
     install_requires=requirements,
@@ -64,10 +64,10 @@ setup(
     tests_require=test_requirements,
     setup_requires=setup_requirements,
     entry_points={
-        'org.molssi.workflow': [
+        'org.molssi.seamm': [
             'Loop = loop_step:LoopStep',
         ],
-        'org.molssi.workflow.tk': [
+        'org.molssi.seamm.tk': [
             'Loop = loop_step:LoopStep',
         ],
     }
