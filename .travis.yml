@@ -1,21 +1,36 @@
 language: python
 
-dist: xenial
+before_install:
+    # Additional info about the build
+  - uname -a
+  - df -h
+  - ulimit -a
 
-python:
-  - 3.5
-  - 3.6
-  - 3.7
+  # Install the Python environment
+  - source devtools/travis-ci/before_install.sh
+  - python -V
 
 install:
-  - pip install -U tox-travis
-  - pip install -U codecov
+  - pip install -U pytest pytest-cov codecov
+  - pip install -e .
 
 script:
-  - tox -e coverage
+  - pytest -v --cov=loop_step tests/
 
 after_success:
-  - codecov -e TOX_ENV
+  - codecov
+
+deploy:
+  provider: pypi
+  distributions: sdist bdist_wheel
+  skip_existing: true
+  on:
+    python: 3.7
+    repo: molssi-seamm/loop_step
+    tags: true
+  user: seamm
+  password:
+    secure: hjhqNZcsLDwJNlIzbkaOTl4nLX86mgc9xs8IwQlkzHQTrGFKCuL4SV7mDZ0QPyowICyrAB8wU/TIVVltmiVcWtdFtWWLF9P2qHJ0cZgarWtxEvGphYaf+0Xk5FeqUd34c38AEUAvN5CEa7BLSyhrQduqfTogaroOkyN1eVFDdnKTVybg7BLaH8RovITbSGxR3pVVfI1ejb4mIdlEUnugU/2CNzUCxCfUCX2XImGrRCTfrg0EKNYyi/PAXv4b1pT+5oJfy2GivmhelNdI0vLX8FRRkaYLjmgNHoM1wl7CpCJX5aJ2c3O4K8k2UDE4258/ixVFixlk44gesDWqevBUFwaa6lDOYSLBA/WaCNhizCc5Y7QVufXHMj8cCS9dhX9GGO6jJsIpZYuLhonaP7lwPuegpRWDfB/rqwRUY2x020osS4N9nnq8u717K0WSCdFumrDalYSXl/0uX2ayDwaZhzmlp0WBQZH6Hf+aRZTxG6l7ovLTkA+cGMgruIkzEmNnWwtXUDeeLN1RxrJvjYy4i0zncFsjKHogLFdDZLwVR/drHOJfoBXMJ1tDyizoZpEXDPynN+8fOhplIiWejg60KYSYxS0Wv/ZH+uDQE9eTdYBRa6YNycOxn2YmlgS/wvLztW80EoKY9FoJGcPKovW+YI5fKA3miKmVFlbYkowB1No=
 
 matrix:
   fast_finish: true
@@ -23,7 +38,7 @@ matrix:
 stages:
   - lint
   - test
-  - deploy
+  # - deploy
   
 jobs:  
   include:
@@ -32,20 +47,29 @@ jobs:
       script: tox -e lint
       python: 3.7
 
-    - stage: deploy
-      name: "Deploy to PyPi"
-      if: tag IS present
-      python: 3.7
-      script:
-        - python setup.py sdist bdist_wheel
-      deploy:
-        provider: pypi
-        distributions: sdist bdist_wheel
-        skip_existing: true
-        on:
-          repo: molssi-seamm/loop_step
-          tags: true
-        user: seamm
-        password:
-          secure: hjhqNZcsLDwJNlIzbkaOTl4nLX86mgc9xs8IwQlkzHQTrGFKCuL4SV7mDZ0QPyowICyrAB8wU/TIVVltmiVcWtdFtWWLF9P2qHJ0cZgarWtxEvGphYaf+0Xk5FeqUd34c38AEUAvN5CEa7BLSyhrQduqfTogaroOkyN1eVFDdnKTVybg7BLaH8RovITbSGxR3pVVfI1ejb4mIdlEUnugU/2CNzUCxCfUCX2XImGrRCTfrg0EKNYyi/PAXv4b1pT+5oJfy2GivmhelNdI0vLX8FRRkaYLjmgNHoM1wl7CpCJX5aJ2c3O4K8k2UDE4258/ixVFixlk44gesDWqevBUFwaa6lDOYSLBA/WaCNhizCc5Y7QVufXHMj8cCS9dhX9GGO6jJsIpZYuLhonaP7lwPuegpRWDfB/rqwRUY2x020osS4N9nnq8u717K0WSCdFumrDalYSXl/0uX2ayDwaZhzmlp0WBQZH6Hf+aRZTxG6l7ovLTkA+cGMgruIkzEmNnWwtXUDeeLN1RxrJvjYy4i0zncFsjKHogLFdDZLwVR/drHOJfoBXMJ1tDyizoZpEXDPynN+8fOhplIiWejg60KYSYxS0Wv/ZH+uDQE9eTdYBRa6YNycOxn2YmlgS/wvLztW80EoKY9FoJGcPKovW+YI5fKA3miKmVFlbYkowB1No=
-      after_success: skip
+    - stage: test
+      # Extra includes for OSX since python language is not available by default on OSX
+      - os: osx
+        language: generic
+        env: PYTHON_VER=3.6
+        deploy: skip
+      - os: osx
+        language: generic
+        env: PYTHON_VER=3.7
+        deploy: skip
+
+      # Pip can use Travis build-in Python
+      - os: linux
+        python: 3.6
+        deploy: skip
+      - os: linux
+        dist: xenial  # Travis Trusty image does not have Python 3.7, Xenial does
+        python: 3.7
+      
+    # - stage: deploy
+    #   name: "Deploy to PyPi"
+    #   if: tag IS present
+    #   python: 3.7
+    #   script:
+    #     - python setup.py sdist bdist_wheel
+    #   after_success: skip
