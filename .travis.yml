@@ -54,8 +54,8 @@ jobs:
 
     - stage: test
       # Pip can use Travis build-in Python
-      - os: linux
-        python: 3.6
+    - os: linux
+      python: 3.6
 
 
     #   # Extra includes for OSX since python language is not available by default on OSX
