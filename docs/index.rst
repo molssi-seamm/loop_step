@@ -1,5 +1,5 @@
-Welcome to Loop Step's documentation!
-======================================
+Welcome to the documentation for a loop step in a SEAMM Flowchart
+=================================================================
 
 Contents:
 

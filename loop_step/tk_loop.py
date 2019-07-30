@@ -5,7 +5,6 @@ import logging
 import seamm
 import loop_step
 import Pmw
-import pprint  # nopep8
 import tkinter as tk
 import tkinter.ttk as ttk
 

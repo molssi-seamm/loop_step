@@ -5,7 +5,6 @@ import logging
 import loop_step
 import seamm
 from seamm_util import ureg, Q_, units_class  # noqa: F401
-from seamm_util import variable_names
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 
@@ -43,6 +42,16 @@ class Loop(seamm.Node):
         """
         text = ''
 
+        # Print the body of the loop
+        indent = '    '
+        for edge in self.flowchart.edges(self, direction='out'):
+            if edge.edge_subtype == 'loop':
+                logger.debug('Loop, first node of loop is: {}'
+                             .format(edge.node2))
+                next_node = edge.node2
+                while next_node and not next_node.visited:
+                    text += next_node.describe(indent)
+
         return text
 
     def describe(self, indent='', json_dict=None):
@@ -51,7 +60,7 @@ class Loop(seamm.Node):
         so that it can be written out by the controller as appropriate.
         """
 
-        next_node = super().describe(indent, json_dict)
+        super().describe(indent, json_dict)
 
         P = self.parameters.values_to_dict()
 
@@ -59,7 +68,7 @@ class Loop(seamm.Node):
 
         job.job(__(text, **P, indent=self.indent+'    '))
 
-        return next_node
+        return self.exit_node()
 
     def run(self):
         """Run a Loop step.
@@ -224,14 +233,14 @@ class Loop(seamm.Node):
             self.table_handle['current index'] = (
                 self.table.index[self._loop_value]
             )
-            
+
             row = self.table.iloc[self._loop_value]
             self.set_variable('_row', row)
-            
+
         for edge in self.flowchart.edges(self, direction='out'):
             if edge.edge_subtype == 'loop':
                 logger.info('Loop, first node of loop is: {}'
-                             .format(edge.node2))
+                            .format(edge.node2))
                 # Add the iteration to the ids so the directory structure is
                 # reasonable
                 self.flowchart.reset_visited()
@@ -266,26 +275,6 @@ class Loop(seamm.Node):
             return "exit"
         else:
             return "too many"
-
-    def describe(self, indent='', json_dict=None):
-        """Write out information about what this node will do
-        If json_dict is passed in, add information to that dictionary
-        so that it can be written out by the controller as appropriate.
-        """
-
-        super().describe(indent, json_dict)
-
-        # Print the body of the loop
-        indent = indent + '    '
-        for edge in self.flowchart.edges(self, direction='out'):
-            if edge.edge_subtype == 'loop':
-                logger.debug('Loop, first node of loop is: {}'
-                             .format(edge.node2))
-                next_node = edge.node2
-                while next_node and not next_node.visited:
-                    next_node = next_node.describe(indent)
-
-        return self.exit_node()
 
     def set_id(self, node_id=()):
         """Sequentially number the loop subnodes"""
