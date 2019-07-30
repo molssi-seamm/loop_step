@@ -52,10 +52,9 @@ jobs:
       python: 3.7
       after_success: skip
 
-    - stage: test
-      # Pip can use Travis build-in Python
     - os: linux
       python: 3.6
+      deploy: skip
 
 
     #   # Extra includes for OSX since python language is not available by default on OSX
@@ -68,7 +67,6 @@ jobs:
     #     env: PYTHON_VER=3.7
     #     deploy: skip
 
-    #     deploy: skip
     #   - os: linux
     #     dist: xenial  # Travis Trusty image does not have Python 3.7, Xenial does
     #     python: 3.7
