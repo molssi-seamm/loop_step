@@ -43,7 +43,7 @@ jobs:
   include:
     - stage: lint
       name: "Check formatting of code for PEP-8"
-      script: tox -e lint
+      script: flake8 loop_step tests
       dist: xenial
       python: 3.7
 
