@@ -61,7 +61,7 @@ jobs:
     - os: osx
       name: "Python 3.7"
       language: generic
-      env: PYTHON_VER=3.7
+      env: PYTHON_VER=3.7-dev
       script:
         - pytest -v tests/
       after_success: skip
