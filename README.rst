@@ -17,8 +17,11 @@ Loop Step
      :target: https://pyup.io/repos/github/molssi-seamm/loop_step/
      :alt: Updates
 
+.. image:: https://codecov.io/gh/molssi-seamm/loop_step/branch/master/graph/badge.svg
+  :target: https://codecov.io/gh/molssi-seamm/loop_step
 
-Handle various type of loops in a flowchart
+
+Handle various type of loops in a SEAMM Flowchart
 
 
 * Free software: BSD license
