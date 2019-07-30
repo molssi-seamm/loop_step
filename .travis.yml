@@ -65,11 +65,3 @@ jobs:
       - os: linux
         dist: xenial  # Travis Trusty image does not have Python 3.7, Xenial does
         python: 3.7
-      
-    # - stage: deploy
-    #   name: "Deploy to PyPi"
-    #   if: tag IS present
-    #   python: 3.7
-    #   script:
-    #     - python setup.py sdist bdist_wheel
-    #   after_success: skip
