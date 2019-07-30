@@ -38,7 +38,6 @@ matrix:
 stages:
   - lint
   - test
-  # - deploy
   
 jobs:  
   include:
@@ -47,21 +46,21 @@ jobs:
       script: tox -e lint
       python: 3.7
 
-    - stage: test
-      # Extra includes for OSX since python language is not available by default on OSX
-      - os: osx
-        language: generic
-        env: PYTHON_VER=3.6
-        deploy: skip
-      - os: osx
-        language: generic
-        env: PYTHON_VER=3.7
-        deploy: skip
+    # - stage: test
+    #   # Extra includes for OSX since python language is not available by default on OSX
+    #   - os: osx
+    #     language: generic
+    #     env: PYTHON_VER=3.6
+    #     deploy: skip
+    #   - os: osx
+    #     language: generic
+    #     env: PYTHON_VER=3.7
+    #     deploy: skip
 
-      # Pip can use Travis build-in Python
-      - os: linux
-        python: 3.6
-        deploy: skip
-      - os: linux
-        dist: xenial  # Travis Trusty image does not have Python 3.7, Xenial does
-        python: 3.7
+    #   # Pip can use Travis build-in Python
+    #   - os: linux
+    #     python: 3.6
+    #     deploy: skip
+    #   - os: linux
+    #     dist: xenial  # Travis Trusty image does not have Python 3.7, Xenial does
+    #     python: 3.7
