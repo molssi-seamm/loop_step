@@ -2,10 +2,10 @@ language: python
 
 dist: xenial
 
-# python:
-#   - 3.7
-#   - 3.6
-#   - 3.5
+python:
+  - 3.7
+  - 3.6
+  - 3.5
 
 
 install:
@@ -25,9 +25,7 @@ matrix:
       script: tox -e lint
       python: '3.6'
 
-    - python: '3.7'
-    - python: '3.6'
-    - python: '3.5'    
+    - stage: test
 
     - stage: release
       if: tag IS present
