@@ -4,7 +4,6 @@
 
 import logging
 import seamm
-import pprint
 
 logger = logging.getLogger(__name__)
 
@@ -100,4 +99,3 @@ class LoopParameters(seamm.Parameters):
             defaults={**LoopParameters.parameters, **defaults},
             data=data
         )
-
