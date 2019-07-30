@@ -22,7 +22,7 @@ matrix:
 
 stages:
   - lint
-  - test
+  - check
   - deploy
   
 jobs:  
@@ -31,15 +31,13 @@ jobs:
       script: tox -e lint
       python: 3.7
 
-    - stage: test
-
     - stage: release
       if: tag IS present
+      python: 3.7
       deploy:
         provider: pypi
         distributions: sdist bdist_wheel
         on:
-          python: 3.7
           repo: molssi-seamm/loop_step
           tags: true
           user: seamm
