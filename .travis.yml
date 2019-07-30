@@ -11,9 +11,12 @@ before_install:
   - python -V
 
 install:
-  - pip install -U pytest pytest-cov codecov
+  - pip install -U pytest
   - pip install -e .
 
+script:
+  - pytest -v tests/
+  
 matrix:
   fast_finish: true
 
@@ -32,18 +35,17 @@ jobs:
         - flake8 loop_step tests
       dist: xenial
       python: 3.7
-      after_success: skip
 
     - stage: test
       os: linux
       python: 3.6
-      script:
-        - pytest -v tests/
-      after_success: skip
 
     - os: linux
       dist: xenial
       python: 3.7
+      install:
+        - pip install -U pytest pytest-cov codecov
+        - pip install -e .
       script:
         - pytest -v --cov=loop_step tests/
       after_success:
@@ -54,21 +56,16 @@ jobs:
       name: "Python 3.6"
       language: generic
       env: PYTHON_VER=3.6
-      script:
-        - pytest -v tests/
-      after_success: skip
 
     - os: osx
       name: "Python 3.7"
       language: generic
       env: PYTHON_VER=3.7-dev
-      script:
-        - pytest -v tests/
-      after_success: skip
 
     - stage: deploy
       name: "Deploy to PyPi"
       if: tag IS present
+      dist: xenial
       python: 3.7
       script: skip
       deploy:
