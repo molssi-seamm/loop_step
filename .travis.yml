@@ -44,6 +44,7 @@ jobs:
     - stage: lint
       name: "Check formatting of code for PEP-8"
       script: tox -e lint
+      dist: xenial
       python: 3.7
 
     # - stage: test
