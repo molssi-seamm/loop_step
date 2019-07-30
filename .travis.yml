@@ -36,6 +36,7 @@ jobs:
       name: "Deploy to PyPi"
       if: tag IS present
       python: 3.7
+      after_success: skip
       deploy:
         provider: pypi
         distributions: sdist bdist_wheel
@@ -46,6 +47,3 @@ jobs:
         user: seamm
         password:
           secure: hjhqNZcsLDwJNlIzbkaOTl4nLX86mgc9xs8IwQlkzHQTrGFKCuL4SV7mDZ0QPyowICyrAB8wU/TIVVltmiVcWtdFtWWLF9P2qHJ0cZgarWtxEvGphYaf+0Xk5FeqUd34c38AEUAvN5CEa7BLSyhrQduqfTogaroOkyN1eVFDdnKTVybg7BLaH8RovITbSGxR3pVVfI1ejb4mIdlEUnugU/2CNzUCxCfUCX2XImGrRCTfrg0EKNYyi/PAXv4b1pT+5oJfy2GivmhelNdI0vLX8FRRkaYLjmgNHoM1wl7CpCJX5aJ2c3O4K8k2UDE4258/ixVFixlk44gesDWqevBUFwaa6lDOYSLBA/WaCNhizCc5Y7QVufXHMj8cCS9dhX9GGO6jJsIpZYuLhonaP7lwPuegpRWDfB/rqwRUY2x020osS4N9nnq8u717K0WSCdFumrDalYSXl/0uX2ayDwaZhzmlp0WBQZH6Hf+aRZTxG6l7ovLTkA+cGMgruIkzEmNnWwtXUDeeLN1RxrJvjYy4i0zncFsjKHogLFdDZLwVR/drHOJfoBXMJ1tDyizoZpEXDPynN+8fOhplIiWejg60KYSYxS0Wv/ZH+uDQE9eTdYBRa6YNycOxn2YmlgS/wvLztW80EoKY9FoJGcPKovW+YI5fKA3miKmVFlbYkowB1No=
-      install: skip
-      script: skip
-      after_success: skip
