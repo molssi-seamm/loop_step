@@ -10,7 +10,7 @@ from seamm_util.printing import FormattedText as __
 
 logger = logging.getLogger(__name__)
 job = printing.getPrinter()
-printer = printing.getPrinter('from_smiles')
+printer = printing.getPrinter('loop')
 
 
 class Loop(seamm.Node):
@@ -37,36 +37,70 @@ class Loop(seamm.Node):
         # This needs to be after initializing subclasses...
         self.parameters = loop_step.LoopParameters()
 
-    def description(self, P):
-        """Prepare information about what this node will do
+    @property
+    def version(self):
+        """The semantic version of this module.
         """
+        return loop_step.__version__
+
+    @property
+    def git_revision(self):
+        """The git version of this module.
+        """
+        return loop_step.__git_revision__
+
+    def description_text(self, P=None):
+        """Return a short description of this step.
+
+        Return a nicely formatted string describing what this step will
+        do.
+
+        Keyword arguments:
+            P: a dictionary of parameter values, which may be variables
+                or final values. If None, then the parameters values will
+                be used as is.
+        """
+
+        if not P:
+            P = self.parameters.values_to_dict()
+
         text = ''
 
+        if P['type'] == 'For':
+            subtext = 'For {variable} from {start} to {end} by {step}'
+        elif P['type'] == 'Foreach':
+            subtext = 'Foreach {variable} in {values}'
+        elif P['type'] == 'For rows in table':
+            subtext = 'For rows in table {table}'
+        else:
+            subtext = 'Loop type defined by {type}'
+            
+        text += self.header + '\n' + __(subtext, **P, indent=4 * ' ').__str__()
+        text += '\n'
+
         # Print the body of the loop
-        indent = '    '
         for edge in self.flowchart.edges(self, direction='out'):
             if edge.edge_subtype == 'loop':
                 logger.debug('Loop, first node of loop is: {}'
                              .format(edge.node2))
                 next_node = edge.node2
                 while next_node and not next_node.visited:
-                    text += next_node.describe(indent)
+                    text += __(
+                        next_node.description_text(), indent=3 * ' '
+                    ).__str__()
+                    text += '\n'
+                    next_node = next_node.next()
 
         return text
 
-    def describe(self, indent='', json_dict=None):
+    def describe(self):
         """Write out information about what this node will do
-        If json_dict is passed in, add information to that dictionary
-        so that it can be written out by the controller as appropriate.
         """
 
-        super().describe(indent, json_dict)
+        self.visited = True
 
-        P = self.parameters.values_to_dict()
-
-        text = self.description(P)
-
-        job.job(__(text, **P, indent=self.indent+'    '))
+        # The description
+        job.job(__(self.description_text(), indent=self.indent))
 
         return self.exit_node()
 
