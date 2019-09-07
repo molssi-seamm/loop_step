@@ -74,7 +74,7 @@ class Loop(seamm.Node):
             subtext = 'For rows in table {table}'
         else:
             subtext = 'Loop type defined by {type}'
-            
+
         text += self.header + '\n' + __(subtext, **P, indent=4 * ' ').__str__()
         text += '\n'
 
