@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """Non-graphical part of the Loop step in a SEAMM flowchart"""
 
 import logging
@@ -14,9 +15,8 @@ printer = printing.getPrinter('loop')
 
 
 class Loop(seamm.Node):
-    def __init__(self,
-                 flowchart=None,
-                 extension=None):
+
+    def __init__(self, flowchart=None, extension=None):
         '''Setup the non-graphical part of the Loop step in a
         SEAMM flowchart.
 
@@ -30,9 +30,8 @@ class Loop(seamm.Node):
         self._loop_length = None
 
         super().__init__(
-            flowchart=flowchart,
-            title='Loop',
-            extension=extension)
+            flowchart=flowchart, title='Loop', extension=extension
+        )
 
         # This needs to be after initializing subclasses...
         self.parameters = loop_step.LoopParameters()
@@ -81,13 +80,13 @@ class Loop(seamm.Node):
         # Print the body of the loop
         for edge in self.flowchart.edges(self, direction='out'):
             if edge.edge_subtype == 'loop':
-                logger.debug('Loop, first node of loop is: {}'
-                             .format(edge.node2))
+                logger.debug(
+                    'Loop, first node of loop is: {}'.format(edge.node2)
+                )
                 next_node = edge.node2
                 while next_node and not next_node.visited:
-                    text += __(
-                        next_node.description_text(), indent=3 * ' '
-                    ).__str__()
+                    text += __(next_node.description_text(),
+                               indent=3 * ' ').__str__()
                     text += '\n'
                     next_node = next_node.next()
 
@@ -119,7 +118,8 @@ class Loop(seamm.Node):
             if self._loop_value is None:
                 logger.info(
                     'For {} from {} to {} by {}'.format(
-                        P['variable'], P['start'], P['end'], P['step'])
+                        P['variable'], P['start'], P['end'], P['step']
+                    )
                 )
 
                 logger.info('Initializing loop')
@@ -140,7 +140,10 @@ class Loop(seamm.Node):
                 # Set up the index variables
                 tmp = self.get_variable('_loop_indices')
                 self.set_variable(
-                    '_loop_indices', (*tmp[0:-1], self._loop_value,)
+                    '_loop_indices', (
+                        *tmp[0:-1],
+                        self._loop_value,
+                    )
                 )
                 self.set_variable('_loop_index', self._loop_value)
 
@@ -160,9 +163,12 @@ class Loop(seamm.Node):
                         self.set_variable('_loop_index', tmp[-2])
 
                     logger.info(
-                        ('The loop over {} from {} to {} by {}'
-                         ' finished successfully').format(
-                             P['variable'], P['start'], P['end'], P['step'])
+                        (
+                            'The loop over {} from {} to {} by {}'
+                            ' finished successfully'
+                        ).format(
+                            P['variable'], P['start'], P['end'], P['step']
+                        )
                     )
                     return self.exit_node()
 
@@ -174,7 +180,10 @@ class Loop(seamm.Node):
                 self._loop_length = len(P['values'])
                 if self.variable_exists('_loop_indices'):
                     tmp = self.get_variable('_loop_indices')
-                    self.set_variable('_loop_indices', (*tmp, None,))
+                    self.set_variable('_loop_indices', (
+                        *tmp,
+                        None,
+                    ))
                 else:
                     self.set_variable('_loop_indices', (None,))
 
@@ -193,9 +202,7 @@ class Loop(seamm.Node):
                 else:
                     self.set_variable('_loop_indices', tmp[0:-1])
                     self.set_variable('_loop_index', tmp[-2])
-                logger.info(
-                    'The loop over value finished successfully'
-                )
+                logger.info('The loop over value finished successfully')
 
                 # return the next node after the loop
                 return self.exit_node()
@@ -206,7 +213,10 @@ class Loop(seamm.Node):
             # Set up the index variables
             tmp = self.get_variable('_loop_indices')
             self.set_variable(
-                '_loop_indices', (*tmp[0:-1], self._loop_value,)
+                '_loop_indices', (
+                    *tmp[0:-1],
+                    self._loop_value,
+                )
             )
             self.set_variable('_loop_index', self._loop_value)
             logger.info('    Loop value = {}'.format(value))
@@ -217,13 +227,17 @@ class Loop(seamm.Node):
                 self.table_handle['loop index'] = True
 
                 logger.info(
-                    'Initialize loop over {} rows in table {}'
-                    .format(self.table.shape[0], P['table'])
+                    'Initialize loop over {} rows in table {}'.format(
+                        self.table.shape[0], P['table']
+                    )
                 )
                 self._loop_value = -1
                 if self.variable_exists('_loop_indices'):
                     tmp = self.get_variable('_loop_indices')
-                    self.set_variable('_loop_indices', (*tmp, None,))
+                    self.set_variable('_loop_indices', (
+                        *tmp,
+                        None,
+                    ))
                 else:
                     self.set_variable('_loop_indices', (None,))
             self._loop_value += 1
@@ -273,8 +287,9 @@ class Loop(seamm.Node):
 
         for edge in self.flowchart.edges(self, direction='out'):
             if edge.edge_subtype == 'loop':
-                logger.info('Loop, first node of loop is: {}'
-                            .format(edge.node2))
+                logger.info(
+                    'Loop, first node of loop is: {}'.format(edge.node2)
+                )
                 # Add the iteration to the ids so the directory structure is
                 # reasonable
                 self.flowchart.reset_visited()
@@ -325,8 +340,9 @@ class Loop(seamm.Node):
         """Set the ids of the nodes in the loop"""
         for edge in self.flowchart.edges(self, direction='out'):
             if edge.edge_subtype == 'loop':
-                logger.debug('Loop, first node of loop is: {}'
-                             .format(edge.node2))
+                logger.debug(
+                    'Loop, first node of loop is: {}'.format(edge.node2)
+                )
                 next_node = edge.node2
                 n = 0
                 while next_node and next_node != self:
@@ -340,8 +356,7 @@ class Loop(seamm.Node):
 
         for edge in self.flowchart.edges(self, direction='out'):
             if edge.edge_subtype == 'exit':
-                logger.debug('Loop, node after loop is: {}'
-                             .format(edge.node2))
+                logger.debug('Loop, node after loop is: {}'.format(edge.node2))
                 return edge.node2
 
         # loop is the last node in the flowchart

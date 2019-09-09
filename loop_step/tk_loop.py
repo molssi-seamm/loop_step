@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 """The graphical part of a Loop step"""
 
 import logging
@@ -18,16 +19,31 @@ class TkLoop(seamm.TkNode):
 
     node_class = loop_step.Loop
 
-    def __init__(self, tk_flowchart=None, node=None, canvas=None,
-                 x=120, y=20, w=200, h=50):
+    def __init__(
+        self,
+        tk_flowchart=None,
+        node=None,
+        canvas=None,
+        x=120,
+        y=20,
+        w=200,
+        h=50
+    ):
         '''Initialize a node
 
         Keyword arguments:
         '''
         self.dialog = None
 
-        super().__init__(tk_flowchart=tk_flowchart, node=node,
-                         canvas=canvas, x=x, y=y, w=w, h=h)
+        super().__init__(
+            tk_flowchart=tk_flowchart,
+            node=node,
+            canvas=canvas,
+            x=x,
+            y=y,
+            w=w,
+            h=h
+        )
 
         self.node_type = 'loop'
 
@@ -38,7 +54,8 @@ class TkLoop(seamm.TkNode):
             buttons=('OK', 'Help', 'Cancel'),
             master=self.toplevel,
             title='Edit Loop step',
-            command=self.handle_dialog)
+            command=self.handle_dialog
+        )
         self.dialog.withdraw()
 
         # Create a frame to hold everything
@@ -85,7 +102,8 @@ class TkLoop(seamm.TkNode):
             self['variable'].grid(row=row, column=3, sticky=tk.W)
         else:
             raise RuntimeError(
-                "Don't recognize the loop_type {}".format(loop_type))
+                "Don't recognize the loop_type {}".format(loop_type)
+            )
         row += 1
 
     def right_click(self, event):
@@ -117,7 +135,8 @@ class TkLoop(seamm.TkNode):
         if result != "OK":
             self.dialog.deactivate(result)
             raise RuntimeError(
-                "Don't recognize dialog result '{}'".format(result))
+                "Don't recognize dialog result '{}'".format(result)
+            )
 
         self.dialog.deactivate(result)
 
