@@ -48,14 +48,17 @@ clean-test: ## remove test and coverage artifacts
 	rm -fr .tox/
 	rm -f .coverage
 	rm -fr htmlcov/
+	find . -name '.pytype' -exec rm -fr {} +
 
-lint: ## check style with yapf
+lint: ## check style with flake8
 	flake8 $(MODULE) tests
-#	yapf --diff --recursive $(MODULE) tests
+	yapf --diff --recursive  $(MODULE) tests
 
 format: ## reformat with with yapf and isort
 	yapf --recursive --in-place $(MODULE) tests
-#	isort --recursive --atomic $(MODULE) tests
+
+typing: ## check typing
+	pytype $(MODULE)
 
 test: ## run tests quickly with the default Python
 	py.test
