@@ -22,11 +22,8 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [
-    'seamm>=0.5',
-    'seamm_util>=0.5',
-    'Pmw',
-]
+with open('requirements_install.txt') as fd:
+    requirements = fd.read()
 
 setup_requirements = [
     'pytest-runner',
