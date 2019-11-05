@@ -5,7 +5,6 @@
 import logging
 import seamm
 import loop_step
-import Pmw
 import tkinter as tk
 import tkinter.ttk as ttk
 
@@ -49,19 +48,7 @@ class TkLoop(seamm.TkNode):
 
     def create_dialog(self):
         """Create the dialog!"""
-        self.dialog = Pmw.Dialog(
-            self.toplevel,
-            buttons=('OK', 'Help', 'Cancel'),
-            master=self.toplevel,
-            title='Edit Loop step',
-            command=self.handle_dialog
-        )
-        self.dialog.withdraw()
-
-        # Create a frame to hold everything
-        frame = ttk.Frame(self.dialog.interior())
-        frame.pack(expand=tk.YES, fill=tk.BOTH)
-        self['frame'] = frame
+        frame = super().create_dialog('Edit Loop Step')
 
         # Create the widgets and grid them in
         P = self.node.parameters
@@ -73,9 +60,9 @@ class TkLoop(seamm.TkNode):
         self.reset_dialog()
 
     def reset_dialog(self, widget=None):
-
-        # and get the method, which in this example controls
-        # how the widgets are laid out.
+        """Lay out the edit dialog according to the type of loop."""
+        
+        # Get the type of loop currently requested
         loop_type = self['type'].get()
 
         logger.debug('Updating edit loop dialog: {}'.format(loop_type))
@@ -114,41 +101,6 @@ class TkLoop(seamm.TkNode):
         self.popup_menu.add_command(label="Edit..", command=self.edit)
 
         self.popup_menu.tk_popup(event.x_root, event.y_root, 0)
-
-    def edit(self):
-        """Present a dialog for editing the Loop input
-        """
-        if self.dialog is None:
-            self.create_dialog()
-
-        self.dialog.activate(geometry='centerscreenfirst')
-
-    def handle_dialog(self, result):
-        if result is None or result == 'Cancel':
-            self.dialog.deactivate(result)
-            return
-
-        if result == 'Help':
-            # display help!!!
-            return
-
-        if result != "OK":
-            self.dialog.deactivate(result)
-            raise RuntimeError(
-                "Don't recognize dialog result '{}'".format(result)
-            )
-
-        self.dialog.deactivate(result)
-
-        # Shortcut for parameters
-        P = self.node.parameters
-
-        for key in P:
-            P[key].set_from_widget()
-
-    def handle_help(self):
-        """Not implemented yet ... you'll need to fill this out!"""
-        print('Help!')
 
     def default_edge_subtype(self):
         """Return the default subtype of the edge. Usually this is 'next'
