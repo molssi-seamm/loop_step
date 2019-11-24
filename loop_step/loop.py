@@ -2,6 +2,7 @@
 
 """Non-graphical part of the Loop step in a SEAMM flowchart"""
 
+import configargparse
 import logging
 import loop_step
 import seamm
@@ -28,6 +29,43 @@ class Loop(seamm.Node):
         self.table = None
         self._loop_value = None
         self._loop_length = None
+
+        # Argument/config parsing
+        self.parser = configargparse.ArgParser(
+            auto_env_var_prefix='',
+            default_config_files=[
+                '/etc/seamm/loop.ini',
+                '/etc/seamm/loop_step.ini',
+                '/etc/seamm/seamm.ini',
+                '~/.seamm/loop.ini',
+                '~/.seamm/loop_step.ini',
+                '~/.seamm/seamm.ini',
+            ]
+        )
+
+        self.parser.add_argument(
+            '--seamm-configfile',
+            is_config_file=True,
+            default=None,
+            help='a configuration file to override others'
+        )
+
+        # Options for this plugin
+        self.parser.add_argument(
+            "--loop-log-level",
+            default=configargparse.SUPPRESS,
+            choices=[
+                'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'
+            ],
+            type=lambda string: string.upper(),
+            help="the logging level for the Loop step"
+        )
+
+        self.options, self.unknown = self.parser.parse_known_args()
+
+        # Set the logging level for this module if requested
+        if 'loop_log_level' in self.options:
+            logger.setLevel(self.options.loop_log_level)
 
         super().__init__(
             flowchart=flowchart, title='Loop', extension=extension
@@ -270,10 +308,15 @@ class Loop(seamm.Node):
                 return self.exit_node()
 
             # Set up the index variables
+            logger.debug('  _loop_value = {}'.format(self._loop_value))
             tmp = self.get_variable('_loop_indices')
+            logger.debug('  _loop_indices = {}'.format(tmp))
             self.set_variable(
                 '_loop_indices',
                 (*tmp[0:-1], self.table.index[self._loop_value])
+            )
+            logger.debug(
+                '   --> {}'.format(self.get_variable('_loop_indices'))
             )
             self.set_variable(
                 '_loop_index', self.table.index[self._loop_value]
@@ -284,6 +327,7 @@ class Loop(seamm.Node):
 
             row = self.table.iloc[self._loop_value]
             self.set_variable('_row', row)
+            logger.debug('   _row = {}'.format(row))
 
         for edge in self.flowchart.edges(self, direction='out'):
             if edge.edge_subtype == 'loop':
@@ -296,11 +340,10 @@ class Loop(seamm.Node):
                 self.set_subids(
                     (*self._id, 'iter_{}'.format(self._loop_value))
                 )
-
                 return edge.node2
-
-        # No loop body? just go on?
-        return self.exit_node()
+            else:
+                # No loop body? just go on?
+                return self.exit_node()
 
     def default_edge_subtype(self):
         """Return the default subtype of the edge. Usually this is 'next'
@@ -348,8 +391,6 @@ class Loop(seamm.Node):
                 while next_node and next_node != self:
                     next_node = next_node.set_id((*node_id, str(n)))
                     n += 1
-
-        logger.debug('end of loop')
 
     def exit_node(self):
         """The next node after the loop, if any"""
