@@ -6,7 +6,6 @@ import logging
 import seamm
 import loop_step
 import tkinter as tk
-import tkinter.ttk as ttk
 
 logger = logging.getLogger(__name__)
 
@@ -61,7 +60,7 @@ class TkLoop(seamm.TkNode):
 
     def reset_dialog(self, widget=None):
         """Lay out the edit dialog according to the type of loop."""
-        
+
         # Get the type of loop currently requested
         loop_type = self['type'].get()
 
