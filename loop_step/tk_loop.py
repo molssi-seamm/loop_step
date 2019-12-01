@@ -2,6 +2,7 @@
 
 """The graphical part of a Loop step"""
 
+import configargparse
 import logging
 import seamm
 import loop_step
@@ -25,14 +26,55 @@ class TkLoop(seamm.TkNode):
         x=120,
         y=20,
         w=200,
-        h=50
+        h=50,
+        my_logger=logger
     ):
-        '''Initialize a node
+        """Initialize the graphical Tk Loop node
 
         Keyword arguments:
-        '''
-        self.dialog = None
+        """
 
+        self.node_type = 'loop'
+
+        # Argument/config parsing
+        self.parser = configargparse.ArgParser(
+            auto_env_var_prefix='',
+            default_config_files=[
+                '/etc/seamm/tk_loop.ini',
+                '/etc/seamm/seamm.ini',
+                '~/.seamm/tk_loop.ini',
+                '~/.seamm/seamm.ini',
+            ]
+        )
+
+        self.parser.add_argument(
+            '--seamm-configfile',
+            is_config_file=True,
+            default=None,
+            help='a configuration file to override others'
+        )
+
+        # Options for this plugin
+        self.parser.add_argument(
+            "--tk-loop-log-level",
+            default=configargparse.SUPPRESS,
+            choices=[
+                'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'
+            ],
+            type=lambda string: string.upper(),
+            help="the logging level for the Tk_Loop step"
+        )
+
+        self.options, self.unknown = self.parser.parse_known_args()
+
+        # Set the logging level for this module if requested
+        if 'tk_loop_log_level' in self.options:
+            logger.setLevel(self.options.tk_loop_log_level)
+            logger.critical(
+                'Set log level to {}'.format(self.options.tk_loop_log_level)
+            )
+
+        # Call the constructor for the energy
         super().__init__(
             tk_flowchart=tk_flowchart,
             node=node,
@@ -40,14 +82,13 @@ class TkLoop(seamm.TkNode):
             x=x,
             y=y,
             w=w,
-            h=h
+            h=h,
+            my_logger=my_logger
         )
-
-        self.node_type = 'loop'
 
     def create_dialog(self):
         """Create the dialog!"""
-        frame = super().create_dialog('Edit Loop Step')
+        frame = super().create_dialog(title='Edit Loop Step')
 
         # Create the widgets and grid them in
         P = self.node.parameters
@@ -55,8 +96,6 @@ class TkLoop(seamm.TkNode):
             self[key] = P[key].widget(frame)
 
         self['type'].combobox.bind("<<ComboboxSelected>>", self.reset_dialog)
-
-        self.reset_dialog()
 
     def reset_dialog(self, widget=None):
         """Lay out the edit dialog according to the type of loop."""
@@ -85,7 +124,6 @@ class TkLoop(seamm.TkNode):
             self['values'].grid(row=row, column=3, sticky=tk.W)
         elif loop_type == 'For rows in table':
             self['table'].grid(row=row, column=2, sticky=tk.W)
-            self['variable'].grid(row=row, column=3, sticky=tk.W)
         else:
             raise RuntimeError(
                 "Don't recognize the loop_type {}".format(loop_type)
