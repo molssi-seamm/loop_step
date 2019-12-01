@@ -35,10 +35,8 @@ class Loop(seamm.Node):
             auto_env_var_prefix='',
             default_config_files=[
                 '/etc/seamm/loop.ini',
-                '/etc/seamm/loop_step.ini',
                 '/etc/seamm/seamm.ini',
                 '~/.seamm/loop.ini',
-                '~/.seamm/loop_step.ini',
                 '~/.seamm/seamm.ini',
             ]
         )
