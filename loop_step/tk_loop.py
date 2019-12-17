@@ -2,12 +2,11 @@
 
 """The graphical part of a Loop step"""
 
+import configargparse
 import logging
 import seamm
 import loop_step
-import Pmw
 import tkinter as tk
-import tkinter.ttk as ttk
 
 logger = logging.getLogger(__name__)
 
@@ -27,14 +26,55 @@ class TkLoop(seamm.TkNode):
         x=120,
         y=20,
         w=200,
-        h=50
+        h=50,
+        my_logger=logger
     ):
-        '''Initialize a node
+        """Initialize the graphical Tk Loop node
 
         Keyword arguments:
-        '''
-        self.dialog = None
+        """
 
+        self.node_type = 'loop'
+
+        # Argument/config parsing
+        self.parser = configargparse.ArgParser(
+            auto_env_var_prefix='',
+            default_config_files=[
+                '/etc/seamm/tk_loop.ini',
+                '/etc/seamm/seamm.ini',
+                '~/.seamm/tk_loop.ini',
+                '~/.seamm/seamm.ini',
+            ]
+        )
+
+        self.parser.add_argument(
+            '--seamm-configfile',
+            is_config_file=True,
+            default=None,
+            help='a configuration file to override others'
+        )
+
+        # Options for this plugin
+        self.parser.add_argument(
+            "--tk-loop-log-level",
+            default=configargparse.SUPPRESS,
+            choices=[
+                'CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG', 'NOTSET'
+            ],
+            type=lambda string: string.upper(),
+            help="the logging level for the Tk_Loop step"
+        )
+
+        self.options, self.unknown = self.parser.parse_known_args()
+
+        # Set the logging level for this module if requested
+        if 'tk_loop_log_level' in self.options:
+            logger.setLevel(self.options.tk_loop_log_level)
+            logger.critical(
+                'Set log level to {}'.format(self.options.tk_loop_log_level)
+            )
+
+        # Call the constructor for the energy
         super().__init__(
             tk_flowchart=tk_flowchart,
             node=node,
@@ -42,26 +82,13 @@ class TkLoop(seamm.TkNode):
             x=x,
             y=y,
             w=w,
-            h=h
+            h=h,
+            my_logger=my_logger
         )
-
-        self.node_type = 'loop'
 
     def create_dialog(self):
         """Create the dialog!"""
-        self.dialog = Pmw.Dialog(
-            self.toplevel,
-            buttons=('OK', 'Help', 'Cancel'),
-            master=self.toplevel,
-            title='Edit Loop step',
-            command=self.handle_dialog
-        )
-        self.dialog.withdraw()
-
-        # Create a frame to hold everything
-        frame = ttk.Frame(self.dialog.interior())
-        frame.pack(expand=tk.YES, fill=tk.BOTH)
-        self['frame'] = frame
+        frame = super().create_dialog(title='Edit Loop Step')
 
         # Create the widgets and grid them in
         P = self.node.parameters
@@ -70,12 +97,10 @@ class TkLoop(seamm.TkNode):
 
         self['type'].combobox.bind("<<ComboboxSelected>>", self.reset_dialog)
 
-        self.reset_dialog()
-
     def reset_dialog(self, widget=None):
+        """Lay out the edit dialog according to the type of loop."""
 
-        # and get the method, which in this example controls
-        # how the widgets are laid out.
+        # Get the type of loop currently requested
         loop_type = self['type'].get()
 
         logger.debug('Updating edit loop dialog: {}'.format(loop_type))
@@ -99,7 +124,6 @@ class TkLoop(seamm.TkNode):
             self['values'].grid(row=row, column=3, sticky=tk.W)
         elif loop_type == 'For rows in table':
             self['table'].grid(row=row, column=2, sticky=tk.W)
-            self['variable'].grid(row=row, column=3, sticky=tk.W)
         else:
             raise RuntimeError(
                 "Don't recognize the loop_type {}".format(loop_type)
@@ -114,41 +138,6 @@ class TkLoop(seamm.TkNode):
         self.popup_menu.add_command(label="Edit..", command=self.edit)
 
         self.popup_menu.tk_popup(event.x_root, event.y_root, 0)
-
-    def edit(self):
-        """Present a dialog for editing the Loop input
-        """
-        if self.dialog is None:
-            self.create_dialog()
-
-        self.dialog.activate(geometry='centerscreenfirst')
-
-    def handle_dialog(self, result):
-        if result is None or result == 'Cancel':
-            self.dialog.deactivate(result)
-            return
-
-        if result == 'Help':
-            # display help!!!
-            return
-
-        if result != "OK":
-            self.dialog.deactivate(result)
-            raise RuntimeError(
-                "Don't recognize dialog result '{}'".format(result)
-            )
-
-        self.dialog.deactivate(result)
-
-        # Shortcut for parameters
-        P = self.node.parameters
-
-        for key in P:
-            P[key].set_from_widget()
-
-    def handle_help(self):
-        """Not implemented yet ... you'll need to fill this out!"""
-        print('Help!')
 
     def default_edge_subtype(self):
         """Return the default subtype of the edge. Usually this is 'next'

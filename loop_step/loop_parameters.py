@@ -20,7 +20,6 @@ class LoopParameters(seamm.Parameters):
                 "For",
                 "Foreach",
                 "For rows in table",
-                "While",
             ),
             "format_string": "s",
             "description": "",
