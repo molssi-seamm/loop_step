@@ -34,8 +34,6 @@ class TkLoop(seamm.TkNode):
         Keyword arguments:
         """
 
-        self.node_type = 'loop'
-
         # Argument/config parsing
         self.parser = configargparse.ArgParser(
             auto_env_var_prefix='',
@@ -78,6 +76,7 @@ class TkLoop(seamm.TkNode):
         super().__init__(
             tk_flowchart=tk_flowchart,
             node=node,
+            node_type='loop',
             canvas=canvas,
             x=x,
             y=y,
