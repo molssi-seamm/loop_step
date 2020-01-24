@@ -20,6 +20,7 @@ dependencies:
     - Pmw
     - seamm>=0.7
     - seamm-util>=0.7
+    - seamm-widgets>=0.7
       # Testing
     - yapf
 
