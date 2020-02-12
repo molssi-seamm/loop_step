@@ -119,25 +119,15 @@ class Loop(seamm.Node):
                 logger.debug(
                     'Loop, first node of loop is: {}'.format(edge.node2)
                 )
-                next_node = edge.node2
-                while next_node and not next_node.visited:
-                    text += __(next_node.description_text(),
+                node = edge.node2
+                while node and not node.visited:
+                    node.visited = True
+                    text += __(node.description_text(),
                                indent=3 * ' ').__str__()
                     text += '\n'
-                    next_node = next_node.next()
+                    node = self.subflowchart.next_node(node)
 
         return text
-
-    def describe(self):
-        """Write out information about what this node will do
-        """
-
-        self.visited = True
-
-        # The description
-        job.job(__(self.description_text(), indent=self.indent))
-
-        return self.exit_node()
 
     def run(self):
         """Run a Loop step.
@@ -206,7 +196,7 @@ class Loop(seamm.Node):
                             P['variable'], P['start'], P['end'], P['step']
                         )
                     )
-                    return self.exit_node()
+                    return 'next'
 
             logger.info('    Loop value = {}'.format(self._loop_value))
         elif P['type'] == 'Foreach':
@@ -241,7 +231,7 @@ class Loop(seamm.Node):
                 logger.info('The loop over value finished successfully')
 
                 # return the next node after the loop
-                return self.exit_node()
+                return 'next'
 
             value = P['values'][self._loop_value]
             self.set_variable(P['variable'], value)
@@ -303,7 +293,7 @@ class Loop(seamm.Node):
                 )
 
                 # return the next node after the loop
-                return self.exit_node()
+                return 'next'
 
             # Set up the index variables
             logger.debug('  _loop_value = {}'.format(self._loop_value))
@@ -341,7 +331,7 @@ class Loop(seamm.Node):
                 return edge.node2
             else:
                 # No loop body? just go on?
-                return self.exit_node()
+                return 'next'
 
     def default_edge_subtype(self):
         """Return the default subtype of the edge. Usually this is 'next'
@@ -366,16 +356,14 @@ class Loop(seamm.Node):
         else:
             return "too many"
 
-    def set_id(self, node_id=()):
-        """Sequentially number the loop subnodes"""
-        logger.debug('Setting ids for loop {}'.format(self))
-        if self.visited:
-            return None
-        else:
-            self.visited = True
-            self._id = node_id
-            self.set_subids(self._id)
-            return self.exit_node()
+    def set_id(self, node_id):
+        """Set the id for node to a given tuple"""
+        self._id = node_id
+
+        # and set our subnodes
+        self.subflowchart.set_ids(self._id)
+
+        return 'next'
 
     def set_subids(self, node_id=()):
         """Set the ids of the nodes in the loop"""
