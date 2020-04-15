@@ -1,4 +1,4 @@
 Pmw
-seamm>=0.8
-seamm-util>=0.8
-seamm-widgets>=0.8
+seamm>=0.9
+seamm-util>=0.9
+seamm-widgets>=0.9
