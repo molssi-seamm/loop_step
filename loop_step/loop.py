@@ -4,11 +4,14 @@
 
 import configargparse
 import logging
+import os.path
+
 import loop_step
 import seamm
 from seamm_util import ureg, Q_, units_class  # noqa: F401
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
+from seamm_util import to_mmcif, to_cif
 
 logger = logging.getLogger(__name__)
 job = printing.getPrinter()
@@ -170,6 +173,8 @@ class Loop(seamm.Node):
                     self.set_variable('_loop_indices', (self._loop_value,))
                     self.set_variable('_loop_index', self._loop_value)
             else:
+                self.write_final_structure()
+
                 self._loop_value += P['step']
                 self.set_variable(P['variable'], self._loop_value)
 
@@ -222,6 +227,9 @@ class Loop(seamm.Node):
                     ))
                 else:
                     self.set_variable('_loop_indices', (None,))
+
+            if self._loop_value >= 0:
+                self.write_final_structure()
 
             self._loop_value += 1
 
@@ -276,6 +284,10 @@ class Loop(seamm.Node):
                     ))
                 else:
                     self.set_variable('_loop_indices', (None,))
+
+            if self._loop_value >= 0:
+                self.write_final_structure()
+
             self._loop_value += 1
             if self._loop_value >= self.table.shape[0]:
                 self._loop_value = None
@@ -342,6 +354,26 @@ class Loop(seamm.Node):
             else:
                 # No loop body? just go on?
                 return self.exit_node()
+
+    def write_final_structure(self):
+        """Write the final structure"""
+        if seamm.data.structure is not None:
+            system = seamm.data.structure
+            # MMCIF file has bonds
+            filename = os.path.join(
+                self.directory, f'iter_{self._loop_value}',
+                'final_structure.mmcif'
+            )
+            with open(filename, 'w') as fd:
+                print(to_mmcif(system), file=fd)
+            # CIF file has cell
+            if system['periodicity'] == 3:
+                filename = os.path.join(
+                    self.directory, f'iter_{self._loop_value}',
+                    'final_structure.cif'
+                )
+                with open(filename, 'w') as fd:
+                    print(to_cif(seamm.data.structure), file=fd)
 
     def default_edge_subtype(self):
         """Return the default subtype of the edge. Usually this is 'next'
