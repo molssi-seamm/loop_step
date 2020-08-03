@@ -114,7 +114,7 @@ class Loop(seamm.Node):
             subtext = 'Loop type defined by {type}'
 
         text += self.header + '\n' + __(subtext, **P, indent=4 * ' ').__str__()
-        text += '\n'
+        text += '\n\n'
 
         # Print the body of the loop
         for edge in self.flowchart.edges(self, direction='out'):
@@ -124,8 +124,9 @@ class Loop(seamm.Node):
                 )
                 next_node = edge.node2
                 while next_node and not next_node.visited:
+                    next_node.visited = True
                     text += __(next_node.description_text(),
-                               indent=3 * ' ').__str__()
+                               indent=4 * ' ').__str__()
                     text += '\n'
                     next_node = next_node.next()
 
