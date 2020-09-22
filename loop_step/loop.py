@@ -5,13 +5,13 @@
 import configargparse
 import logging
 import os.path
+import traceback
 
 import loop_step
 import seamm
 from seamm_util import ureg, Q_, units_class  # noqa: F401
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
-from seamm_util import to_mmcif, to_cif
 
 logger = logging.getLogger(__name__)
 job = printing.getPrinter()
@@ -32,6 +32,7 @@ class Loop(seamm.Node):
         self.table = None
         self._loop_value = None
         self._loop_length = None
+        self._file_handler = None
 
         # Argument/config parsing
         self.parser = configargparse.ArgParser(
@@ -153,6 +154,12 @@ class Loop(seamm.Node):
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
         )
+
+        # Remove any redirection of printing.
+        if self._file_handler is not None:
+            job.removeHandler(self._file_handler)
+            self._file_handler = None
+        job.handlers[0].setLevel(printing.NORMAL)
 
         if P['type'] == 'For':
             if self._loop_value is None:
@@ -345,6 +352,23 @@ class Loop(seamm.Node):
                 logger.info(
                     'Loop, first node of loop is: {}'.format(edge.node2)
                 )
+
+                # Direct most output to iteration.out
+                # A handler for the file
+                iter_dir = os.path.join(
+                    self.directory, f'iter_{self._loop_value}'
+                )
+                os.makedirs(iter_dir, exist_ok=True)
+
+                self._file_handler = logging.FileHandler(
+                    os.path.join(iter_dir, 'iteration.out')
+                )
+                self._file_handler.setLevel(printing.NORMAL)
+                formatter = logging.Formatter(fmt='{message:s}', style='{')
+                self._file_handler.setFormatter(formatter)
+                job.addHandler(self._file_handler)
+
+                job.handlers[0].setLevel(printing.JOB)
                 # Add the iteration to the ids so the directory structure is
                 # reasonable
                 self.flowchart.reset_visited()
@@ -358,23 +382,46 @@ class Loop(seamm.Node):
 
     def write_final_structure(self):
         """Write the final structure"""
-        if seamm.data.structure is not None:
-            system = seamm.data.structure
+        system = self.get_variable('_system')
+        if system.n_atoms() > 0:
             # MMCIF file has bonds
             filename = os.path.join(
                 self.directory, f'iter_{self._loop_value}',
                 'final_structure.mmcif'
             )
-            with open(filename, 'w') as fd:
-                print(to_mmcif(system), file=fd)
+            text = None
+            try:
+                text = system.to_mmcif_text()
+            except Exception:
+                message = (
+                    'Error creating the mmcif file at the end of the loop\n\n'
+                    + traceback.format_exc()
+                )
+                logger.critical(message)
+
+            if text is not None:
+                with open(filename, 'w') as fd:
+                    print(text, file=fd)
+
             # CIF file has cell
-            if system['periodicity'] == 3:
+            if system.periodicity == 3:
                 filename = os.path.join(
                     self.directory, f'iter_{self._loop_value}',
                     'final_structure.cif'
                 )
-                with open(filename, 'w') as fd:
-                    print(to_cif(seamm.data.structure), file=fd)
+                text = None
+                try:
+                    text = system.to_cif_text()
+                except Exception:
+                    message = (
+                        'Error creating the cif file at the end of the loop'
+                        '\n\n' + traceback.format_exc()
+                    )
+                logger.critical(message)
+
+                if text is not None:
+                    with open(filename, 'w') as fd:
+                        print(text, file=fd)
 
     def default_edge_subtype(self):
         """Return the default subtype of the edge. Usually this is 'next'
