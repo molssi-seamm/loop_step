@@ -417,7 +417,7 @@ class Loop(seamm.Node):
                         'Error creating the cif file at the end of the loop'
                         '\n\n' + traceback.format_exc()
                     )
-                logger.critical(message)
+                    logger.critical(message)
 
                 if text is not None:
                     with open(filename, 'w') as fd:
