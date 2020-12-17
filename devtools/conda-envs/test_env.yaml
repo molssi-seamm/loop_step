@@ -20,8 +20,12 @@ dependencies:
   # Pip-only installs
   - pip:
     - seamm
-    - seamm-util
 
     # Testing
     - yapf
 
+    # Documentation
+    - rinohtype
+    - pygments
+    - sphinx-rtd-theme
+    - pystemmer

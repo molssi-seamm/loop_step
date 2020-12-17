@@ -1,2 +1,1 @@
 seamm
-seamm-util
