@@ -2,24 +2,33 @@
 Loop Step
 =========
 
+.. image:: https://img.shields.io/github/issues-pr-raw/molssi-seamm/loop_step
+   :target: https://github.com/molssi-seamm/loop_step/pulls
+   :alt: GitHub pull requests
 
-.. image:: https://img.shields.io/pypi/v/loop_step.svg
-        :target: https://pypi.python.org/pypi/loop_step
-
-.. image:: https://img.shields.io/travis/molssi-seamm/loop_step.svg
-        :target: https://travis-ci.org/molssi-seamm/loop_step
-
-.. image:: https://readthedocs.org/projects/loop-step/badge/?version=latest
-        :target: https://loop-step.readthedocs.io/en/latest/?badge=latest
-        :alt: Documentation Status
-
-.. image:: https://pyup.io/repos/github/molssi-seamm/loop_step/shield.svg
-     :target: https://pyup.io/repos/github/molssi-seamm/loop_step/
-     :alt: Updates
+.. image:: https://github.com/molssi-seamm/loop_step/workflows/CI/badge.svg
+   :target: https://github.com/molssi-seamm/loop_step/actions
+   :alt: Build Status
 
 .. image:: https://codecov.io/gh/molssi-seamm/loop_step/branch/master/graph/badge.svg
-  :target: https://codecov.io/gh/molssi-seamm/loop_step
+   :target: https://codecov.io/gh/molssi-seamm/loop_step
+   :alt: Code Coverage
 
+.. image:: https://img.shields.io/lgtm/grade/python/g/molssi-seamm/loop_step.svg?logo=lgtm&logoWidth=18
+   :target: https://lgtm.com/projects/g/molssi-seamm/loop_step/context:python
+   :alt: Code Quality
+
+.. image:: https://github.com/molssi-seamm/loop_step/workflows/Documentation/badge.svg
+   :target: https://molssi-seamm.github.io/loop_step/index.html
+   :alt: Documentation Status
+
+.. image:: https://pyup.io/repos/github/molssi-seamm/loop_step/shield.svg
+   :target: https://pyup.io/repos/github/molssi-seamm/loop_step/
+   :alt: Updates for Dependencies
+
+.. image:: https://img.shields.io/pypi/v/loop_step.svg
+   :target: https://pypi.python.org/pypi/loop_step
+   :alt: PyPi VERSION
 
 Handle various type of loops in a SEAMM Flowchart
 

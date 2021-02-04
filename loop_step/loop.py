@@ -8,7 +8,6 @@ import traceback
 
 import loop_step
 import seamm
-from seamm_util import ureg, Q_, units_class  # noqa: F401
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 
@@ -349,8 +348,9 @@ class Loop(seamm.Node):
 
     def write_final_structure(self):
         """Write the final structure"""
-        system = self.get_variable('_system')
-        if system.n_atoms() > 0:
+        system_db = self.get_variable('_system_db')
+        configuration = system_db.system.configuration
+        if configuration.n_atoms > 0:
             # MMCIF file has bonds
             filename = os.path.join(
                 self.directory, f'iter_{self._loop_value}',
@@ -358,7 +358,7 @@ class Loop(seamm.Node):
             )
             text = None
             try:
-                text = system.to_mmcif_text()
+                text = configuration.to_mmcif_text()
             except Exception:
                 message = (
                     'Error creating the mmcif file at the end of the loop\n\n'
@@ -371,14 +371,14 @@ class Loop(seamm.Node):
                     print(text, file=fd)
 
             # CIF file has cell
-            if system.periodicity == 3:
+            if configuration.periodicity == 3:
                 filename = os.path.join(
                     self.directory, f'iter_{self._loop_value}',
                     'final_structure.cif'
                 )
                 text = None
                 try:
-                    text = system.to_cif_text()
+                    text = configuration.to_cif_text()
                 except Exception:
                     message = (
                         'Error creating the cif file at the end of the loop'
