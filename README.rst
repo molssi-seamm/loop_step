@@ -1,6 +1,6 @@
-=========
-Loop Step
-=========
+====================
+SEAMM Loop Plug-in
+====================
 
 .. image:: https://img.shields.io/github/issues-pr-raw/molssi-seamm/loop_step
    :target: https://github.com/molssi-seamm/loop_step/pulls
@@ -30,20 +30,26 @@ Loop Step
    :target: https://pypi.python.org/pypi/loop_step
    :alt: PyPi VERSION
 
-Handle various type of loops in a SEAMM Flowchart
+A SEAMM plug-in which provides loops in flowcharts.
 
+This plug-in provides looping control structures for flowcharts, like
+a `for loop` in a programming language.
 
 * Free software: BSD license
-* Documentation: https://loop-step.readthedocs.io.
-
+* Documentation: https://molssi-seamm.github.io/loop_step/index.html
+* Code: https://github.com/molssi-seamm/loop_step
 
 Features
 --------
 
-* TODO
+* Simple `for i = # to # by #` loops
+* `Foreach` loop over elements in a list
+* `For row` loop over rows in a table (see the `table plug-in`_)
 
-Credits
----------
+.. _`table plug-in`: https://molssi-seamm.github.io/table_step/index.html
+
+Acknowledgements
+----------------
 
 This package was created with Cookiecutter_ and the `molssi-seamm/cookiecutter-seamm-plugin`_ project template.
 
