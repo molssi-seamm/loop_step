@@ -8,6 +8,7 @@ import traceback
 
 import loop_step
 import seamm
+import seamm_util
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 
@@ -417,7 +418,7 @@ class Loop(seamm.Node):
         """Setup the command-line / config file parser
         """
         parser_name = 'loop-step'
-        parser = seamm.getParser()
+        parser = seamm_util.getParser()
 
         # Remember if the parser exists ... this type of step may have been
         # found before
