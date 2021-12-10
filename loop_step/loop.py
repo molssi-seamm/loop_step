@@ -3,8 +3,12 @@
 """Non-graphical part of the Loop step in a SEAMM flowchart"""
 
 import logging
-import os.path
+from pathlib import Path
+import sys
 import traceback
+
+import psutil
+import pprint
 
 import loop_step
 import seamm
@@ -50,10 +54,22 @@ class Loop(seamm.Node):
         return loop_step.__version__
 
     @property
+    def iter_format(self):
+        if self._loop_length is None:
+            return "07"
+        else:
+            n = len(str(self._loop_length))
+            return f"0{n}"
+
+    @property
     def git_revision(self):
         """The git version of this module.
         """
         return loop_step.__git_revision__
+
+    @property
+    def working_path(self):
+        return Path(self.directory) / f"iter_{self._loop_value:{self.iter_format}}"
 
     def description_text(self, P=None):
         """Return a short description of this step.
@@ -114,6 +130,9 @@ class Loop(seamm.Node):
     def run(self):
         """Run a Loop step.
         """
+        # If the loop is empty, just go on
+        if self.loop_node() is None:
+            return self.exit_node()
 
         # Set up the directory, etc.
         super().run()
@@ -128,208 +147,211 @@ class Loop(seamm.Node):
             self._file_handler = None
         job.handlers[0].setLevel(printing.NORMAL)
 
-        if P['type'] == 'For':
-            if self._loop_value is None:
-                self.logger.info(
-                    'For {} from {} to {} by {}'.format(
-                        P['variable'], P['start'], P['end'], P['step']
-                    )
-                )
+        # Cycle through the iterations, setting up the first time.
+        next_node = self
+        while next_node is not None:
+            if next_node is self:
+                next_node = self.loop_node()
 
-                self.logger.info('Initializing loop')
-                self._loop_value = P['start']
-                self.set_variable(P['variable'], self._loop_value)
-                if self.variable_exists('_loop_indices'):
+                if P['type'] == 'For':
+                    if self._loop_value is None:
+                        self.logger.info(
+                            'For {} from {} to {} by {}'.format(
+                                P['variable'], P['start'], P['end'], P['step']
+                            )
+                        )
+
+                        self.logger.info('Initializing loop')
+                        self._loop_value = P['start']
+                        self.set_variable(P['variable'], self._loop_value)
+                        self._loop_length = len(
+                            range(P["start"], P["end"]+1, P["step"])
+                        )
+                        if self.variable_exists('_loop_indices'):
+                            tmp = self.get_variable('_loop_indices')
+                            self.set_variable(
+                                '_loop_indices', (*tmp, self._loop_value)
+                            )
+                        else:
+                            self.set_variable('_loop_indices', (self._loop_value,))
+                            self.set_variable('_loop_index', self._loop_value)
+                    else:
+                        self.write_final_structure()
+
+                        self._loop_value += P['step']
+                        self.set_variable(P['variable'], self._loop_value)
+
+                        # Set up the index variables
+                        tmp = self.get_variable('_loop_indices')
+                        self.set_variable(
+                            '_loop_indices', (
+                                *tmp[0:-1],
+                                self._loop_value,
+                            )
+                        )
+                        self.set_variable('_loop_index', self._loop_value)
+
+                        # See if we are at the end of loop
+                        if self._loop_value > P['end']:
+                            self._loop_value = None
+
+                            # Revert the loop index variables to the next outer loop
+                            # if there is one, or remove them.
+                            tmp = self.get_variable('_loop_indices')
+
+                            if len(tmp) <= 1:
+                                self.delete_variable('_loop_indices')
+                                self.delete_variable('_loop_index')
+                            else:
+                                self.set_variable('_loop_indices', tmp[0:-1])
+                                self.set_variable('_loop_index', tmp[-2])
+
+                            self.logger.info(
+                                (
+                                    'The loop over {} from {} to {} by {}'
+                                    ' finished successfully'
+                                ).format(
+                                    P['variable'], P['start'], P['end'], P['step']
+                                )
+                            )
+                            break
+
+                    self.logger.info('    Loop value = {}'.format(self._loop_value))
+                elif P['type'] == 'Foreach':
+                    self.logger.info(f"Foreach {P['variable']} in {P['values']}")
+                    if self._loop_value is None:
+                        self._loop_value = -1
+                        self._loop_length = len(P['values'])
+                        if self.variable_exists('_loop_indices'):
+                            tmp = self.get_variable('_loop_indices')
+                            self.set_variable('_loop_indices', (
+                                *tmp,
+                                None,
+                            ))
+                        else:
+                            self.set_variable('_loop_indices', (None,))
+
+                    if self._loop_value >= 0:
+                        self.write_final_structure()
+
+                    self._loop_value += 1
+
+                    if self._loop_value >= self._loop_length:
+                        self._loop_value = None
+                        self._loop_length = None
+
+                        # Revert the loop index variables to the next outer loop
+                        # if there is one, or remove them.
+                        tmp = self.get_variable('_loop_indices')
+                        if len(tmp) <= 1:
+                            self.delete_variable('_loop_indices')
+                            self.delete_variable('_loop_index')
+                        else:
+                            self.set_variable('_loop_indices', tmp[0:-1])
+                            self.set_variable('_loop_index', tmp[-2])
+                        self.logger.info('The loop over value finished successfully')
+
+                        # return the next node after the loop
+                        break
+
+                    value = P['values'][self._loop_value]
+                    self.set_variable(P['variable'], value)
+
+                    # Set up the index variables
                     tmp = self.get_variable('_loop_indices')
                     self.set_variable(
-                        '_loop_indices', (*tmp, self._loop_value)
-                    )
-                else:
-                    self.set_variable('_loop_indices', (self._loop_value,))
-                    self.set_variable('_loop_index', self._loop_value)
-            else:
-                self.write_final_structure()
-
-                self._loop_value += P['step']
-                self.set_variable(P['variable'], self._loop_value)
-
-                # Set up the index variables
-                tmp = self.get_variable('_loop_indices')
-                self.set_variable(
-                    '_loop_indices', (
-                        *tmp[0:-1],
-                        self._loop_value,
-                    )
-                )
-                self.set_variable('_loop_index', self._loop_value)
-
-                # See if we are at the end of loop
-                if self._loop_value > P['end']:
-                    self._loop_value = None
-
-                    # Revert the loop index variables to the next outer loop
-                    # if there is one, or remove them.
-                    tmp = self.get_variable('_loop_indices')
-
-                    if len(tmp) <= 1:
-                        self.delete_variable('_loop_indices')
-                        self.delete_variable('_loop_index')
-                    else:
-                        self.set_variable('_loop_indices', tmp[0:-1])
-                        self.set_variable('_loop_index', tmp[-2])
-
-                    self.logger.info(
-                        (
-                            'The loop over {} from {} to {} by {}'
-                            ' finished successfully'
-                        ).format(
-                            P['variable'], P['start'], P['end'], P['step']
+                        '_loop_indices', (
+                            *tmp[0:-1],
+                            self._loop_value,
                         )
                     )
-                    return self.exit_node()
+                    self.set_variable('_loop_index', self._loop_value)
+                    self.logger.info('    Loop value = {}'.format(value))
+                elif P['type'] == 'For rows in table':
+                    if self._loop_value is None:
+                        self.table_handle = self.get_variable(P['table'])
+                        self.table = self.table_handle['table']
+                        self.table_handle['loop index'] = True
 
-            self.logger.info('    Loop value = {}'.format(self._loop_value))
-        elif P['type'] == 'Foreach':
-            self.logger.info(f"Foreach {P['variable']} in {P['values']}")
-            if self._loop_value is None:
-                self._loop_value = -1
-                self._loop_length = len(P['values'])
-                if self.variable_exists('_loop_indices'):
+                        self.logger.info(
+                            'Initialize loop over {} rows in table {}'.format(
+                                self.table.shape[0], P['table']
+                            )
+                        )
+                        self._loop_value = -1
+                        self._loop_length = self.table.shape[0]
+                        if self.variable_exists('_loop_indices'):
+                            tmp = self.get_variable('_loop_indices')
+                            self.set_variable('_loop_indices', (
+                                *tmp,
+                                None,
+                            ))
+                        else:
+                            self.set_variable('_loop_indices', (None,))
+
+                    if self._loop_value >= 0:
+                        self.write_final_structure()
+
+                    self._loop_value += 1
+                    if self._loop_value >= self.table.shape[0]:
+                        self._loop_value = None
+
+                        self.delete_variable('_row')
+                        # Revert the loop index variables to the next outer loop
+                        # if there is one, or remove them.
+                        tmp = self.get_variable('_loop_indices')
+                        if len(tmp) <= 1:
+                            self.delete_variable('_loop_indices')
+                            self.delete_variable('_loop_index')
+                        else:
+                            self.set_variable('_loop_indices', tmp[0:-1])
+                            self.set_variable('_loop_index', tmp[-2])
+
+                        # and the other info in the table handle
+                        self.table_handle['loop index'] = False
+
+                        self.table = None
+                        self.table_handle = None
+
+                        self.logger.info(
+                            'The loop over table ' + self.parameters['table'].value +
+                            ' finished successfully'
+                        )
+
+                        # return the next node after the loop
+                        break
+
+                    # Set up the index variables
+                    self.logger.debug('  _loop_value = {}'.format(self._loop_value))
                     tmp = self.get_variable('_loop_indices')
-                    self.set_variable('_loop_indices', (
-                        *tmp,
-                        None,
-                    ))
-                else:
-                    self.set_variable('_loop_indices', (None,))
-
-            if self._loop_value >= 0:
-                self.write_final_structure()
-
-            self._loop_value += 1
-
-            if self._loop_value >= self._loop_length:
-                self._loop_value = None
-                self._loop_length = None
-
-                # Revert the loop index variables to the next outer loop
-                # if there is one, or remove them.
-                tmp = self.get_variable('_loop_indices')
-                if len(tmp) <= 1:
-                    self.delete_variable('_loop_indices')
-                    self.delete_variable('_loop_index')
-                else:
-                    self.set_variable('_loop_indices', tmp[0:-1])
-                    self.set_variable('_loop_index', tmp[-2])
-                self.logger.info('The loop over value finished successfully')
-
-                # return the next node after the loop
-                return self.exit_node()
-
-            value = P['values'][self._loop_value]
-            self.set_variable(P['variable'], value)
-
-            # Set up the index variables
-            tmp = self.get_variable('_loop_indices')
-            self.set_variable(
-                '_loop_indices', (
-                    *tmp[0:-1],
-                    self._loop_value,
-                )
-            )
-            self.set_variable('_loop_index', self._loop_value)
-            self.logger.info('    Loop value = {}'.format(value))
-        elif P['type'] == 'For rows in table':
-            if self._loop_value is None:
-                self.table_handle = self.get_variable(P['table'])
-                self.table = self.table_handle['table']
-                self.table_handle['loop index'] = True
-
-                self.logger.info(
-                    'Initialize loop over {} rows in table {}'.format(
-                        self.table.shape[0], P['table']
+                    self.logger.debug('  _loop_indices = {}'.format(tmp))
+                    self.set_variable(
+                        '_loop_indices',
+                        (*tmp[0:-1], self.table.index[self._loop_value])
                     )
-                )
-                self._loop_value = -1
-                if self.variable_exists('_loop_indices'):
-                    tmp = self.get_variable('_loop_indices')
-                    self.set_variable('_loop_indices', (
-                        *tmp,
-                        None,
-                    ))
-                else:
-                    self.set_variable('_loop_indices', (None,))
+                    self.logger.debug(
+                        '   --> {}'.format(self.get_variable('_loop_indices'))
+                    )
+                    self.set_variable(
+                        '_loop_index', self.table.index[self._loop_value]
+                    )
+                    self.table_handle['current index'] = (
+                        self.table.index[self._loop_value]
+                    )
 
-            if self._loop_value >= 0:
-                self.write_final_structure()
-
-            self._loop_value += 1
-            if self._loop_value >= self.table.shape[0]:
-                self._loop_value = None
-
-                self.delete_variable('_row')
-                # Revert the loop index variables to the next outer loop
-                # if there is one, or remove them.
-                tmp = self.get_variable('_loop_indices')
-                if len(tmp) <= 1:
-                    self.delete_variable('_loop_indices')
-                    self.delete_variable('_loop_index')
-                else:
-                    self.set_variable('_loop_indices', tmp[0:-1])
-                    self.set_variable('_loop_index', tmp[-2])
-
-                # and the other info in the table handle
-                self.table_handle['loop index'] = False
-
-                self.table = None
-                self.table_handle = None
-
-                self.logger.info(
-                    'The loop over table ' + self.parameters['table'].value +
-                    ' finished successfully'
-                )
-
-                # return the next node after the loop
-                return self.exit_node()
-
-            # Set up the index variables
-            self.logger.debug('  _loop_value = {}'.format(self._loop_value))
-            tmp = self.get_variable('_loop_indices')
-            self.logger.debug('  _loop_indices = {}'.format(tmp))
-            self.set_variable(
-                '_loop_indices',
-                (*tmp[0:-1], self.table.index[self._loop_value])
-            )
-            self.logger.debug(
-                '   --> {}'.format(self.get_variable('_loop_indices'))
-            )
-            self.set_variable(
-                '_loop_index', self.table.index[self._loop_value]
-            )
-            self.table_handle['current index'] = (
-                self.table.index[self._loop_value]
-            )
-
-            row = self.table.iloc[self._loop_value]
-            self.set_variable('_row', row)
-            self.logger.debug('   _row = {}'.format(row))
-
-        for edge in self.flowchart.edges(self, direction='out'):
-            if edge.edge_subtype == 'loop':
-                self.logger.info(
-                    'Loop, first node of loop is: {}'.format(edge.node2)
-                )
+                    row = self.table.iloc[self._loop_value]
+                    self.set_variable('_row', row)
+                    self.logger.debug('   _row = {}'.format(row))
 
                 # Direct most output to iteration.out
                 # A handler for the file
-                iter_dir = os.path.join(
-                    self.directory, f'iter_{self._loop_value}'
-                )
-                os.makedirs(iter_dir, exist_ok=True)
+                iter_dir = self.working_path
+                iter_dir.mkdir(parents=True, exist_ok=True)
 
-                self._file_handler = logging.FileHandler(
-                    os.path.join(iter_dir, 'iteration.out')
-                )
+                if self._file_handler is not None:
+                    self._file_handler.close()
+                    job.removeHandler(self._file_handler)
+                self._file_handler = logging.FileHandler(iter_dir / "iteration.out")
                 self._file_handler.setLevel(printing.NORMAL)
                 formatter = logging.Formatter(fmt='{message:s}', style='{')
                 self._file_handler.setFormatter(formatter)
@@ -340,12 +362,38 @@ class Loop(seamm.Node):
                 # reasonable
                 self.flowchart.reset_visited()
                 self.set_subids(
-                    (*self._id, 'iter_{}'.format(self._loop_value))
+                    (*self._id, f"iter_{self._loop_value:{self.iter_format}}")
                 )
-                return edge.node2
-            else:
-                # No loop body? just go on?
-                return self.exit_node()
+
+            # Run through the steps in the loop body
+            try:
+                next_node = next_node.run()
+            except DeprecationWarning as e:
+                print("\nDeprecation warning: " + str(e))
+                traceback.print_exc(file=sys.stderr)
+                traceback.print_exc(file=sys.stdout)
+            except Exception as e:
+                print(
+                    f"Caught exception in loop iteration {self._loop_value}: {str(e)}"
+                )
+                next_node = self
+
+            if self.logger.isEnabledFor(logging.DEBUG):
+                p = psutil.Process()
+                self.logger.debug(pprint.pformat(p.open_files()))
+
+            self.logger.debug(f"Bottom of loop {next_node}")
+
+        # Return to the normally scheduled step, i.e. fall out of the loop.
+
+        # Remove any redirection of printing.
+        if self._file_handler is not None:
+            self._file_handler.close()
+            job.removeHandler(self._file_handler)
+            self._file_handler = None
+        job.handlers[0].setLevel(printing.NORMAL)
+
+        return self.exit_node()
 
     def write_final_structure(self):
         """Write the final structure"""
@@ -353,10 +401,7 @@ class Loop(seamm.Node):
         configuration = system_db.system.configuration
         if configuration.n_atoms > 0:
             # MMCIF file has bonds
-            filename = os.path.join(
-                self.directory, f'iter_{self._loop_value}',
-                'final_structure.mmcif'
-            )
+            filename = self.working_path / "final_structure.mmcif"
             text = None
             try:
                 text = configuration.to_mmcif_text()
@@ -373,10 +418,7 @@ class Loop(seamm.Node):
 
             # CIF file has cell
             if configuration.periodicity == 3:
-                filename = os.path.join(
-                    self.directory, f'iter_{self._loop_value}',
-                    'final_structure.cif'
-                )
+                filename = self.working_path / "final_structure.cif"
                 text = None
                 try:
                     text = configuration.to_cif_text()
@@ -477,4 +519,16 @@ class Loop(seamm.Node):
 
         # loop is the last node in the flowchart
         self.logger.debug('There is no node after the loop')
+        return None
+
+    def loop_node(self):
+        """The first node in the loop body"""
+
+        for edge in self.flowchart.edges(self, direction='out'):
+            if edge.edge_subtype == 'loop':
+                self.logger.debug(f'Loop, first node in loop is: {edge.node2}')
+                return edge.node2
+
+        # There is no body of the loop!
+        self.logger.debug('There is no loop body')
         return None
