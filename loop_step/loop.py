@@ -4,6 +4,7 @@
 
 import logging
 from pathlib import Path
+import re
 import sys
 import traceback
 
@@ -134,7 +135,71 @@ class Loop(seamm.Node):
         if self._file_handler is not None:
             job.removeHandler(self._file_handler)
             self._file_handler = None
-        job.handlers[0].setLevel(printing.NORMAL)
+
+        # Find the handler for job.out and set the level up
+        job_handler = None
+        out_handler = None
+        for handler in job.handlers:
+            if (
+                isinstance(handler, logging.FileHandler)
+                and "job.out" in handler.baseFilename
+            ):
+                job_handler = handler
+                job_level = job_handler.level
+                job_handler.setLevel(printing.JOB)
+            elif isinstance(handler, logging.StreamHandler):
+                out_handler = handler
+                out_level = out_handler.level
+                out_handler.setLevel(printing.JOB)
+
+        # Set up some unchanging variables
+        if P["type"] == "For rows in table":
+            if self._loop_value is None:
+                self.table_handle = self.get_variable(P["table"])
+                self.table = self.table_handle["table"]
+                self.table_handle["loop index"] = True
+
+                self.logger.info(
+                    "Initialize loop over {} rows in table {}".format(
+                        self.table.shape[0], P["table"]
+                    )
+                )
+                self._loop_value = -1
+                self._loop_length = self.table.shape[0]
+                if self.variable_exists("_loop_indices"):
+                    tmp = self.get_variable("_loop_indices")
+                    self.set_variable(
+                        "_loop_indices",
+                        (
+                            *tmp,
+                            None,
+                        ),
+                    )
+                else:
+                    self.set_variable("_loop_indices", (None,))
+            where = P["where"]
+            if where == "Use all rows":
+                pass
+            elif where == "Select rows where column":
+                column = P["query-column"]
+                op = P["query-op"]
+                value = P["query-value"]
+                if self.table.shape[0] > 0:
+                    row = self.table.iloc[0]
+                    tmp = pprint.pformat(row)
+                    self.logger.debug(f"Row is\n{tmp}")
+                    if column not in row:
+                        for key in row.keys():
+                            if column.lower() == key.lower():
+                                column = key
+                                break
+                    if column not in row:
+                        raise ValueError(
+                            f"Looping over table with criterion on column '{column}': "
+                            "that column does not exist."
+                        )
+            else:
+                raise NotImplementedError(f"Loop cannot handle '{where}'")
 
         # Cycle through the iterations, setting up the first time.
         next_node = self
@@ -258,34 +323,64 @@ class Loop(seamm.Node):
                     self.set_variable("_loop_index", self._loop_value)
                     self.logger.info("    Loop value = {}".format(value))
                 elif P["type"] == "For rows in table":
-                    if self._loop_value is None:
-                        self.table_handle = self.get_variable(P["table"])
-                        self.table = self.table_handle["table"]
-                        self.table_handle["loop index"] = True
-
-                        self.logger.info(
-                            "Initialize loop over {} rows in table {}".format(
-                                self.table.shape[0], P["table"]
-                            )
-                        )
-                        self._loop_value = -1
-                        self._loop_length = self.table.shape[0]
-                        if self.variable_exists("_loop_indices"):
-                            tmp = self.get_variable("_loop_indices")
-                            self.set_variable(
-                                "_loop_indices",
-                                (
-                                    *tmp,
-                                    None,
-                                ),
-                            )
-                        else:
-                            self.set_variable("_loop_indices", (None,))
-
                     if self._loop_value >= 0:
                         self.write_final_structure()
 
-                    self._loop_value += 1
+                    # Loop until query is satisfied
+                    while True:
+                        self._loop_value += 1
+
+                        if self._loop_value >= self.table.shape[0]:
+                            break
+
+                        if where == "Use all rows":
+                            break
+
+                        row = self.table.iloc[self._loop_value]
+
+                        self.logger.debug(f"Query {row[column]} {op} {value}")
+                        if op == "==":
+                            if row[column] == value:
+                                break
+                        elif op == "!=":
+                            if row[column] != value:
+                                break
+                        elif op == ">":
+                            if row[column] > value:
+                                break
+                        elif op == ">=":
+                            if row[column] >= value:
+                                break
+                        elif op == "<":
+                            if row[column] < value:
+                                break
+                        elif op == "<=":
+                            if row[column] <= value:
+                                break
+                        elif op == "contains":
+                            if value in row[column]:
+                                break
+                        elif op == "does not contain":
+                            if value not in row[column]:
+                                break
+                        elif op == "contains regexp":
+                            if re.search(value, row[column]) is not None:
+                                break
+                        elif op == "does not contain regexp":
+                            if re.search(value, row[column]) is None:
+                                break
+                        elif op == "is empty":
+                            # Might be numpy.nan, and NaN != NaN hence odd test.
+                            if row[column] == "" or row[column] != row[column]:
+                                break
+                        elif op == "is not empty":
+                            if row[column] != "" and row[column] == row[column]:
+                                break
+                        else:
+                            raise NotImplementedError(
+                                f"Loop query '{op}' not implemented"
+                            )
+
                     if self._loop_value >= self.table.shape[0]:
                         self._loop_value = None
 
@@ -349,7 +444,6 @@ class Loop(seamm.Node):
                 self._file_handler.setFormatter(formatter)
                 job.addHandler(self._file_handler)
 
-                job.handlers[0].setLevel(printing.JOB)
                 # Add the iteration to the ids so the directory structure is
                 # reasonable
                 self.flowchart.reset_visited()
@@ -361,14 +455,19 @@ class Loop(seamm.Node):
             try:
                 next_node = next_node.run()
             except DeprecationWarning as e:
-                print("\nDeprecation warning: " + str(e))
+                printer.normal("\nDeprecation warning: " + str(e))
                 traceback.print_exc(file=sys.stderr)
                 traceback.print_exc(file=sys.stdout)
             except Exception as e:
-                print(
+                printer.job(
                     f"Caught exception in loop iteration {self._loop_value}: {str(e)}"
                 )
-                next_node = self
+                if "continue" in P["errors"]:
+                    next_node = self
+                elif "exit" in P["errors"]:
+                    break
+                else:
+                    raise
 
             if self.logger.isEnabledFor(logging.DEBUG):
                 p = psutil.Process()
@@ -383,14 +482,22 @@ class Loop(seamm.Node):
             self._file_handler.close()
             job.removeHandler(self._file_handler)
             self._file_handler = None
-        job.handlers[0].setLevel(printing.NORMAL)
+        if job_handler is not None:
+            job_handler.setLevel(job_level)
+        if out_handler is not None:
+            out_handler.setLevel(out_level)
 
         return self.exit_node()
 
     def write_final_structure(self):
         """Write the final structure"""
         system_db = self.get_variable("_system_db")
-        configuration = system_db.system.configuration
+        system = system_db.system
+        if system is None:
+            return
+        configuration = system.configuration
+        if configuration is None:
+            return
         if configuration.n_atoms > 0:
             # MMCIF file has bonds
             filename = self.working_path / "final_structure.mmcif"
