@@ -38,8 +38,8 @@ jobs:
     - name: Run linters
       shell: bash -l {0}
       run: |
+        black --extend-exclude '_version.py' --check --diff loop_step tests
         flake8 loop_step tests
-        yapf --diff --recursive loop_step tests
     - name: Run tests
       shell: bash -l {0}
       run: |
