@@ -9,6 +9,7 @@ dependencies:
   - pip
 
   # Dependencies for this module
+  - psutil
   - seamm
 
   # Testing
