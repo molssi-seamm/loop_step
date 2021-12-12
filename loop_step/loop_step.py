@@ -10,9 +10,9 @@ import loop_step
 
 class LoopStep(object):
     my_description = {
-        'description': 'An interface for Loop',
-        'group': 'Control',
-        'name': 'Loop'
+        "description": "An interface for Loop",
+        "group": "Control",
+        "name": "Loop",
     }
 
     def __init__(self, flowchart=None, gui=None):
@@ -23,8 +23,7 @@ class LoopStep(object):
         pass
 
     def description(self):
-        """Return a description of what this extension does
-        """
+        """Return a description of what this extension does"""
         return LoopStep.my_description
 
     def create_node(self, flowchart=None, **kwargs):

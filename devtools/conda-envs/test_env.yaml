@@ -9,9 +9,11 @@ dependencies:
   - pip
 
   # Dependencies for this module
+  - psutil
   - seamm
 
   # Testing
+  - black
   - codecov
   - flake8
   - pytest
@@ -19,9 +21,6 @@ dependencies:
 
   # Pip-only installs
   - pip:
-    # Testing
-    - yapf
-
     # Documentation
     - rinohtype
     - pygments
