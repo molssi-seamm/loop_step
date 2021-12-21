@@ -84,16 +84,15 @@ class Loop(seamm.Node):
         text = ""
 
         if P["type"] == "For":
-            subtext = "For {variable} from {start} to {end} by {step}"
+            subtext = "For {variable} from {start} to {end} by {step}\n"
         elif P["type"] == "Foreach":
-            subtext = "Foreach {variable} in {values}"
+            subtext = "Foreach {variable} in {values}\n"
         elif P["type"] == "For rows in table":
-            subtext = "For rows in table {table}"
+            subtext = "For rows in table {table}\n"
         else:
-            subtext = "Loop type defined by {type}"
+            subtext = "Loop type defined by {type}\n"
 
         text += self.header + "\n" + __(subtext, **P, indent=4 * " ").__str__()
-        text += "\n\n"
 
         # Print the body of the loop
         for edge in self.flowchart.edges(self, direction="out"):
@@ -102,8 +101,8 @@ class Loop(seamm.Node):
                 next_node = edge.node2
                 while next_node and not next_node.visited:
                     next_node.visited = True
+                    text += "\n\n"
                     text += __(next_node.description_text(), indent=4 * " ").__str__()
-                    text += "\n"
                     next_node = next_node.next()
 
         return text
@@ -130,6 +129,9 @@ class Loop(seamm.Node):
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
         )
+
+        # Print out header to the main output
+        printer.important(self.description_text(P))
 
         # Remove any redirection of printing.
         if self._file_handler is not None:
@@ -166,6 +168,7 @@ class Loop(seamm.Node):
                 )
                 self._loop_value = -1
                 self._loop_length = self.table.shape[0]
+                printer.job(f"    The loop will have {self._loop_length} iterations.")
                 if self.variable_exists("_loop_indices"):
                     tmp = self.get_variable("_loop_indices")
                     self.set_variable(
@@ -215,11 +218,36 @@ class Loop(seamm.Node):
                             )
                         )
 
+                        # See if loop variables are all integers
+                        start = P["start"]
+                        if isinstance(start, str):
+                            start = float(start)
+                        if isinstance(start, float) and start.is_integer():
+                            start = int(start)
+                        step = P["step"]
+                        if isinstance(step, str):
+                            step = float(step)
+                        if isinstance(step, float) and step.is_integer():
+                            step = int(step)
+                        end = P["end"]
+                        if isinstance(end, str):
+                            end = float(end)
+                        if isinstance(end, float) and end.is_integer():
+                            end = int(end)
+
                         self.logger.info("Initializing loop")
-                        self._loop_value = P["start"]
+                        self._loop_value = start
                         self.set_variable(P["variable"], self._loop_value)
-                        self._loop_length = len(
-                            range(P["start"], P["end"] + 1, P["step"])
+
+                        # Loop to get length... range doesn't work for nonintegers
+                        count = 0
+                        tmp = start
+                        while tmp <= end:
+                            count += 1
+                            tmp += step
+                        self._loop_length = count
+                        printer.job(
+                            f"    The loop will have {self._loop_length} iterations."
                         )
                         if self.variable_exists("_loop_indices"):
                             tmp = self.get_variable("_loop_indices")
@@ -230,7 +258,7 @@ class Loop(seamm.Node):
                     else:
                         self.write_final_structure()
 
-                        self._loop_value += P["step"]
+                        self._loop_value += step
                         self.set_variable(P["variable"], self._loop_value)
 
                         # Set up the index variables
@@ -245,7 +273,7 @@ class Loop(seamm.Node):
                         self.set_variable("_loop_index", self._loop_value)
 
                         # See if we are at the end of loop
-                        if self._loop_value > P["end"]:
+                        if self._loop_value > end:
                             self._loop_value = None
 
                             # Revert the loop index variables to the next outer loop
@@ -260,10 +288,8 @@ class Loop(seamm.Node):
                                 self.set_variable("_loop_index", tmp[-2])
 
                             self.logger.info(
-                                (
-                                    "The loop over {} from {} to {} by {}"
-                                    " finished successfully"
-                                ).format(P["variable"], P["start"], P["end"], P["step"])
+                                f"The loop over {P['variable']} from {start} to "
+                                f"{end} by {step} finished successfully"
                             )
                             break
 
@@ -273,6 +299,9 @@ class Loop(seamm.Node):
                     if self._loop_value is None:
                         self._loop_value = -1
                         self._loop_length = len(P["values"])
+                        printer.job(
+                            f"    The loop will have {self._loop_length} iterations."
+                        )
                         if self.variable_exists("_loop_indices"):
                             tmp = self.get_variable("_loop_indices")
                             self.set_variable(
