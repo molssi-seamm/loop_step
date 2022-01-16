@@ -491,6 +491,8 @@ class Loop(seamm.Node):
                 printer.job(
                     f"Caught exception in loop iteration {self._loop_value}: {str(e)}"
                 )
+                with open(iter_dir / "stderr.out", "a") as fd:
+                    traceback.print_exc(file=fd)
                 if "continue" in P["errors"]:
                     next_node = self
                 elif "exit" in P["errors"]:
