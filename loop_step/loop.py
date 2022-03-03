@@ -86,7 +86,14 @@ class Loop(seamm.Node):
         if P["type"] == "For":
             subtext = "For {variable} from {start} to {end} by {step}\n"
         elif P["type"] == "Foreach":
-            subtext = "Foreach {variable} in {values}\n"
+            values = P["values"]
+            if not isinstance(values, str):
+                if len(values) > 5:
+                    last = values[-1]
+                    values = values[0:6]
+                    values.append("...")
+                    values.append(last)
+            subtext = f"Foreach {P['variable']} in {values}\n"
         elif P["type"] == "For rows in table":
             subtext = "For rows in table {table}\n"
         else:
