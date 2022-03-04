@@ -2,6 +2,7 @@
 
 """Non-graphical part of the Loop step in a SEAMM flowchart"""
 
+import fnmatch
 import logging
 from pathlib import Path
 import re
@@ -210,6 +211,41 @@ class Loop(seamm.Node):
                         )
             else:
                 raise NotImplementedError(f"Loop cannot handle '{where}'")
+        elif P["type"] == "For systems in the database":
+            # Get a list of all the matching systems and configurations
+            system_db = self.get_variable("_system_db")
+            systems = system_db.systems
+
+            # Filter on system names
+            choice = P["where system name"]
+            if choice == "is anything":
+                pass
+            elif choice == "is":
+                name = P["system name"]
+                systems = [s for s in systems if s.name == name]
+            elif choice == "matches":
+                pattern = P["system name"]
+                systems = [s for s in systems if fnmatch.fnmatch(s.name, pattern)]
+            elif choice == "regexp":
+                pattern = P["system name"]
+                systems = [s for s in systems if re.search(pattern, s.name) is not None]
+            else:
+                raise RuntimeError(
+                    f"Matching system names by '{choice}' is not supported"
+                )
+
+            # Finally, allow only systems that contain the requested configuration
+            choice = P["default configuration"]
+            if choice == "last" or choice == "-1":
+                systems = [s for s in systems if s.n_configurations > 0]
+                configurations = [s.configurations[-1] for s in systems]
+            elif choice == "first" or choice == "1":
+                systems = [s for s in systems if s.n_configurations > 0]
+                configurations = [s.configurations[0] for s in systems]
+            elif choice == "name is":
+                name = P["configuration name"]
+                systems = [s for s in systems if s.n_configurations > 0]
+                configurations = [s.configurations[0] for s in systems]
 
         # Cycle through the iterations, setting up the first time.
         next_node = self
@@ -465,6 +501,13 @@ class Loop(seamm.Node):
                     row = self.table.iloc[self._loop_value]
                     self.set_variable("_row", row)
                     self.logger.debug("   _row = {}".format(row))
+                elif P["type"] == "For rows in table":
+                    if self._loop_value >= 0:
+                        self.write_final_structure()
+
+                    # Loop until query is satisfied
+                    while True:
+                        self._loop_value += 1
 
                 # Direct most output to iteration.out
                 # A handler for the file
