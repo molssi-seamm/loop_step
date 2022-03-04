@@ -247,6 +247,8 @@ class Loop(seamm.Node):
                 systems = [s for s in systems if s.n_configurations > 0]
                 configurations = [s.configurations[0] for s in systems]
 
+            print(configurations)
+
         # Cycle through the iterations, setting up the first time.
         next_node = self
         while next_node is not None:
