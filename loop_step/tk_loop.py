@@ -62,12 +62,17 @@ class TkLoop(seamm.TkNode):
         for key in P:
             self[key] = P[key].widget(frame)
 
-        self["type"].bind("<<ComboboxSelected>>", self.reset_dialog)
-        self["where"].bind("<<ComboboxSelected>>", self.reset_dialog)
-        self["query-op"].bind("<<ComboboxSelected>>", self.reset_dialog)
-
-        for widget in ("type", "where", "query-op", "errors"):
+        for widget in (
+            "type",
+            "where",
+            "query-op",
+            "where system name",
+            "default configuration",
+        ):
+            self[widget].bind("<<ComboboxSelected>>", self.reset_dialog)
             self[widget].combobox.config(state="readonly")
+
+        self["errors"].combobox.config(state="readonly")
 
     def reset_dialog(self, widget=None):
         """Lay out the edit dialog according to the type of loop."""
@@ -109,6 +114,22 @@ class TkLoop(seamm.TkNode):
                 if "empty" not in op:
                     self["query-value"].grid(row=row, column=5, sticky=tk.EW)
                     frame.columnconfigure(5, weight=1)
+        elif loop_type == "For systems in the database":
+            self["where system name"].grid(row=row, column=2, sticky=tk.EW)
+            op = self["where system name"].get()
+            if op != "is anything":
+                self["system name"].grid(row=row, column=3, sticky=tk.EW)
+            row += 1
+
+            self["default configuration"].grid(
+                row=row, column=0, columnspan=2, sticky=tk.EW
+            )
+            op = self["default configuration"].get()
+            if "name" in op:
+                self["configuration name"].grid(
+                    row=row, column=2, columnspan=2, sticky=tk.EW
+                )
+            frame.columnconfigure(3, weight=1)
         else:
             raise RuntimeError("Don't recognize the loop_type {}".format(loop_type))
         row += 1
