@@ -88,13 +88,21 @@ class Loop(seamm.Node):
             subtext = "For {variable} from {start} to {end} by {step}\n"
         elif P["type"] == "Foreach":
             values = P["values"]
-            if not isinstance(values, str):
+            if isinstance(values, str):
+                subtext = f"Foreach {P['variable']} in {values}\n"
+            else:
                 if len(values) > 5:
                     last = values[-1]
                     values = values[0:6]
                     values.append("...")
                     values.append(last)
-            subtext = f"Foreach {P['variable']} in {values}\n"
+                tmp = ", ".join(values)
+                if len(tmp) < 50:
+                    subtext = f"Foreach {P['variable']} in {tmp}\n"
+                else:
+                    tmp = "\n   ".join(values)
+                    subtext = f"Foreach {P['variable']} in\n   {tmp}\n"
+
         elif P["type"] == "For rows in table":
             subtext = "For rows in table {table}\n"
         else:
@@ -247,8 +255,6 @@ class Loop(seamm.Node):
                 systems = [s for s in systems if s.n_configurations > 0]
                 configurations = [s.configurations[0] for s in systems]
 
-            print(configurations)
-
         # Cycle through the iterations, setting up the first time.
         next_node = self
         while next_node is not None:
@@ -340,7 +346,7 @@ class Loop(seamm.Node):
 
                     self.logger.info("    Loop value = {}".format(self._loop_value))
                 elif P["type"] == "Foreach":
-                    self.logger.info(f"Foreach {P['variable']} in {P['values']}")
+                    self.logger.debug(f"Foreach {P['variable']} in {P['values']}")
                     if self._loop_value is None:
                         self._loop_value = -1
                         self._loop_length = len(P["values"])
@@ -503,13 +509,67 @@ class Loop(seamm.Node):
                     row = self.table.iloc[self._loop_value]
                     self.set_variable("_row", row)
                     self.logger.debug("   _row = {}".format(row))
-                elif P["type"] == "For rows in table":
+                elif P["type"] == "For systems in the database":
+                    if self._loop_value is None:
+                        self._loop_value = -1
+                        self._loop_length = len(configurations)
+                        printer.job(
+                            f"    The loop will have {self._loop_length} iterations."
+                        )
+                        if self.variable_exists("_loop_indices"):
+                            tmp = self.get_variable("_loop_indices")
+                            self.set_variable(
+                                "_loop_indices",
+                                (
+                                    *tmp,
+                                    None,
+                                ),
+                            )
+                        else:
+                            self.set_variable("_loop_indices", (None,))
+
                     if self._loop_value >= 0:
                         self.write_final_structure()
 
-                    # Loop until query is satisfied
-                    while True:
-                        self._loop_value += 1
+                    self._loop_value += 1
+
+                    if self._loop_value >= self._loop_length:
+                        self._loop_value = None
+                        self._loop_length = None
+
+                        # Revert the loop index variables to the next outer loop
+                        # if there is one, or remove them.
+                        tmp = self.get_variable("_loop_indices")
+                        if len(tmp) <= 1:
+                            self.delete_variable("_loop_indices")
+                            self.delete_variable("_loop_index")
+                        else:
+                            self.set_variable("_loop_indices", tmp[0:-1])
+                            self.set_variable("_loop_index", tmp[-2])
+                        self.logger.info("The loop over value finished successfully")
+
+                        # return the next node after the loop
+                        break
+
+                    # Set the default system and configuration
+                    configuration = configurations[self._loop_value]
+                    system_db = configuration.system_db
+                    system = configuration.system
+                    system_db.system = configuration.system
+                    system.configuration = configuration
+
+                    # Set up the index variables
+                    tmp = self.get_variable("_loop_indices")
+                    self.set_variable(
+                        "_loop_indices",
+                        (
+                            *tmp[0:-1],
+                            self._loop_value,
+                        ),
+                    )
+                    self.set_variable("_loop_index", self._loop_value)
+                    self.logger.info(f"       system = {system.name}")
+                    self.logger.info(f"configuration = {configuration.name}")
 
                 # Direct most output to iteration.out
                 # A handler for the file
