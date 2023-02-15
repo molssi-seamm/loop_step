@@ -2,6 +2,27 @@
 History
 =======
 
+2023.2.15 -- Starting to add loops over structures in the database
+
+* Reorganized the documentation and changed to the standard MolSSI theme.
+
+2022.1.16 -- Improved error handling
+
+* Wrote the traceback for any errors caught to item_nnn/stderr.out to aid debugging.
+
+2021.12.21 -- Cleaned up the printing
+
+2021.12.12 -- Error handling and querying for loops over tables
+
+* Errors in the body of the loop are caught and can be ignored or handled in different
+  ways at the direction of the user.
+* When looping over rows in a table, a query can be used to select the rows to operate
+  on.
+
+2021.10.13 -- updated to Python 3.8 and 3.9
+
+2021.6.3 -- updated for internal changes in argument parsing
+
 2021.2.11 (11 February 2021)
 ----------------------------
 

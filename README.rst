@@ -14,17 +14,13 @@ SEAMM Loop Plug-in
    :target: https://codecov.io/gh/molssi-seamm/loop_step
    :alt: Code Coverage
 
-.. image:: https://img.shields.io/lgtm/grade/python/g/molssi-seamm/loop_step.svg?logo=lgtm&logoWidth=18
-   :target: https://lgtm.com/projects/g/molssi-seamm/loop_step/context:python
+.. image:: https://github.com/molssi-seamm/loop_step/workflows/CodeQL/badge.svg
+   :target: https://github.com/molssi-seamm/loop_step/security/code-scanning
    :alt: Code Quality
 
-.. image:: https://github.com/molssi-seamm/loop_step/workflows/Documentation/badge.svg
+.. image:: https://github.com/molssi-seamm/loop_step/workflows/Release/badge.svg
    :target: https://molssi-seamm.github.io/loop_step/index.html
    :alt: Documentation Status
-
-.. image:: https://pyup.io/repos/github/molssi-seamm/loop_step/shield.svg
-   :target: https://pyup.io/repos/github/molssi-seamm/loop_step/
-   :alt: Updates for Dependencies
 
 .. image:: https://img.shields.io/pypi/v/loop_step.svg
    :target: https://pypi.python.org/pypi/loop_step

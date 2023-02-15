@@ -7,7 +7,46 @@ import seamm
 import loop_step
 import tkinter as tk
 
+import seamm_widgets as sw
+
 logger = logging.getLogger(__name__)
+
+search_fields = {
+    "system index": {
+        "operators": (
+            "=",
+            "!=",
+            "between",
+            "not between",
+            ">",
+            "<",
+        ),
+    },
+    "system name": {
+        "operators": (
+            "is",
+            "is not",
+            "contains",
+            "does not contain",
+            "matches",
+            "does not match",
+            "matches regexp",
+            "does not match regexp",
+        ),
+    },
+    "configuration name": {
+        "operators": (
+            "is",
+            "is not",
+            "contains",
+            "does not contain",
+            "matches",
+            "does not match",
+            "matches regexp",
+            "does not match regexp",
+        ),
+    },
+}
 
 
 class TkLoop(seamm.TkNode):
@@ -60,14 +99,76 @@ class TkLoop(seamm.TkNode):
         # Create the widgets and grid them in
         P = self.node.parameters
         for key in P:
-            self[key] = P[key].widget(frame)
+            if key != "search criteria":
+                self[key] = P[key].widget(frame)
 
-        self["type"].bind("<<ComboboxSelected>>", self.reset_dialog)
-        self["where"].bind("<<ComboboxSelected>>", self.reset_dialog)
-        self["query-op"].bind("<<ComboboxSelected>>", self.reset_dialog)
+        # Create the search widgets for the systems
+        self["criteria"] = sw.SearchCriteria(
+            frame,
+            text="Select systems where",
+            labelanchor=tk.NW,
+            inclusiontext="",
+            inclusionvalues=(
+                "",
+                "and",
+                "or",
+                "(",
+                ")",
+                "ignore",
+            ),
+            operatorvalues=(
+                "is",
+                "is not",
+                "contains",
+                "does not contain",
+                "matches",
+                "does not match",
+                "matches regexp",
+                "does not match regexp",
+            ),
+            fieldvalues=[*search_fields.keys()],
+            two_values=("between", "not between"),
+            command=self.criteria_callback,
+        )
 
-        for widget in ("type", "where", "query-op", "errors"):
+        for widget in (
+            "type",
+            "where",
+            "query-op",
+            "where system name",
+            "default configuration",
+        ):
+            self[widget].bind("<<ComboboxSelected>>", self.reset_dialog)
             self[widget].combobox.config(state="readonly")
+
+        self["errors"].combobox.config(state="readonly")
+
+    def criteria_callback(self, widget, criterion, event, what):
+        """Handle changes in the search criteria widget.
+
+        Parameters
+        ----------
+        widget : Tk widget
+            The widget.
+        criterion : sw.Criterion
+            The row -- Criterion widget -- in the table.
+        event : tk.Event
+            The event causing the callback.
+        what : str
+            The item that changed: 'inclusion', 'field', 'operator', 'self.two_values',
+            'clear', 'set', 'add row', 'remove row'
+        """
+        if criterion is not None:
+            inclusion, field, operator, value, value2 = criterion.get()
+
+            if what == "field":
+                operators = search_fields[field]["operators"]
+                w = criterion.operator
+                w.configure(values=operators)
+                if operator in operators:
+                    w.set(operator)
+                else:
+                    w.set(operators[0])
 
     def reset_dialog(self, widget=None):
         """Lay out the edit dialog according to the type of loop."""
@@ -109,6 +210,21 @@ class TkLoop(seamm.TkNode):
                 if "empty" not in op:
                     self["query-value"].grid(row=row, column=5, sticky=tk.EW)
                     frame.columnconfigure(5, weight=1)
+        elif loop_type == "For systems in the database":
+            row += 1
+            self["criteria"].grid(row=row, column=1, columnspan=3, sticky=tk.NSEW)
+            frame.rowconfigure(row, weight=1, minsize=100)
+            row += 1
+
+            self["default configuration"].grid(
+                row=row, column=0, columnspan=2, sticky=tk.EW
+            )
+            op = self["default configuration"].get()
+            if "name" in op:
+                self["configuration name"].grid(
+                    row=row, column=2, columnspan=2, sticky=tk.EW
+                )
+            frame.columnconfigure(3, weight=1)
         else:
             raise RuntimeError("Don't recognize the loop_type {}".format(loop_type))
         row += 1
