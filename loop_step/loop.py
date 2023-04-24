@@ -579,7 +579,9 @@ class Loop(seamm.Node):
                 if self._file_handler is not None:
                     self._file_handler.close()
                     job.removeHandler(self._file_handler)
-                self._file_handler = logging.FileHandler(iter_dir / "iteration.out")
+                path = iter_dir / "iteration.out"
+                path.unlink(missing_ok=True)
+                self._file_handler = logging.FileHandler(path)
                 self._file_handler.setLevel(printing.NORMAL)
                 formatter = logging.Formatter(fmt="{message:s}", style="{")
                 self._file_handler.setFormatter(formatter)
