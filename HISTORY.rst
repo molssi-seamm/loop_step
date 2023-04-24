@@ -2,6 +2,9 @@
 History
 =======
 
+2023.4.24 -- Better support for rerunning/restarting jobs
+    * Remove 'iteration.out' if it already exists.
+      
 2023.2.15 -- Starting to add loops over structures in the database
 
 * Reorganized the documentation and changed to the standard MolSSI theme.
