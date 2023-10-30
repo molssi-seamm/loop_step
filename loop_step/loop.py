@@ -67,6 +67,16 @@ class Loop(seamm.Node):
     def working_path(self):
         return Path(self.directory) / f"iter_{self._loop_value:{self.iter_format}}"
 
+    def describe(self):
+        """Write out information about what this node will do"""
+
+        self.visited = True
+
+        # The description
+        job.job(__(self.description_text(), indent=self.indent))
+
+        return self.exit_node()
+
     def description_text(self, P=None):
         """Return a short description of this step.
 
@@ -87,10 +97,10 @@ class Loop(seamm.Node):
         if P["type"] == "For":
             subtext = "For {variable} from {start} to {end} by {step}\n"
         elif P["type"] == "Foreach":
-            values = [str(v) for v in P["values"]]
-            if isinstance(values, str):
-                subtext = f"Foreach {P['variable']} in {values}\n"
+            if self.is_expr(P["values"]):
+                subtext = f"Foreach {P['variable']} in {P['values']}\n"
             else:
+                values = [str(v) for v in P["values"]]
                 if len(values) > 5:
                     last = values[-1]
                     values = values[0:6]
@@ -102,36 +112,24 @@ class Loop(seamm.Node):
                 else:
                     tmp = "\n   ".join(values)
                     subtext = f"Foreach {P['variable']} in\n   {tmp}\n"
-
         elif P["type"] == "For rows in table":
             subtext = "For rows in table {table}\n"
+        elif P["type"] == "For systems in the database":
+            subtext = "For system in the database\n"
         else:
             subtext = "Loop type defined by {type}\n"
 
         text += self.header + "\n" + __(subtext, **P, indent=4 * " ").__str__()
 
         # Print the body of the loop
-        for edge in self.flowchart.edges(self, direction="out"):
-            if edge.edge_subtype == "loop":
-                self.logger.debug("Loop, first node of loop is: {}".format(edge.node2))
-                next_node = edge.node2
-                while next_node and not next_node.visited:
-                    next_node.visited = True
-                    text += "\n\n"
-                    text += __(next_node.description_text(), indent=4 * " ").__str__()
-                    next_node = next_node.next()
+        join_node = self.previous()
+        next_node = self.loop_node()
+        while next_node is not None and next_node != join_node:
+            text += "\n\n"
+            text += __(next_node.description_text(), indent=4 * " ").__str__()
+            next_node = next_node.next()
 
         return text
-
-    def describe(self):
-        """Write out information about what this node will do"""
-
-        self.visited = True
-
-        # The description
-        job.job(__(self.description_text(), indent=self.indent))
-
-        return self.exit_node()
 
     def run(self):
         """Run a Loop step."""
@@ -147,31 +145,79 @@ class Loop(seamm.Node):
         )
 
         # Print out header to the main output
-        printer.important(self.description_text(P))
-
-        # Remove any redirection of printing.
-        if self._file_handler is not None:
-            job.removeHandler(self._file_handler)
-            self._file_handler = None
-
-        # Find the handler for job.out and set the level up
-        job_handler = None
-        out_handler = None
-        for handler in job.handlers:
-            if (
-                isinstance(handler, logging.FileHandler)
-                and "job.out" in handler.baseFilename
-            ):
-                job_handler = handler
-                job_level = job_handler.level
-                job_handler.setLevel(printing.JOB)
-            elif isinstance(handler, logging.StreamHandler):
-                out_handler = handler
-                out_level = out_handler.level
-                out_handler.setLevel(printing.JOB)
+        printer.important(__(self.description_text(P), indent=self.indent))
 
         # Set up some unchanging variables
-        if P["type"] == "For rows in table":
+        if P["type"] == "For":
+            if self._loop_value is None:
+                self.logger.info(
+                    "For {} from {} to {} by {}".format(
+                        P["variable"], P["start"], P["end"], P["step"]
+                    )
+                )
+
+                # See if loop variables are all integers
+                start = P["start"]
+                if isinstance(start, str):
+                    start = float(start)
+                if isinstance(start, float) and start.is_integer():
+                    start = int(start)
+                step = P["step"]
+                if isinstance(step, str):
+                    step = float(step)
+                if isinstance(step, float) and step.is_integer():
+                    step = int(step)
+                end = P["end"]
+                if isinstance(end, str):
+                    end = float(end)
+                if isinstance(end, float) and end.is_integer():
+                    end = int(end)
+
+                self.logger.info("Initializing loop")
+                self._loop_value = start
+                self.set_variable(P["variable"], self._loop_value)
+
+                # Loop to get length... range doesn't work for nonintegers
+                count = 0
+                tmp = start
+                while tmp <= end:
+                    count += 1
+                    tmp += step
+                self._loop_length = count
+                printer.important(
+                    __(
+                        f"The loop will have {self._loop_length} iterations.\n\n",
+                        indent=self.indent + 4 * " ",
+                    )
+                )
+                if self.variable_exists("_loop_indices"):
+                    tmp = self.get_variable("_loop_indices")
+                    self.set_variable("_loop_indices", (*tmp, self._loop_value))
+                else:
+                    self.set_variable("_loop_indices", (self._loop_value,))
+                    self.set_variable("_loop_index", self._loop_value)
+        elif P["type"] == "Foreach":
+            if self._loop_value is None:
+                self._loop_value = -1
+                self._loop_length = len(P["values"])
+                printer.important(
+                    __(
+                        f"The loop will have {self._loop_length} iterations.\n\n",
+                        indent=self.indent + 4 * " ",
+                    )
+                )
+                if self.variable_exists("_loop_indices"):
+                    tmp = self.get_variable("_loop_indices")
+                    self.set_variable(
+                        "_loop_indices",
+                        (
+                            *tmp,
+                            None,
+                        ),
+                    )
+                else:
+                    self.set_variable("_loop_indices", (None,))
+        elif P["type"] == "For rows in table":
             if self._loop_value is None:
                 self.table_handle = self.get_variable(P["table"])
                 self.table = self.table_handle["table"]
@@ -184,7 +230,12 @@ class Loop(seamm.Node):
                 )
                 self._loop_value = -1
                 self._loop_length = self.table.shape[0]
-                printer.job(f"    The loop will have {self._loop_length} iterations.")
+                printer.important(
+                    __(
+                        f"The loop will have {self._loop_length} iterations.\n\n",
+                        indent=self.indent + 4 * " ",
+                    )
+                )
                 if self.variable_exists("_loop_indices"):
                     tmp = self.get_variable("_loop_indices")
                     self.set_variable(
@@ -254,117 +305,96 @@ class Loop(seamm.Node):
                 name = P["configuration name"]
                 systems = [s for s in systems if s.n_configurations > 0]
                 configurations = [s.configurations[0] for s in systems]
+            if self._loop_value is None:
+                self._loop_value = -1
+                self._loop_length = len(configurations)
+                printer.important(
+                    __(
+                        f"The loop will have {self._loop_length} iterations.\n\n",
+                        indent=self.indent + 4 * " ",
+                    )
+                )
+                if self.variable_exists("_loop_indices"):
+                    tmp = self.get_variable("_loop_indices")
+                    self.set_variable(
+                        "_loop_indices",
+                        (
+                            *tmp,
+                            None,
+                        ),
+                    )
+                else:
+                    self.set_variable("_loop_indices", (None,))
 
-        # Cycle through the iterations, setting up the first time.
+        # Remove any redirection of printing.
+        if self._file_handler is not None:
+            job.removeHandler(self._file_handler)
+            self._file_handler = None
+
+        # Find the handler for job.out and set the level up
+        job_handler = None
+        out_handler = None
+        for handler in job.handlers:
+            if (
+                isinstance(handler, logging.FileHandler)
+                and "job.out" in handler.baseFilename
+            ):
+                job_handler = handler
+                job_level = job_handler.level
+                job_handler.setLevel(printing.JOB)
+            elif isinstance(handler, logging.StreamHandler):
+                out_handler = handler
+                out_level = out_handler.level
+                out_handler.setLevel(printing.JOB)
+
+        # Cycle through the iterations
         next_node = self
         while next_node is not None:
             if next_node is self:
                 next_node = self.loop_node()
 
                 if P["type"] == "For":
-                    if self._loop_value is None:
-                        self.logger.info(
-                            "For {} from {} to {} by {}".format(
-                                P["variable"], P["start"], P["end"], P["step"]
-                            )
-                        )
-
-                        # See if loop variables are all integers
-                        start = P["start"]
-                        if isinstance(start, str):
-                            start = float(start)
-                        if isinstance(start, float) and start.is_integer():
-                            start = int(start)
-                        step = P["step"]
-                        if isinstance(step, str):
-                            step = float(step)
-                        if isinstance(step, float) and step.is_integer():
-                            step = int(step)
-                        end = P["end"]
-                        if isinstance(end, str):
-                            end = float(end)
-                        if isinstance(end, float) and end.is_integer():
-                            end = int(end)
-
-                        self.logger.info("Initializing loop")
-                        self._loop_value = start
-                        self.set_variable(P["variable"], self._loop_value)
-
-                        # Loop to get length... range doesn't work for nonintegers
-                        count = 0
-                        tmp = start
-                        while tmp <= end:
-                            count += 1
-                            tmp += step
-                        self._loop_length = count
-                        printer.job(
-                            f"    The loop will have {self._loop_length} iterations."
-                        )
-                        if self.variable_exists("_loop_indices"):
-                            tmp = self.get_variable("_loop_indices")
-                            self.set_variable("_loop_indices", (*tmp, self._loop_value))
-                        else:
-                            self.set_variable("_loop_indices", (self._loop_value,))
-                            self.set_variable("_loop_index", self._loop_value)
-                    else:
+                    if self._loop_value >= 0:
                         self.write_final_structure()
 
-                        self._loop_value += step
-                        self.set_variable(P["variable"], self._loop_value)
+                    self._loop_value += step
+                    self.set_variable(P["variable"], self._loop_value)
 
-                        # Set up the index variables
+                    # Set up the index variables
+                    tmp = self.get_variable("_loop_indices")
+                    self.set_variable(
+                        "_loop_indices",
+                        (
+                            *tmp[0:-1],
+                            self._loop_value,
+                        ),
+                    )
+                    self.set_variable("_loop_index", self._loop_value)
+
+                    # See if we are at the end of loop
+                    if self._loop_value > end:
+                        self._loop_value = None
+
+                        # Revert the loop index variables to the next outer loop
+                        # if there is one, or remove them.
                         tmp = self.get_variable("_loop_indices")
-                        self.set_variable(
-                            "_loop_indices",
-                            (
-                                *tmp[0:-1],
-                                self._loop_value,
-                            ),
+
+                        if len(tmp) <= 1:
+                            self.delete_variable("_loop_indices")
+                            self.delete_variable("_loop_index")
+                        else:
+                            self.set_variable("_loop_indices", tmp[0:-1])
+                            self.set_variable("_loop_index", tmp[-2])
+
+                        self.logger.info(
+                            f"The loop over {P['variable']} from {start} to "
+                            f"{end} by {step} finished successfully"
                         )
-                        self.set_variable("_loop_index", self._loop_value)
-
-                        # See if we are at the end of loop
-                        if self._loop_value > end:
-                            self._loop_value = None
-
-                            # Revert the loop index variables to the next outer loop
-                            # if there is one, or remove them.
-                            tmp = self.get_variable("_loop_indices")
-
-                            if len(tmp) <= 1:
-                                self.delete_variable("_loop_indices")
-                                self.delete_variable("_loop_index")
-                            else:
-                                self.set_variable("_loop_indices", tmp[0:-1])
-                                self.set_variable("_loop_index", tmp[-2])
-
-                            self.logger.info(
-                                f"The loop over {P['variable']} from {start} to "
-                                f"{end} by {step} finished successfully"
-                            )
-                            break
+                        break
 
                     self.logger.info("    Loop value = {}".format(self._loop_value))
                 elif P["type"] == "Foreach":
                     self.logger.debug(f"Foreach {P['variable']} in {P['values']}")
-                    if self._loop_value is None:
-                        self._loop_value = -1
-                        self._loop_length = len(P["values"])
-                        printer.job(
-                            f"    The loop will have {self._loop_length} iterations."
-                        )
-                        if self.variable_exists("_loop_indices"):
-                            tmp = self.get_variable("_loop_indices")
-                            self.set_variable(
-                                "_loop_indices",
-                                (
-                                    *tmp,
-                                    None,
-                                ),
-                            )
-                        else:
-                            self.set_variable("_loop_indices", (None,))
-
                     if self._loop_value >= 0:
                         self.write_final_structure()
 
@@ -510,24 +540,6 @@ class Loop(seamm.Node):
                     self.set_variable("_row", row)
                     self.logger.debug("   _row = {}".format(row))
                 elif P["type"] == "For systems in the database":
-                    if self._loop_value is None:
-                        self._loop_value = -1
-                        self._loop_length = len(configurations)
-                        printer.job(
-                            f"    The loop will have {self._loop_length} iterations."
-                        )
-                        if self.variable_exists("_loop_indices"):
-                            tmp = self.get_variable("_loop_indices")
-                            self.set_variable(
-                                "_loop_indices",
-                                (
-                                    *tmp,
-                                    None,
-                                ),
-                            )
-                        else:
-                            self.set_variable("_loop_indices", (None,))
-
                     if self._loop_value >= 0:
                         self.write_final_structure()
 
@@ -739,14 +751,11 @@ class Loop(seamm.Node):
 
     def set_subids(self, node_id=()):
         """Set the ids of the nodes in the loop"""
-        for edge in self.flowchart.edges(self, direction="out"):
-            if edge.edge_subtype == "loop":
-                self.logger.debug("Loop, first node of loop is: {}".format(edge.node2))
-                next_node = edge.node2
-                n = 0
-                while next_node and next_node != self:
-                    next_node = next_node.set_id((*node_id, str(n)))
-                    n += 1
+        next_node = self.loop_node()
+        n = 0
+        while next_node and next_node != self:
+            next_node = next_node.set_id((*node_id, str(n)))
+            n += 1
 
     def exit_node(self):
         """The next node after the loop, if any"""
