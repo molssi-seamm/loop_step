@@ -1,6 +1,7 @@
 =======
 History
 =======
+2023.10.30 -- Improved consistency of printing loop information
 
 2023.4.24 -- Better support for rerunning/restarting jobs
     * Remove 'iteration.out' if it already exists.
