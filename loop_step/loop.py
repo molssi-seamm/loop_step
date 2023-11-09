@@ -34,6 +34,7 @@ class Loop(seamm.Node):
 
         self.table_handle = None
         self.table = None
+        self._loop_count = None
         self._loop_value = None
         self._loop_length = None
         self._file_handler = None
@@ -174,6 +175,7 @@ class Loop(seamm.Node):
                     end = int(end)
 
                 self.logger.info("Initializing loop")
+                self._loop_count = 0
                 self._loop_value = start
                 self.set_variable(P["variable"], self._loop_value)
 
@@ -354,10 +356,11 @@ class Loop(seamm.Node):
                 next_node = self.loop_node()
 
                 if P["type"] == "For":
-                    if self._loop_value >= 0:
+                    self._loop_count += 1
+                    if self._loop_count > 1:
                         self.write_final_structure()
+                        self._loop_value += step
 
-                    self._loop_value += step
                     self.set_variable(P["variable"], self._loop_value)
 
                     # Set up the index variables

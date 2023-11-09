@@ -1,6 +1,10 @@
 =======
 History
 =======
+2023.11.9 -- Bugfix: "For" loops could crash
+   * For loops could crash writing to write final_structure.mmcif before the directory
+     had been made.
+     
 2023.10.30 -- Improved consistency of printing loop information
 
 2023.4.24 -- Better support for rerunning/restarting jobs
