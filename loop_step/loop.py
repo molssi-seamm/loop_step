@@ -38,6 +38,7 @@ class Loop(seamm.Node):
         self._loop_value = None
         self._loop_length = None
         self._file_handler = None
+        self._custom_directory_name = None
 
         super().__init__(
             flowchart=flowchart, title="Loop", extension=extension, logger=logger
@@ -66,7 +67,11 @@ class Loop(seamm.Node):
 
     @property
     def working_path(self):
-        return Path(self.directory) / f"iter_{self._loop_value:{self.iter_format}}"
+        if self._custom_directory_name is not None:
+            tmp = Path(self.directory) / self._custom_directory_name
+        else:
+            tmp = Path(self.directory) / f"iter_{self._loop_value+1:{self.iter_format}}"
+        return tmp
 
     def describe(self):
         """Write out information about what this node will do"""
@@ -144,6 +149,9 @@ class Loop(seamm.Node):
         P = self.parameters.current_values_to_dict(
             context=seamm.flowchart_variables._data
         )
+
+        # Reset variables to initial state.
+        self._custom_directory_name = None
 
         # Print out header to the main output
         printer.important(__(self.description_text(P), indent=self.indent))
@@ -551,6 +559,7 @@ class Loop(seamm.Node):
                     if self._loop_value >= self._loop_length:
                         self._loop_value = None
                         self._loop_length = None
+                        self._custom_directory_name = None
 
                         # Revert the loop index variables to the next outer loop
                         # if there is one, or remove them.
@@ -572,6 +581,15 @@ class Loop(seamm.Node):
                     system = configuration.system
                     system_db.system = configuration.system
                     system.configuration = configuration
+
+                    if P["directory name"] == "system name":
+                        self._custom_directory_name = self.safe_filename(system.name)
+                    elif P["directory name"] == "configuration name":
+                        self._custom_directory_name = self.safe_filename(
+                            configuration.name
+                        )
+                    else:
+                        self._custom_directory_name = None
 
                     # Set up the index variables
                     tmp = self.get_variable("_loop_indices")
@@ -605,9 +623,8 @@ class Loop(seamm.Node):
                 # Add the iteration to the ids so the directory structure is
                 # reasonable
                 self.flowchart.reset_visited()
-                self.set_subids(
-                    (*self._id, f"iter_{self._loop_value:{self.iter_format}}")
-                )
+                tmp = self.working_path.name
+                self.set_subids((*self._id, tmp))
 
             # Run through the steps in the loop body
             try:
@@ -617,9 +634,8 @@ class Loop(seamm.Node):
                 traceback.print_exc(file=sys.stderr)
                 traceback.print_exc(file=sys.stdout)
             except Exception as e:
-                printer.job(
-                    f"Caught exception in loop iteration {self._loop_value}: {str(e)}"
-                )
+                tmp = self.working_path.name
+                printer.job(f"Caught exception in loop iteration {tmp}: {str(e)}")
                 with open(iter_dir / "stderr.out", "a") as fd:
                     traceback.print_exc(file=fd)
                 if "continue" in P["errors"]:
@@ -783,3 +799,15 @@ class Loop(seamm.Node):
         # There is no body of the loop!
         self.logger.debug("There is no loop body")
         return None
+
+    def safe_filename(self, filename):
+        clean = re.sub(r"[/\\?%*:|\"<>\x7F\x00-\x1F]", "-", filename)
+
+        # Check for duplicates...
+        path = Path(self.directory) / clean
+        count = 1
+        while path.exists():
+            count += 1
+            path = Path(self.directory) / f"{clean}_{count}"
+
+        return path.name

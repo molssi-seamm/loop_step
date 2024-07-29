@@ -165,6 +165,19 @@ class LoopParameters(seamm.Parameters):
             "description": "",
             "help_text": "The filter for the configuration name",
         },
+        "directory name": {
+            "default": "loop iteration",
+            "kind": "string",
+            "default_units": "",
+            "enumeration": (
+                "loop iteration",
+                "system name",
+                "configuration name",
+            ),
+            "format_string": "s",
+            "description": "Directory names:",
+            "help_text": "The directory name for the loop iteration.",
+        },
         "errors": {
             "default": "continue to next iteration",
             "kind": "string",

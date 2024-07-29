@@ -1,6 +1,11 @@
 =======
 History
 =======
+2024.7.28 -- Improved naming of loop subdirectories
+   * The subdirectories now start at 1, not 0, to make counting more normal
+   * When looping over systems, now have the option to name the directories
+     after the system or configuration name, not the iteration number.
+     
 2023.11.9 -- Bugfix: "For" loops could crash
    * For loops could crash writing to write final_structure.mmcif before the directory
      had been made.
