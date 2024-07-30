@@ -1,6 +1,12 @@
 =======
 History
 =======
+2024.7.30 -- Further improving naming of loop subdirectories
+   * For loops now use the value of loop index as the subdirectory
+   * Improved handling of lists for ForEach loops so blank-deliminated lists work
+     properly. Quotes can be used for values with embedded blanks, much like the Linux
+     commandline.
+     
 2024.7.28 -- Improved naming of loop subdirectories
    * The subdirectories now start at 1, not 0, to make counting more normal
    * When looping over systems, now have the option to name the directories
