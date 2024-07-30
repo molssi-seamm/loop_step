@@ -6,6 +6,7 @@ import fnmatch
 import logging
 from pathlib import Path
 import re
+import shlex
 import sys
 import traceback
 
@@ -70,7 +71,7 @@ class Loop(seamm.Node):
         if self._custom_directory_name is not None:
             tmp = Path(self.directory) / self._custom_directory_name
         else:
-            tmp = Path(self.directory) / f"iter_{self._loop_value+1:{self.iter_format}}"
+            tmp = Path(self.directory) / f"iter_{self._loop_value:{self.iter_format}}"
         return tmp
 
     def describe(self):
@@ -106,7 +107,10 @@ class Loop(seamm.Node):
             if self.is_expr(P["values"]):
                 subtext = f"Foreach {P['variable']} in {P['values']}\n"
             else:
-                values = [str(v) for v in P["values"]]
+                if isinstance(P["values"], str):
+                    values = [str(v) for v in shlex.split(P["values"])]
+                else:
+                    values = [str(v) for v in P["values"]]
                 if len(values) > 5:
                     last = values[-1]
                     values = values[0:6]
@@ -208,8 +212,11 @@ class Loop(seamm.Node):
                     self.set_variable("_loop_index", self._loop_value)
         elif P["type"] == "Foreach":
             if self._loop_value is None:
-                self._loop_value = -1
-                self._loop_length = len(P["values"])
+                self._loop_value = 0
+                if isinstance(P["values"], str):
+                    self._loop_length = len(shlex.split(P["values"]))
+                else:
+                    self._loop_length = len(P["values"])
                 printer.important(
                     __(
                         f"The loop will have {self._loop_length} iterations.\n\n",
@@ -238,7 +245,7 @@ class Loop(seamm.Node):
                         self.table.shape[0], P["table"]
                     )
                 )
-                self._loop_value = -1
+                self._loop_value = 0
                 self._loop_length = self.table.shape[0]
                 printer.important(
                     __(
@@ -316,8 +323,9 @@ class Loop(seamm.Node):
                 systems = [s for s in systems if s.n_configurations > 0]
                 configurations = [s.configurations[0] for s in systems]
             if self._loop_value is None:
-                self._loop_value = -1
+                self._loop_value = 0
                 self._loop_length = len(configurations)
+                print(f"{self._loop_length} configurations found.")
                 printer.important(
                     __(
                         f"The loop will have {self._loop_length} iterations.\n\n",
@@ -406,12 +414,12 @@ class Loop(seamm.Node):
                     self.logger.info("    Loop value = {}".format(self._loop_value))
                 elif P["type"] == "Foreach":
                     self.logger.debug(f"Foreach {P['variable']} in {P['values']}")
-                    if self._loop_value >= 0:
+                    if self._loop_value > 0:
                         self.write_final_structure()
 
                     self._loop_value += 1
 
-                    if self._loop_value >= self._loop_length:
+                    if self._loop_value > self._loop_length:
                         self._loop_value = None
                         self._loop_length = None
 
@@ -429,7 +437,10 @@ class Loop(seamm.Node):
                         # return the next node after the loop
                         break
 
-                    value = P["values"][self._loop_value]
+                    if isinstance(P["values"], str):
+                        value = shlex.split(P["values"])[self._loop_value - 1]
+                    else:
+                        value = P["values"][self._loop_value - 1]
                     self.set_variable(P["variable"], value)
 
                     # Set up the index variables
@@ -444,20 +455,20 @@ class Loop(seamm.Node):
                     self.set_variable("_loop_index", self._loop_value)
                     self.logger.info("    Loop value = {}".format(value))
                 elif P["type"] == "For rows in table":
-                    if self._loop_value >= 0:
+                    if self._loop_value > 0:
                         self.write_final_structure()
 
                     # Loop until query is satisfied
                     while True:
                         self._loop_value += 1
 
-                        if self._loop_value >= self.table.shape[0]:
+                        if self._loop_value > self.table.shape[0]:
                             break
 
                         if where == "Use all rows":
                             break
 
-                        row = self.table.iloc[self._loop_value]
+                        row = self.table.iloc[self._loop_value - 1]
 
                         self.logger.debug(f"Query {row[column]} {op} {value}")
                         if op == "==":
@@ -502,7 +513,7 @@ class Loop(seamm.Node):
                                 f"Loop query '{op}' not implemented"
                             )
 
-                    if self._loop_value >= self.table.shape[0]:
+                    if self._loop_value > self.table.shape[0]:
                         self._loop_value = None
 
                         self.delete_variable("_row")
@@ -537,26 +548,28 @@ class Loop(seamm.Node):
                     self.logger.debug("  _loop_indices = {}".format(tmp))
                     self.set_variable(
                         "_loop_indices",
-                        (*tmp[0:-1], self.table.index[self._loop_value]),
+                        (*tmp[0:-1], self.table.index[self._loop_value - 1]),
                     )
                     self.logger.debug(
                         "   --> {}".format(self.get_variable("_loop_indices"))
                     )
-                    self.set_variable("_loop_index", self.table.index[self._loop_value])
+                    self.set_variable(
+                        "_loop_index", self.table.index[self._loop_value - 1]
+                    )
                     self.table_handle["current index"] = self.table.index[
-                        self._loop_value
+                        self._loop_value - 1
                     ]
 
-                    row = self.table.iloc[self._loop_value]
+                    row = self.table.iloc[self._loop_value - 1]
                     self.set_variable("_row", row)
                     self.logger.debug("   _row = {}".format(row))
                 elif P["type"] == "For systems in the database":
-                    if self._loop_value >= 0:
+                    if self._loop_value > 0:
                         self.write_final_structure()
 
                     self._loop_value += 1
 
-                    if self._loop_value >= self._loop_length:
+                    if self._loop_value > self._loop_length:
                         self._loop_value = None
                         self._loop_length = None
                         self._custom_directory_name = None
@@ -576,7 +589,8 @@ class Loop(seamm.Node):
                         break
 
                     # Set the default system and configuration
-                    configuration = configurations[self._loop_value]
+                    print(f"{self._loop_value} / {self._loop_length}")
+                    configuration = configurations[self._loop_value - 1]
                     system_db = configuration.system_db
                     system = configuration.system
                     system_db.system = configuration.system
