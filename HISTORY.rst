@@ -1,9 +1,13 @@
 =======
 History
 =======
+2024.8.16 -- Improved handling for For Systems in Database
+   * Added ability to get all configurations for each system, as well as using matching
+     or regexps for the names of configurations to select.
+     
 2024.7.30 -- Further improving naming of loop subdirectories
    * For loops now use the value of loop index as the subdirectory
-   * Improved handling of lists for ForEach loops so blank-deliminated lists work
+   * Improved handling of lists for ForEach loops so blank-delimited lists work
      properly. Quotes can be used for values with embedded blanks, much like the Linux
      commandline.
      

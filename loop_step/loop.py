@@ -321,7 +321,33 @@ class Loop(seamm.Node):
             elif choice == "name is":
                 name = P["configuration name"]
                 systems = [s for s in systems if s.n_configurations > 0]
-                configurations = [s.configurations[0] for s in systems]
+                configurations = []
+                for s in systems:
+                    for c in s.configurations:
+                        if c.name is name:
+                            configurations.append(c)
+            elif choice == "matches":
+                pattern = P["configuration name"]
+                systems = [s for s in systems if s.n_configurations > 0]
+                configurations = []
+                for s in systems:
+                    for c in s.configurations:
+                        if fnmatch.fnmatch(c.name, pattern):
+                            configurations.append(c)
+            elif choice == "regexp":
+                pattern = P["configuration name"]
+                configurations = []
+                for s in systems:
+                    for c in s.configurations:
+                        if re.search(pattern, c.name) is not None:
+                            configurations.append(c)
+            elif choice == "all":
+                name = P["configuration name"]
+                systems = [s for s in systems if s.n_configurations > 0]
+                configurations = []
+                for s in systems:
+                    configurations.extend(s.configurations)
+
             if self._loop_value is None:
                 self._loop_value = 0
                 self._loop_length = len(configurations)
