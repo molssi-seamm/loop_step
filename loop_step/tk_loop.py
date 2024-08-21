@@ -192,10 +192,12 @@ class TkLoop(seamm.TkNode):
             self["start"].grid(row=row, column=3, sticky=tk.W)
             self["end"].grid(row=row, column=4, sticky=tk.W)
             self["step"].grid(row=row, column=5, sticky=tk.W)
+            row += 1
         elif loop_type == "Foreach":
             frame.columnconfigure(5, weight=0)
             self["variable"].grid(row=row, column=2, sticky=tk.W)
             self["values"].grid(row=row, column=3, sticky=tk.EW)
+            row += 1
             frame.columnconfigure(3, weight=1)
         elif loop_type == "For rows in table":
             frame.columnconfigure(3, weight=0)
@@ -210,10 +212,19 @@ class TkLoop(seamm.TkNode):
                 if "empty" not in op:
                     self["query-value"].grid(row=row, column=5, sticky=tk.EW)
                     frame.columnconfigure(5, weight=1)
+            row += 1
         elif loop_type == "For systems in the database":
             row += 1
-            self["criteria"].grid(row=row, column=1, columnspan=3, sticky=tk.NSEW)
-            frame.rowconfigure(row, weight=1, minsize=100)
+            # self["criteria"].grid(row=row, column=1, columnspan=3, sticky=tk.NSEW)
+            # frame.rowconfigure(row, weight=1, minsize=100)
+            # row += 1
+
+            self["where system name"].grid(
+                row=row, column=0, columnspan=2, sticky=tk.EW
+            )
+            choice = self["where system name"].get()
+            if choice != "is anything":
+                self["system name"].grid(row=row, column=2, columnspan=2, sticky=tk.EW)
             row += 1
 
             self["default configuration"].grid(
@@ -224,12 +235,11 @@ class TkLoop(seamm.TkNode):
                 self["configuration name"].grid(
                     row=row, column=2, columnspan=2, sticky=tk.EW
                 )
-            frame.columnconfigure(3, weight=1)
             row += 1
+            frame.columnconfigure(3, weight=1)
             self["directory name"].grid(row=row, column=0, columnspan=3, sticky=tk.W)
         else:
             raise RuntimeError("Don't recognize the loop_type {}".format(loop_type))
-        row += 1
         self["errors"].grid(row=row, column=0, columnspan=4, sticky=tk.W)
         row += 1
         frame.columnconfigure(0, minsize=40)
