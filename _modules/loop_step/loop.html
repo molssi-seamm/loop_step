@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2024.8.16 documentation</title>
+    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2024.8.21 documentation</title>
   
   
   
@@ -45,7 +45,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=f7d935e3"></script>
+    <script src="../../_static/documentation_options.js?v=9100d5e2"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -850,7 +850,6 @@ document.write(`
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_loop_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">configurations</span><span class="p">)</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_length</span><span class="si">}</span><span class="s2"> configurations found.&quot;</span><span class="p">)</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
                     <span class="n">__</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">&quot;The loop will have </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_length</span><span class="si">}</span><span class="s2"> iterations.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
@@ -1114,7 +1113,6 @@ document.write(`
                         <span class="k">break</span>
 
                     <span class="c1"># Set the default system and configuration</span>
-                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span><span class="si">}</span><span class="s2"> / </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_length</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                     <span class="n">configuration</span> <span class="o">=</span> <span class="n">configurations</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
                     <span class="n">system_db</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">system_db</span>
                     <span class="n">system</span> <span class="o">=</span> <span class="n">configuration</span><span class="o">.</span><span class="n">system</span>
