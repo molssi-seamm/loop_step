@@ -351,7 +351,6 @@ class Loop(seamm.Node):
             if self._loop_value is None:
                 self._loop_value = 0
                 self._loop_length = len(configurations)
-                print(f"{self._loop_length} configurations found.")
                 printer.important(
                     __(
                         f"The loop will have {self._loop_length} iterations.\n\n",
@@ -615,7 +614,6 @@ class Loop(seamm.Node):
                         break
 
                     # Set the default system and configuration
-                    print(f"{self._loop_value} / {self._loop_length}")
                     configuration = configurations[self._loop_value - 1]
                     system_db = configuration.system_db
                     system = configuration.system

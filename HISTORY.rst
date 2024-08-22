@@ -1,6 +1,9 @@
 =======
 History
 =======
+2024.8.21 -- Bugfix: Error selecting systems by name
+   * There was a bug selecting system by name in the For Systems in Database branch.
+     
 2024.8.16 -- Improved handling for For Systems in Database
    * Added ability to get all configurations for each system, as well as using matching
      or regexps for the names of configurations to select.
