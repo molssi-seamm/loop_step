@@ -1,6 +1,11 @@
 =======
 History
 =======
+2024.8.23 -- Enhancement to 'For' loops
+   * For integer loops, ensure that the loop variable is an integer and
+     make the directory name be value of the loop variable to make it easier
+     to find the iteration of interest.
+
 2024.8.21 -- Bugfix: Error selecting systems by name
    * There was a bug selecting system by name in the For Systems in Database branch.
      
