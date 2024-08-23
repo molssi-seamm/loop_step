@@ -162,29 +162,41 @@ class Loop(seamm.Node):
 
         # Set up some unchanging variables
         if P["type"] == "For":
+            # Some local variables need each iteration
+
+            # See if loop variables are all integers
+            integers = True
+            start = P["start"]
+            if isinstance(start, str):
+                start = float(start)
+            if start.is_integer():
+                start = int(start)
+            else:
+                integers = False
+            step = P["step"]
+            if isinstance(step, str):
+                step = float(step)
+            if step.is_integer():
+                step = int(step)
+            else:
+                integers = False
+            end = P["end"]
+            if isinstance(end, str):
+                end = float(end)
+            if end.is_integer():
+                end = int(end)
+            else:
+                integers = False
+
+            if integers:
+                fmt = f"0{len(str(end))}d"
+
             if self._loop_value is None:
                 self.logger.info(
                     "For {} from {} to {} by {}".format(
                         P["variable"], P["start"], P["end"], P["step"]
                     )
                 )
-
-                # See if loop variables are all integers
-                start = P["start"]
-                if isinstance(start, str):
-                    start = float(start)
-                if isinstance(start, float) and start.is_integer():
-                    start = int(start)
-                step = P["step"]
-                if isinstance(step, str):
-                    step = float(step)
-                if isinstance(step, float) and step.is_integer():
-                    step = int(step)
-                end = P["end"]
-                if isinstance(end, str):
-                    end = float(end)
-                if isinstance(end, float) and end.is_integer():
-                    end = int(end)
 
                 self.logger.info("Initializing loop")
                 self._loop_count = 0
@@ -404,6 +416,10 @@ class Loop(seamm.Node):
 
                     self.set_variable(P["variable"], self._loop_value)
 
+                    # For integer loops, we can use the value for the directory names
+                    if integers:
+                        self._custom_directory_name = f"iter_{self._loop_value:{fmt}}"
+
                     # Set up the index variables
                     tmp = self.get_variable("_loop_indices")
                     self.set_variable(
@@ -416,8 +432,9 @@ class Loop(seamm.Node):
                     self.set_variable("_loop_index", self._loop_value)
 
                     # See if we are at the end of loop
-                    if self._loop_value > end:
+                    if self._loop_count > self._loop_length:
                         self._loop_value = None
+                        self._custom_directory_name = None
 
                         # Revert the loop index variables to the next outer loop
                         # if there is one, or remove them.
