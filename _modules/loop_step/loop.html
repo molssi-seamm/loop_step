@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2024.8.21 documentation</title>
+    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2024.8.23 documentation</title>
   
   
   
@@ -45,7 +45,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=9100d5e2"></script>
+    <script src="../../_static/documentation_options.js?v=0280db91"></script>
     <script src="../../_static/doctools.js?v=9a2dae69"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -661,29 +661,41 @@ document.write(`
 
         <span class="c1"># Set up some unchanging variables</span>
         <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;For&quot;</span><span class="p">:</span>
+            <span class="c1"># Some local variables need each iteration</span>
+
+            <span class="c1"># See if loop variables are all integers</span>
+            <span class="n">integers</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">start</span><span class="o">.</span><span class="n">is_integer</span><span class="p">():</span>
+                <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">integers</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">step</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;step&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">step</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">is_integer</span><span class="p">():</span>
+                <span class="n">step</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">integers</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">end</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">end</span><span class="o">.</span><span class="n">is_integer</span><span class="p">():</span>
+                <span class="n">end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">integers</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="k">if</span> <span class="n">integers</span><span class="p">:</span>
+                <span class="n">fmt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;0</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">end</span><span class="p">))</span><span class="si">}</span><span class="s2">d&quot;</span>
+
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                     <span class="s2">&quot;For </span><span class="si">{}</span><span class="s2"> from </span><span class="si">{}</span><span class="s2"> to </span><span class="si">{}</span><span class="s2"> by </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                         <span class="n">P</span><span class="p">[</span><span class="s2">&quot;variable&quot;</span><span class="p">],</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">],</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">],</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;step&quot;</span><span class="p">]</span>
                     <span class="p">)</span>
                 <span class="p">)</span>
-
-                <span class="c1"># See if loop variables are all integers</span>
-                <span class="n">start</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                    <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="n">start</span><span class="o">.</span><span class="n">is_integer</span><span class="p">():</span>
-                    <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
-                <span class="n">step</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;step&quot;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                    <span class="n">step</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="n">step</span><span class="o">.</span><span class="n">is_integer</span><span class="p">():</span>
-                    <span class="n">step</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
-                <span class="n">end</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
-                    <span class="n">end</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
-                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="nb">float</span><span class="p">)</span> <span class="ow">and</span> <span class="n">end</span><span class="o">.</span><span class="n">is_integer</span><span class="p">():</span>
-                    <span class="n">end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Initializing loop&quot;</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_loop_count</span> <span class="o">=</span> <span class="mi">0</span>
@@ -903,6 +915,10 @@ document.write(`
 
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;variable&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span><span class="p">)</span>
 
+                    <span class="c1"># For integer loops, we can use the value for the directory names</span>
+                    <span class="k">if</span> <span class="n">integers</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_custom_directory_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;iter_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span><span class="si">:{</span><span class="n">fmt</span><span class="si">}}</span><span class="s2">&quot;</span>
+
                     <span class="c1"># Set up the index variables</span>
                     <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_loop_indices&quot;</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span>
@@ -915,8 +931,9 @@ document.write(`
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">&quot;_loop_index&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span><span class="p">)</span>
 
                     <span class="c1"># See if we are at the end of loop</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">&gt;</span> <span class="n">end</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_count</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_length</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">=</span> <span class="kc">None</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_custom_directory_name</span> <span class="o">=</span> <span class="kc">None</span>
 
                         <span class="c1"># Revert the loop index variables to the next outer loop</span>
                         <span class="c1"># if there is one, or remove them.</span>
