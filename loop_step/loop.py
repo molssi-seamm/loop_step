@@ -136,7 +136,7 @@ class Loop(seamm.Node):
         next_node = self.loop_node()
         while next_node is not None and next_node != join_node:
             text += "\n\n"
-            text += __(next_node.description_text(), indent=4 * " ").__str__()
+            text += str(__(next_node.description_text(), indent=4 * " ", wrap=False))
             next_node = next_node.next()
 
         return text

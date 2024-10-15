@@ -1,6 +1,10 @@
 =======
 History
 =======
+2024.10.15: Bugfix: incorrectly wrapping text description of substeps
+   * When printing the description of the substeps in the loop, the code incorrectly
+     wrapped the text, which caused issues with e.g. tables.
+     
 2024.8.23 -- Enhancement to 'For' loops
    * For integer loops, ensure that the loop variable is an integer and
      make the directory name be value of the loop variable to make it easier
