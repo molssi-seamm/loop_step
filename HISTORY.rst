@@ -1,6 +1,11 @@
 =======
 History
 =======
+2024.11.14: Enhancement: loop control
+   * Added methods in the loop_step module to break from a loop, break_loop(), continue
+     a loop, continue_loop(), and totallly skip an iteration, removing any files
+     assocatied with it, skip_iteration.
+     
 2024.10.15: Bugfix: incorrectly wrapping text description of substeps
    * When printing the description of the substeps in the loop, the code incorrectly
      wrapped the text, which caused issues with e.g. tables.

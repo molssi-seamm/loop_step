@@ -7,6 +7,7 @@ import logging
 from pathlib import Path
 import re
 import shlex
+import shutil
 import sys
 import traceback
 
@@ -22,6 +23,43 @@ from seamm_util.printing import FormattedText as __
 logger = logging.getLogger(__name__)
 job = printing.getPrinter()
 printer = printing.getPrinter("loop")
+
+
+class BreakLoop(Exception):
+    """Indicates that SEAMM should break from the loop"""
+
+    def __init__(self, message="break from the loop"):
+        super().__init__(message)
+
+
+def break_loop():
+    """Break from the loop and continue on."""
+    raise BreakLoop()
+
+
+class ContinueLoop(Exception):
+    """Indicates that SEAMM should continue from the loop"""
+
+    def __init__(self, message="continue with next iteration of loop"):
+        super().__init__(message)
+
+
+def continue_loop():
+    """Continue to the next iteration of the loop"""
+    raise ContinueLoop()
+
+
+class SkipIteration(Exception):
+    """Indicates that SEAMM should skip this iteration of the loop,
+    removing any directories, etc."""
+
+    def __init__(self, message="skip iteration of loop"):
+        super().__init__(message)
+
+
+def skip_iteration():
+    """Entirely skip this iteration, removing any files, etc."""
+    raise SkipIteration()
 
 
 class Loop(seamm.Node):
@@ -688,6 +726,13 @@ class Loop(seamm.Node):
                 printer.normal("\nDeprecation warning: " + str(e))
                 traceback.print_exc(file=sys.stderr)
                 traceback.print_exc(file=sys.stdout)
+            except BreakLoop:
+                break
+            except ContinueLoop:
+                next_node = self
+            except SkipIteration:
+                next_node = self
+                shutil.rmtree(iter_dir)
             except Exception as e:
                 tmp = self.working_path.name
                 printer.job(f"Caught exception in loop iteration {tmp}: {str(e)}")
