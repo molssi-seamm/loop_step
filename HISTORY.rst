@@ -1,10 +1,15 @@
 =======
 History
 =======
+2024.11.18: Removed automatic output of structures.
+   * While often convenient, writing out the structure at the end of the loop was not a
+     reasonable default. If you want the structure, add a write_structure step in the
+     loop.
+     
 2024.11.14: Enhancement: loop control
    * Added methods in the loop_step module to break from a loop, break_loop(), continue
-     a loop, continue_loop(), and totallly skip an iteration, removing any files
-     assocatied with it, skip_iteration.
+     a loop, continue_loop(), and totally skip an iteration, removing any files
+     associated with it, skip_iteration.
      
 2024.10.15: Bugfix: incorrectly wrapping text description of substeps
    * When printing the description of the substeps in the loop, the code incorrectly

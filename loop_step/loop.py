@@ -449,7 +449,6 @@ class Loop(seamm.Node):
                 if P["type"] == "For":
                     self._loop_count += 1
                     if self._loop_count > 1:
-                        self.write_final_structure()
                         self._loop_value += step
 
                     self.set_variable(P["variable"], self._loop_value)
@@ -494,8 +493,6 @@ class Loop(seamm.Node):
                     self.logger.info("    Loop value = {}".format(self._loop_value))
                 elif P["type"] == "Foreach":
                     self.logger.debug(f"Foreach {P['variable']} in {P['values']}")
-                    if self._loop_value > 0:
-                        self.write_final_structure()
 
                     self._loop_value += 1
 
@@ -535,9 +532,6 @@ class Loop(seamm.Node):
                     self.set_variable("_loop_index", self._loop_value)
                     self.logger.info("    Loop value = {}".format(value))
                 elif P["type"] == "For rows in table":
-                    if self._loop_value > 0:
-                        self.write_final_structure()
-
                     # Loop until query is satisfied
                     while True:
                         self._loop_value += 1
@@ -644,9 +638,6 @@ class Loop(seamm.Node):
                     self.set_variable("_row", row)
                     self.logger.debug("   _row = {}".format(row))
                 elif P["type"] == "For systems in the database":
-                    if self._loop_value > 0:
-                        self.write_final_structure()
-
                     self._loop_value += 1
 
                     if self._loop_value > self._loop_length:
@@ -764,49 +755,6 @@ class Loop(seamm.Node):
             out_handler.setLevel(out_level)
 
         return self.exit_node()
-
-    def write_final_structure(self):
-        """Write the final structure"""
-        system_db = self.get_variable("_system_db")
-        system = system_db.system
-        if system is None:
-            return
-        configuration = system.configuration
-        if configuration is None:
-            return
-        if configuration.n_atoms > 0:
-            # MMCIF file has bonds
-            filename = self.working_path / "final_structure.mmcif"
-            text = None
-            try:
-                text = configuration.to_mmcif_text()
-            except Exception:
-                message = (
-                    "Error creating the mmcif file at the end of the loop\n\n"
-                    + traceback.format_exc()
-                )
-                self.logger.critical(message)
-
-            if text is not None:
-                with open(filename, "w") as fd:
-                    print(text, file=fd)
-
-            # CIF file has cell
-            if configuration.periodicity == 3:
-                filename = self.working_path / "final_structure.cif"
-                text = None
-                try:
-                    text = configuration.to_cif_text()
-                except Exception:
-                    message = (
-                        "Error creating the cif file at the end of the loop"
-                        "\n\n" + traceback.format_exc()
-                    )
-                    self.logger.critical(message)
-
-                if text is not None:
-                    with open(filename, "w") as fd:
-                        print(text, file=fd)
 
     def default_edge_subtype(self):
         """Return the default subtype of the edge. Usually this is 'next'
