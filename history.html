@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM Loop Plug-in 2024.11.14 documentation</title>
+    <title>History &#8212; SEAMM Loop Plug-in 2024.11.18 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=fb625385"></script>
+    <script src="_static/documentation_options.js?v=24807a2d"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2024.11.14" />
+  <meta name="docsearch:version" content="2024.11.18" />
   </head>
   
   
@@ -474,10 +474,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2024.11.18: Removed automatic output of structures.</dt><dd><ul class="simple">
+<li><p>While often convenient, writing out the structure at the end of the loop was not a
+reasonable default. If you want the structure, add a write_structure step in the
+loop.</p></li>
+</ul>
+</dd>
 <dt>2024.11.14: Enhancement: loop control</dt><dd><ul class="simple">
 <li><p>Added methods in the loop_step module to break from a loop, break_loop(), continue
-a loop, continue_loop(), and totallly skip an iteration, removing any files
-assocatied with it, skip_iteration.</p></li>
+a loop, continue_loop(), and totally skip an iteration, removing any files
+associated with it, skip_iteration.</p></li>
 </ul>
 </dd>
 <dt>2024.10.15: Bugfix: incorrectly wrapping text description of substeps</dt><dd><ul class="simple">
