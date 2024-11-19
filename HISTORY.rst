@@ -1,6 +1,10 @@
 =======
 History
 =======
+2024.11.19: Bugfix: error in selection of table rows
+   * In a loop "For rows in table" a crietrion on the value of a row might cause an
+     error due to mismatch of the types. This is now corrected.
+     
 2024.11.18: Removed automatic output of structures.
    * While often convenient, writing out the structure at the end of the loop was not a
      reasonable default. If you want the structure, add a write_structure step in the
