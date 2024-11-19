@@ -545,29 +545,31 @@ class Loop(seamm.Node):
                         row = self.table.iloc[self._loop_value - 1]
 
                         self.logger.debug(f"Query {row[column]} {op} {value}")
+                        _type = type(row[column])
+                        _value = _type(value)
                         if op == "==":
-                            if row[column] == value:
+                            if row[column] == _value:
                                 break
                         elif op == "!=":
-                            if row[column] != value:
+                            if row[column] != _value:
                                 break
                         elif op == ">":
-                            if row[column] > value:
+                            if row[column] > _value:
                                 break
                         elif op == ">=":
-                            if row[column] >= value:
+                            if row[column] >= _value:
                                 break
                         elif op == "<":
-                            if row[column] < value:
+                            if row[column] < _value:
                                 break
                         elif op == "<=":
-                            if row[column] <= value:
+                            if row[column] <= _value:
                                 break
                         elif op == "contains":
-                            if value in row[column]:
+                            if _value in row[column]:
                                 break
                         elif op == "does not contain":
-                            if value not in row[column]:
+                            if _value not in row[column]:
                                 break
                         elif op == "contains regexp":
                             if re.search(value, row[column]) is not None:
