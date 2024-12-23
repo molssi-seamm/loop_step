@@ -238,6 +238,7 @@ class TkLoop(seamm.TkNode):
             row += 1
             frame.columnconfigure(3, weight=1)
             self["directory name"].grid(row=row, column=0, columnspan=3, sticky=tk.W)
+            row += 1
         else:
             raise RuntimeError("Don't recognize the loop_type {}".format(loop_type))
         self["errors"].grid(row=row, column=0, columnspan=4, sticky=tk.W)
