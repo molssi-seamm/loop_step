@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM Loop Plug-in 2024.12.23 documentation</title>
+    <title>History &#8212; SEAMM Loop Plug-in 2025.5.15 documentation</title>
   
   
   
@@ -30,7 +30,7 @@
   <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=c224919a" />
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=aaf1f7aa"></script>
+    <script src="_static/documentation_options.js?v=908c07b1"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2024.12.23" />
+  <meta name="docsearch:version" content="2025.5.15" />
   </head>
   
   
@@ -481,6 +481,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2025.5.15: Improved and added to loops over tables</dt><dd><ul class="simple">
+<li><p>Added a ‘between’ operator to filter rows of tables.</p></li>
+<li><p>Ensured the correct types of variables in the rows of a table, fixing an issues
+that caused e.g. integers to be treated as floats.</p></li>
+<li><p>Added an option, on by default, to make variables with the name of the columns in
+the tables, holding the values.</p></li>
+<li><p>Using directory names that are the index of the row in the table.</p></li>
+</ul>
+</dd>
 <dt>2024.12.23: Bugfix: Directory name widget not displayed</dt><dd><ul class="simple">
 <li><p>The directory name widget was not displayed for loops over systems in the database.
 This is now corrected.</p></li>

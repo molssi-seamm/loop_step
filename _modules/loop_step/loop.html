@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2024.12.23 documentation</title>
+    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2025.5.15 documentation</title>
   
   
   
@@ -29,7 +29,7 @@
   <link href="../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=c224919a" />
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=aaf1f7aa"></script>
+    <script src="../../_static/documentation_options.js?v=908c07b1"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2024.12.23" />
+  <meta name="docsearch:version" content="2025.5.15" />
   </head>
   
   
@@ -473,23 +473,23 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="sd">&quot;&quot;&quot;Non-graphical part of the Loop step in a SEAMM flowchart&quot;&quot;&quot;</span>
 
-<span class="kn">import</span> <span class="nn">fnmatch</span>
-<span class="kn">import</span> <span class="nn">logging</span>
-<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
-<span class="kn">import</span> <span class="nn">re</span>
-<span class="kn">import</span> <span class="nn">shlex</span>
-<span class="kn">import</span> <span class="nn">shutil</span>
-<span class="kn">import</span> <span class="nn">sys</span>
-<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">fnmatch</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shlex</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
 
-<span class="kn">import</span> <span class="nn">psutil</span>
-<span class="kn">import</span> <span class="nn">pprint</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">psutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pprint</span>
 
-<span class="kn">import</span> <span class="nn">loop_step</span>
-<span class="kn">import</span> <span class="nn">seamm</span>
-<span class="kn">import</span> <span class="nn">seamm_util</span>
-<span class="kn">import</span> <span class="nn">seamm_util.printing</span> <span class="k">as</span> <span class="nn">printing</span>
-<span class="kn">from</span> <span class="nn">seamm_util.printing</span> <span class="kn">import</span> <span class="n">FormattedText</span> <span class="k">as</span> <span class="n">__</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">loop_step</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seamm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seamm_util</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">seamm_util.printing</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">printing</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">seamm_util.printing</span><span class="w"> </span><span class="kn">import</span> <span class="n">FormattedText</span> <span class="k">as</span> <span class="n">__</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 <span class="n">job</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">()</span>
@@ -498,17 +498,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="BreakLoop">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.BreakLoop">[docs]</a>
-<span class="k">class</span> <span class="nc">BreakLoop</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">BreakLoop</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Indicates that SEAMM should break from the loop&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;break from the loop&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;break from the loop&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="break_loop">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.break_loop">[docs]</a>
-<span class="k">def</span> <span class="nf">break_loop</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">break_loop</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Break from the loop and continue on.&quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="n">BreakLoop</span><span class="p">()</span></div>
 
@@ -516,17 +516,17 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="ContinueLoop">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.ContinueLoop">[docs]</a>
-<span class="k">class</span> <span class="nc">ContinueLoop</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ContinueLoop</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Indicates that SEAMM should continue from the loop&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;continue with next iteration of loop&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;continue with next iteration of loop&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="continue_loop">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.continue_loop">[docs]</a>
-<span class="k">def</span> <span class="nf">continue_loop</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">continue_loop</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Continue to the next iteration of the loop&quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="n">ContinueLoop</span><span class="p">()</span></div>
 
@@ -534,18 +534,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="SkipIteration">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.SkipIteration">[docs]</a>
-<span class="k">class</span> <span class="nc">SkipIteration</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">SkipIteration</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Indicates that SEAMM should skip this iteration of the loop,</span>
 <span class="sd">    removing any directories, etc.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;skip iteration of loop&quot;</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="s2">&quot;skip iteration of loop&quot;</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="skip_iteration">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.skip_iteration">[docs]</a>
-<span class="k">def</span> <span class="nf">skip_iteration</span><span class="p">():</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">skip_iteration</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Entirely skip this iteration, removing any files, etc.&quot;&quot;&quot;</span>
     <span class="k">raise</span> <span class="n">SkipIteration</span><span class="p">()</span></div>
 
@@ -553,8 +553,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="Loop">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.Loop">[docs]</a>
-<span class="k">class</span> <span class="nc">Loop</span><span class="p">(</span><span class="n">seamm</span><span class="o">.</span><span class="n">Node</span><span class="p">):</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flowchart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Loop</span><span class="p">(</span><span class="n">seamm</span><span class="o">.</span><span class="n">Node</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flowchart</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup the non-graphical part of the Loop step in a</span>
 <span class="sd">        SEAMM flowchart.</span>
 
@@ -578,12 +578,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">loop_step</span><span class="o">.</span><span class="n">LoopParameters</span><span class="p">()</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">version</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The semantic version of this module.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">loop_step</span><span class="o">.</span><span class="n">__version__</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">iter_format</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">iter_format</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_length</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="s2">&quot;07&quot;</span>
         <span class="k">else</span><span class="p">:</span>
@@ -591,12 +591,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="k">return</span> <span class="sa">f</span><span class="s2">&quot;0</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">&quot;</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">git_revision</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">git_revision</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The git version of this module.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">loop_step</span><span class="o">.</span><span class="n">__git_revision__</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">working_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">working_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_custom_directory_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">tmp</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_custom_directory_name</span>
         <span class="k">else</span><span class="p">:</span>
@@ -605,7 +605,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="Loop.describe">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.Loop.describe">[docs]</a>
-    <span class="k">def</span> <span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">describe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Write out information about what this node will do&quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">visited</span> <span class="o">=</span> <span class="kc">True</span>
@@ -618,7 +618,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="Loop.description_text">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.Loop.description_text">[docs]</a>
-    <span class="k">def</span> <span class="nf">description_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">description_text</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a short description of this step.</span>
 
 <span class="sd">        Return a nicely formatted string describing what this step will</span>
@@ -678,7 +678,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="Loop.run">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.Loop.run">[docs]</a>
-    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Run a Loop step.&quot;&quot;&quot;</span>
         <span class="c1"># If the loop is empty, just go on</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">loop_node</span><span class="p">()</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -796,12 +796,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">=</span> <span class="mi">0</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_loop_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
-                    <span class="n">__</span><span class="p">(</span>
-                        <span class="sa">f</span><span class="s2">&quot;The loop will have </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_length</span><span class="si">}</span><span class="s2"> iterations.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
-                        <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">,</span>
-                    <span class="p">)</span>
-                <span class="p">)</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_exists</span><span class="p">(</span><span class="s2">&quot;_loop_indices&quot;</span><span class="p">):</span>
                     <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_loop_indices&quot;</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span>
@@ -813,29 +807,91 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">&quot;_loop_indices&quot;</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,))</span>
-            <span class="n">where</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;where&quot;</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">where</span> <span class="o">==</span> <span class="s2">&quot;Use all rows&quot;</span><span class="p">:</span>
-                <span class="k">pass</span>
-            <span class="k">elif</span> <span class="n">where</span> <span class="o">==</span> <span class="s2">&quot;Select rows where column&quot;</span><span class="p">:</span>
-                <span class="n">column</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;query-column&quot;</span><span class="p">]</span>
-                <span class="n">op</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;query-op&quot;</span><span class="p">]</span>
-                <span class="n">value</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;query-value&quot;</span><span class="p">]</span>
-                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                    <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                    <span class="n">tmp</span> <span class="o">=</span> <span class="n">pprint</span><span class="o">.</span><span class="n">pformat</span><span class="p">(</span><span class="n">row</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Row is</span><span class="se">\n</span><span class="si">{</span><span class="n">tmp</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                    <span class="k">if</span> <span class="n">column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
-                        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
-                            <span class="k">if</span> <span class="n">column</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-                                <span class="n">column</span> <span class="o">=</span> <span class="n">key</span>
-                                <span class="k">break</span>
-                    <span class="k">if</span> <span class="n">column</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">row</span><span class="p">:</span>
+                <span class="n">where</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;where&quot;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">where</span> <span class="o">==</span> <span class="s2">&quot;Use all rows&quot;</span><span class="p">:</span>
+                    <span class="n">table_indices</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
+                    <span class="n">n_table_indices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">table_indices</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">where</span> <span class="o">==</span> <span class="s2">&quot;Select rows where column&quot;</span><span class="p">:</span>
+                    <span class="n">tmp_col</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;query-column&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                    <span class="n">column</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="n">op</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;query-op&quot;</span><span class="p">]</span>
+
+                    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">tmp_col</span><span class="p">:</span>
+                            <span class="n">column</span> <span class="o">=</span> <span class="n">col</span>
+                    <span class="k">if</span> <span class="n">column</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">column</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;query-column&quot;</span><span class="p">]</span>
                         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                             <span class="sa">f</span><span class="s2">&quot;Looping over table with criterion on column &#39;</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">&#39;: &quot;</span>
                             <span class="s2">&quot;that column does not exist.&quot;</span>
                         <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loop cannot handle &#39;</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+                    <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">dtypes</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">dtype</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;query-value&quot;</span><span class="p">])</span>
+                    <span class="n">value2</span> <span class="o">=</span> <span class="n">dtype</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;query-value2&quot;</span><span class="p">])</span>
+
+                    <span class="c1"># Find the indices</span>
+                    <span class="n">table_indices</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row_value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">column</span><span class="p">]):</span>
+                        <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;==&quot;</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
+                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;!=&quot;</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">!=</span> <span class="n">value</span><span class="p">:</span>
+                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;&gt;&quot;</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">&gt;</span> <span class="n">value</span><span class="p">:</span>
+                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;&gt;=&quot;</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">&gt;=</span> <span class="n">value</span><span class="p">:</span>
+                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;&lt;&quot;</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">&lt;</span> <span class="n">value</span><span class="p">:</span>
+                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;&lt;=&quot;</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">&lt;=</span> <span class="n">value</span><span class="p">:</span>
+                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;between&quot;</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">&gt;=</span> <span class="n">value</span> <span class="ow">and</span> <span class="n">row_value</span> <span class="o">&lt;=</span> <span class="n">value2</span><span class="p">:</span>
+                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;contains&quot;</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">row_value</span><span class="p">:</span>
+                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;does not contain&quot;</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">row_value</span><span class="p">:</span>
+                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;contains regexp&quot;</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">row_value</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;does not contain regexp&quot;</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">row_value</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;is empty&quot;</span><span class="p">:</span>
+                            <span class="c1"># Might be numpy.nan, and NaN != NaN hence odd test.</span>
+                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">or</span> <span class="n">row_value</span> <span class="o">!=</span> <span class="n">row_value</span><span class="p">:</span>
+                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;is not empty&quot;</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">row_value</span> <span class="o">==</span> <span class="n">row_value</span><span class="p">:</span>
+                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s2">&quot;Loop query &#39;</span><span class="si">{</span><span class="n">op</span><span class="si">}</span><span class="s2">&#39; not implemented&quot;</span>
+                            <span class="p">)</span>
+                    <span class="n">n_table_indices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">table_indices</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Loop cannot handle &#39;</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+                <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
+                    <span class="n">__</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;The loop will have </span><span class="si">{</span><span class="n">n_table_indices</span><span class="si">}</span><span class="s2"> iterations.</span><span class="se">\n\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                        <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">&quot; &quot;</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">n_table_indices</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">index</span> <span class="o">=</span> <span class="n">table_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">index_is_int</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">index_is_int</span><span class="p">:</span>
+                        <span class="n">fmt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;0</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">table_indices</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="si">}</span><span class="s2">d&quot;</span>
         <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;For systems in the database&quot;</span><span class="p">:</span>
             <span class="c1"># Get a list of all the matching systems and configurations</span>
             <span class="n">system_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_system_db&quot;</span><span class="p">)</span>
@@ -1031,64 +1087,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">&quot;_loop_index&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;    Loop value = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
                 <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;For rows in table&quot;</span><span class="p">:</span>
-                    <span class="c1"># Loop until query is satisfied</span>
-                    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">+=</span> <span class="mi">1</span>
-
-                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
-                            <span class="k">break</span>
-
-                        <span class="k">if</span> <span class="n">where</span> <span class="o">==</span> <span class="s2">&quot;Use all rows&quot;</span><span class="p">:</span>
-                            <span class="k">break</span>
-
-                        <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-
-                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Query </span><span class="si">{</span><span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">op</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
-                        <span class="n">_type</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">])</span>
-                        <span class="n">_value</span> <span class="o">=</span> <span class="n">_type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
-                        <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;==&quot;</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">==</span> <span class="n">_value</span><span class="p">:</span>
-                                <span class="k">break</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;!=&quot;</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">!=</span> <span class="n">_value</span><span class="p">:</span>
-                                <span class="k">break</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;&gt;&quot;</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">_value</span><span class="p">:</span>
-                                <span class="k">break</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;&gt;=&quot;</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">_value</span><span class="p">:</span>
-                                <span class="k">break</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;&lt;&quot;</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">_value</span><span class="p">:</span>
-                                <span class="k">break</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;&lt;=&quot;</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">_value</span><span class="p">:</span>
-                                <span class="k">break</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;contains&quot;</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">_value</span> <span class="ow">in</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]:</span>
-                                <span class="k">break</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;does not contain&quot;</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">_value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]:</span>
-                                <span class="k">break</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;contains regexp&quot;</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">])</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                                <span class="k">break</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;does not contain regexp&quot;</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">])</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                                <span class="k">break</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;is empty&quot;</span><span class="p">:</span>
-                            <span class="c1"># Might be numpy.nan, and NaN != NaN hence odd test.</span>
-                            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">or</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">!=</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]:</span>
-                                <span class="k">break</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">&quot;is not empty&quot;</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">==</span> <span class="n">row</span><span class="p">[</span><span class="n">column</span><span class="p">]:</span>
-                                <span class="k">break</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-                                <span class="sa">f</span><span class="s2">&quot;Loop query &#39;</span><span class="si">{</span><span class="n">op</span><span class="si">}</span><span class="s2">&#39; not implemented&quot;</span>
-                            <span class="p">)</span>
-
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">&gt;</span> <span class="n">n_table_indices</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">=</span> <span class="kc">None</span>
 
                         <span class="bp">self</span><span class="o">.</span><span class="n">delete_variable</span><span class="p">(</span><span class="s2">&quot;_row&quot;</span><span class="p">)</span>
@@ -1119,24 +1119,29 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
                     <span class="c1"># Set up the index variables</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;  _loop_value = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span><span class="p">))</span>
+                    <span class="n">index</span> <span class="o">=</span> <span class="n">table_indices</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
                     <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_loop_indices&quot;</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;  _loop_indices = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">tmp</span><span class="p">))</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span>
-                        <span class="s2">&quot;_loop_indices&quot;</span><span class="p">,</span>
-                        <span class="p">(</span><span class="o">*</span><span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]),</span>
-                    <span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">&quot;_loop_indices&quot;</span><span class="p">,</span> <span class="p">(</span><span class="o">*</span><span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">index</span><span class="p">))</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
                         <span class="s2">&quot;   --&gt; </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_loop_indices&quot;</span><span class="p">))</span>
                     <span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span>
-                        <span class="s2">&quot;_loop_index&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">index</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
-                    <span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">table_handle</span><span class="p">[</span><span class="s2">&quot;current index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">index</span><span class="p">[</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">-</span> <span class="mi">1</span>
-                    <span class="p">]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">&quot;_loop_index&quot;</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">table_handle</span><span class="p">[</span><span class="s2">&quot;current index&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span>
 
-                    <span class="n">row</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
+                    <span class="c1"># Name of directory is the index (+1 since tends to be 0 based)</span>
+                    <span class="k">if</span> <span class="n">index_is_int</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_custom_directory_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;iter_</span><span class="si">{</span><span class="n">index</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">:{</span><span class="n">fmt</span><span class="si">}}</span><span class="s2">&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_custom_directory_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">safe_filename</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
+
+                    <span class="n">row</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">}</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">&quot;_row&quot;</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;as variables&quot;</span><span class="p">]:</span>
+                        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                            <span class="c1"># Make a safe variable name</span>
+                            <span class="n">key</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[-</span><span class="se">\\</span><span class="s2"> / \+\*()]&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="n">key</span><span class="p">)</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;   _row = </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
                 <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;For systems in the database&quot;</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">+=</span> <span class="mi">1</span>
@@ -1224,7 +1229,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">next_node</span> <span class="o">=</span> <span class="bp">self</span>
             <span class="k">except</span> <span class="n">SkipIteration</span><span class="p">:</span>
                 <span class="n">next_node</span> <span class="o">=</span> <span class="bp">self</span>
-                <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">iter_dir</span><span class="p">)</span>
+                <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">iter_dir</span><span class="p">,</span> <span class="n">ignore_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">working_path</span><span class="o">.</span><span class="n">name</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">job</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Caught exception in loop iteration </span><span class="si">{</span><span class="n">tmp</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -1260,7 +1265,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="Loop.default_edge_subtype">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.Loop.default_edge_subtype">[docs]</a>
-    <span class="k">def</span> <span class="nf">default_edge_subtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">default_edge_subtype</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the default subtype of the edge. Usually this is &#39;next&#39;</span>
 <span class="sd">        but for nodes with two or more edges leaving them, such as a loop, this</span>
 <span class="sd">        method will return an appropriate default for the current edge. For</span>
@@ -1286,7 +1291,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="Loop.create_parser">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.Loop.create_parser">[docs]</a>
-    <span class="k">def</span> <span class="nf">create_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">create_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Setup the command-line / config file parser&quot;&quot;&quot;</span>
         <span class="n">parser_name</span> <span class="o">=</span> <span class="s2">&quot;loop-step&quot;</span>
         <span class="n">parser</span> <span class="o">=</span> <span class="n">seamm_util</span><span class="o">.</span><span class="n">getParser</span><span class="p">()</span>
@@ -1315,7 +1320,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="Loop.set_id">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.Loop.set_id">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="o">=</span><span class="p">()):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="o">=</span><span class="p">()):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sequentially number the loop subnodes&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Setting ids for loop </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">visited</span><span class="p">:</span>
@@ -1329,7 +1334,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="Loop.set_subids">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.Loop.set_subids">[docs]</a>
-    <span class="k">def</span> <span class="nf">set_subids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="o">=</span><span class="p">()):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_subids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="o">=</span><span class="p">()):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the ids of the nodes in the loop&quot;&quot;&quot;</span>
         <span class="n">next_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loop_node</span><span class="p">()</span>
         <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
@@ -1340,7 +1345,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="Loop.exit_node">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.Loop.exit_node">[docs]</a>
-    <span class="k">def</span> <span class="nf">exit_node</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">exit_node</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The next node after the loop, if any&quot;&quot;&quot;</span>
 
         <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;out&quot;</span><span class="p">):</span>
@@ -1355,7 +1360,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="Loop.loop_node">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.Loop.loop_node">[docs]</a>
-    <span class="k">def</span> <span class="nf">loop_node</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">loop_node</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;The first node in the loop body&quot;&quot;&quot;</span>
 
         <span class="k">for</span> <span class="n">edge</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="s2">&quot;out&quot;</span><span class="p">):</span>
@@ -1370,7 +1375,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <div class="viewcode-block" id="Loop.safe_filename">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.Loop.safe_filename">[docs]</a>
-    <span class="k">def</span> <span class="nf">safe_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">safe_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
         <span class="n">clean</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[/</span><span class="se">\\</span><span class="s2">?%*:|</span><span class="se">\&quot;</span><span class="s2">&lt;&gt;\x7F\x00-\x1F]&quot;</span><span class="p">,</span> <span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
 
         <span class="c1"># Check for duplicates...</span>
