@@ -297,12 +297,6 @@ class Loop(seamm.Node):
                 )
                 self._loop_value = 0
                 self._loop_length = self.table.shape[0]
-                printer.important(
-                    __(
-                        f"The loop will have {self._loop_length} iterations.\n\n",
-                        indent=self.indent + 4 * " ",
-                    )
-                )
                 if self.variable_exists("_loop_indices"):
                     tmp = self.get_variable("_loop_indices")
                     self.set_variable(
@@ -314,29 +308,91 @@ class Loop(seamm.Node):
                     )
                 else:
                     self.set_variable("_loop_indices", (None,))
-            where = P["where"]
-            if where == "Use all rows":
-                pass
-            elif where == "Select rows where column":
-                column = P["query-column"]
-                op = P["query-op"]
-                value = P["query-value"]
-                if self.table.shape[0] > 0:
-                    row = self.table.iloc[0]
-                    tmp = pprint.pformat(row)
-                    self.logger.debug(f"Row is\n{tmp}")
-                    if column not in row:
-                        for key in row.keys():
-                            if column.lower() == key.lower():
-                                column = key
-                                break
-                    if column not in row:
+                where = P["where"]
+                if where == "Use all rows":
+                    table_indices = [*self.table.index]
+                    n_table_indices = len(table_indices)
+                elif where == "Select rows where column":
+                    tmp_col = P["query-column"].lower()
+                    column = None
+                    op = P["query-op"]
+
+                    for col in self.table:
+                        if col.lower() == tmp_col:
+                            column = col
+                    if column is None:
+                        column = P["query-column"]
                         raise ValueError(
                             f"Looping over table with criterion on column '{column}': "
                             "that column does not exist."
                         )
-            else:
-                raise NotImplementedError(f"Loop cannot handle '{where}'")
+
+                    dtype = self.table.dtypes[column]
+                    value = dtype.type(P["query-value"])
+                    value2 = dtype.type(P["query-value2"])
+
+                    # Find the indices
+                    table_indices = []
+                    for i, row_value in zip(self.table.index, self.table[column]):
+                        if op == "==":
+                            if row_value == value:
+                                table_indices.append(i)
+                        elif op == "!=":
+                            if row_value != value:
+                                table_indices.append(i)
+                        elif op == ">":
+                            if row_value > value:
+                                table_indices.append(i)
+                        elif op == ">=":
+                            if row_value >= value:
+                                table_indices.append(i)
+                        elif op == "<":
+                            if row_value < value:
+                                table_indices.append(i)
+                        elif op == "<=":
+                            if row_value <= value:
+                                table_indices.append(i)
+                        elif op == "between":
+                            if row_value >= value and row_value <= value2:
+                                table_indices.append(i)
+                        elif op == "contains":
+                            if value in row_value:
+                                table_indices.append(i)
+                        elif op == "does not contain":
+                            if value not in row_value:
+                                table_indices.append(i)
+                        elif op == "contains regexp":
+                            if re.search(value, row_value) is not None:
+                                table_indices.append(i)
+                        elif op == "does not contain regexp":
+                            if re.search(value, row_value) is None:
+                                table_indices.append(i)
+                        elif op == "is empty":
+                            # Might be numpy.nan, and NaN != NaN hence odd test.
+                            if row_value == "" or row_value != row_value:
+                                table_indices.append(i)
+                        elif op == "is not empty":
+                            if row_value != "" and row_value == row_value:
+                                table_indices.append(i)
+                        else:
+                            raise NotImplementedError(
+                                f"Loop query '{op}' not implemented"
+                            )
+                    n_table_indices = len(table_indices)
+                else:
+                    raise NotImplementedError(f"Loop cannot handle '{where}'")
+                printer.important(
+                    __(
+                        f"The loop will have {n_table_indices} iterations.\n\n",
+                        indent=self.indent + 4 * " ",
+                    )
+                )
+
+                if n_table_indices > 0:
+                    index = table_indices[0]
+                    index_is_int = isinstance(index, int)
+                    if index_is_int:
+                        fmt = f"0{len(str(max(table_indices) + 1))}d"
         elif P["type"] == "For systems in the database":
             # Get a list of all the matching systems and configurations
             system_db = self.get_variable("_system_db")
@@ -532,64 +588,8 @@ class Loop(seamm.Node):
                     self.set_variable("_loop_index", self._loop_value)
                     self.logger.info("    Loop value = {}".format(value))
                 elif P["type"] == "For rows in table":
-                    # Loop until query is satisfied
-                    while True:
-                        self._loop_value += 1
-
-                        if self._loop_value > self.table.shape[0]:
-                            break
-
-                        if where == "Use all rows":
-                            break
-
-                        row = self.table.iloc[self._loop_value - 1]
-
-                        self.logger.debug(f"Query {row[column]} {op} {value}")
-                        _type = type(row[column])
-                        _value = _type(value)
-                        if op == "==":
-                            if row[column] == _value:
-                                break
-                        elif op == "!=":
-                            if row[column] != _value:
-                                break
-                        elif op == ">":
-                            if row[column] > _value:
-                                break
-                        elif op == ">=":
-                            if row[column] >= _value:
-                                break
-                        elif op == "<":
-                            if row[column] < _value:
-                                break
-                        elif op == "<=":
-                            if row[column] <= _value:
-                                break
-                        elif op == "contains":
-                            if _value in row[column]:
-                                break
-                        elif op == "does not contain":
-                            if _value not in row[column]:
-                                break
-                        elif op == "contains regexp":
-                            if re.search(value, row[column]) is not None:
-                                break
-                        elif op == "does not contain regexp":
-                            if re.search(value, row[column]) is None:
-                                break
-                        elif op == "is empty":
-                            # Might be numpy.nan, and NaN != NaN hence odd test.
-                            if row[column] == "" or row[column] != row[column]:
-                                break
-                        elif op == "is not empty":
-                            if row[column] != "" and row[column] == row[column]:
-                                break
-                        else:
-                            raise NotImplementedError(
-                                f"Loop query '{op}' not implemented"
-                            )
-
-                    if self._loop_value > self.table.shape[0]:
+                    self._loop_value += 1
+                    if self._loop_value > n_table_indices:
                         self._loop_value = None
 
                         self.delete_variable("_row")
@@ -620,24 +620,29 @@ class Loop(seamm.Node):
 
                     # Set up the index variables
                     self.logger.debug("  _loop_value = {}".format(self._loop_value))
+                    index = table_indices[self._loop_value - 1]
                     tmp = self.get_variable("_loop_indices")
                     self.logger.debug("  _loop_indices = {}".format(tmp))
-                    self.set_variable(
-                        "_loop_indices",
-                        (*tmp[0:-1], self.table.index[self._loop_value - 1]),
-                    )
+                    self.set_variable("_loop_indices", (*tmp[0:-1], index))
                     self.logger.debug(
                         "   --> {}".format(self.get_variable("_loop_indices"))
                     )
-                    self.set_variable(
-                        "_loop_index", self.table.index[self._loop_value - 1]
-                    )
-                    self.table_handle["current index"] = self.table.index[
-                        self._loop_value - 1
-                    ]
+                    self.set_variable("_loop_index", index)
+                    self.table_handle["current index"] = index
 
-                    row = self.table.iloc[self._loop_value - 1]
+                    # Name of directory is the index (+1 since tends to be 0 based)
+                    if index_is_int:
+                        self._custom_directory_name = f"iter_{index + 1:{fmt}}"
+                    else:
+                        self._custom_directory_name = self.safe_filename(str(index))
+
+                    row = {k: self.table.at[index, k] for k in self.table}
                     self.set_variable("_row", row)
+                    if P["as variables"]:
+                        for key, value in row.items():
+                            # Make a safe variable name
+                            key = re.sub(r"[-\\ / \+\*()]", "_", key)
+                            self.set_variable(key, value)
                     self.logger.debug("   _row = {}".format(row))
                 elif P["type"] == "For systems in the database":
                     self._loop_value += 1
@@ -725,7 +730,7 @@ class Loop(seamm.Node):
                 next_node = self
             except SkipIteration:
                 next_node = self
-                shutil.rmtree(iter_dir)
+                shutil.rmtree(iter_dir, ignore_errors=True)
             except Exception as e:
                 tmp = self.working_path.name
                 printer.job(f"Caught exception in loop iteration {tmp}: {str(e)}")
