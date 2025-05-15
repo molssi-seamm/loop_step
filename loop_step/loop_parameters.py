@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Control parameters for loops
-"""
+"""Control parameters for loops"""
 
 import logging
 import seamm
@@ -109,6 +108,7 @@ class LoopParameters(seamm.Parameters):
                 ">=",
                 "<",
                 "<=",
+                "between",
                 "contains",
                 "does not contain",
                 "contains regexp",
@@ -128,6 +128,24 @@ class LoopParameters(seamm.Parameters):
             "format_string": "s",
             "description": "",
             "help_text": ("Value to use in the test"),
+        },
+        "query-value2": {
+            "default": "",
+            "kind": "string",
+            "default_units": "",
+            "enumeration": tuple(),
+            "format_string": "s",
+            "description": "",
+            "help_text": "The second value to use in the test",
+        },
+        "as variables": {
+            "default": "yes",
+            "kind": "boolean",
+            "default_units": "",
+            "enumeration": ("yes", "no"),
+            "format_string": "",
+            "description": "Values as variables:",
+            "help_text": "Whether to put the values for the row as seperate variables.",
         },
         "where system name": {
             "default": "is anything",

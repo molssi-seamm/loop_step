@@ -1,6 +1,14 @@
 =======
 History
 =======
+2025.5.15: Improved and added to loops over tables
+   * Added a 'between' operator to filter rows of tables.
+   * Ensured the correct types of variables in the rows of a table, fixing an issues
+     that caused e.g. integers to be treated as floats.
+   * Added an option, on by default, to make variables with the name of the columns in
+     the tables, holding the values.
+   * Using directory names that are the index of the row in the table.
+     
 2024.12.23: Bugfix: Directory name widget not displayed
    * The directory name widget was not displayed for loops over systems in the database.
      This is now corrected.

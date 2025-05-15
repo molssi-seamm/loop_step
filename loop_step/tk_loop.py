@@ -203,6 +203,8 @@ class TkLoop(seamm.TkNode):
             frame.columnconfigure(3, weight=0)
             self["table"].grid(row=row, column=2, columnspan=2, sticky=tk.EW)
             row += 1
+            self["as variables"].grid(row=row, column=1, columnspan=2, sticky=tk.EW)
+            row += 1
             self["where"].grid(row=row, column=1, columnspan=2, sticky=tk.EW)
             where = self["where"].get()
             if where != "Use all rows":
@@ -212,6 +214,9 @@ class TkLoop(seamm.TkNode):
                 if "empty" not in op:
                     self["query-value"].grid(row=row, column=5, sticky=tk.EW)
                     frame.columnconfigure(5, weight=1)
+                    if op == "between":
+                        self["query-value2"].grid(row=row, column=6, sticky=tk.EW)
+                        frame.columnconfigure(6, weight=1)
             row += 1
         elif loop_type == "For systems in the database":
             row += 1
