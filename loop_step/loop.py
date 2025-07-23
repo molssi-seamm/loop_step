@@ -92,6 +92,20 @@ class Loop(seamm.Node):
         return loop_step.__version__
 
     @property
+    def all_options(self):
+        """The complete set of all options."""
+        return self._all_options
+
+    @all_options.setter
+    def all_options(self, value):
+        self._all_options = value
+        # and set for the subnodes
+        node = self.loop_node()
+        while node is not None and node != self:
+            node.all_options = value
+            node = node.next()
+
+    @property
     def iter_format(self):
         if self._loop_length is None:
             return "07"
