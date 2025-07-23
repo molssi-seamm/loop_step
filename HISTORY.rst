@@ -1,6 +1,10 @@
 =======
 History
 =======
+2025.7.23: Bugfix: options not properly set if the loop is in a subflowchart
+   * The options of the steps in the loop were not set correctly if the loop was in a
+     subflowchart in e.g. a substep step or training step.
+
 2025.5.15: Improved and added to loops over tables
    * Added a 'between' operator to filter rows of tables.
    * Ensured the correct types of variables in the rows of a table, fixing an issues
