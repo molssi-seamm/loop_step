@@ -1,6 +1,11 @@
 =======
 History
 =======
+2025.9.22: Bugfix: fixed numerical precision in For loops
+   * Fixed a problem caused by numerical imprecision of For loops with floating points
+     values causing termination too early, and also ugly directory names, etc. like
+     3.00000000002 or 2.999999999998
+
 2025.7.23: Bugfix: options not properly set if the loop is in a subflowchart
    * The options of the steps in the loop were not set correctly if the loop was in a
      subflowchart in e.g. a substep step or training step.

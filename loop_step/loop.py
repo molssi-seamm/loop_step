@@ -256,11 +256,27 @@ class Loop(seamm.Node):
                 self.set_variable(P["variable"], self._loop_value)
 
                 # Loop to get length... range doesn't work for nonintegers
+                # If floating point, remove nasty extra digits
+                ndigits = 0
+                if isinstance(start, float):
+                    tmp = str(start).split(".")
+                    if len(tmp) == 2:
+                        tmp = len(tmp[1])
+                        if tmp > ndigits:
+                            ndigits = tmp
+                if isinstance(step, float):
+                    tmp = str(step).split(".")
+                    if len(tmp) == 2:
+                        tmp = len(tmp[1])
+                        if tmp > ndigits:
+                            ndigits = tmp
                 count = 0
                 tmp = start
                 while tmp <= end:
                     count += 1
                     tmp += step
+                    if ndigits > 0:
+                        tmp = round(tmp, ndigits)
                 self._loop_length = count
                 printer.important(
                     __(
@@ -520,6 +536,8 @@ class Loop(seamm.Node):
                     self._loop_count += 1
                     if self._loop_count > 1:
                         self._loop_value += step
+                        if ndigits > 0:
+                            self._loop_value = round(self._loop_value, ndigits)
 
                     self.set_variable(P["variable"], self._loop_value)
 
