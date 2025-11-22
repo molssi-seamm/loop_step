@@ -1,6 +1,12 @@
 =======
 History
 =======
+2025.9.22: Bugfix: fixed floating-point precision issues in For loops
+    * This fix addresses floating-point precision issues in For loops that caused early
+      termination and generated malformed directory names (e.g., "3.00000000002" or
+      "2.999999999998"). The fix calculates the number of decimal places from loop
+      parameters and applies rounding to maintain precision throughout loop iterations.
+
 2025.7.23: Bugfix: options not properly set if the loop is in a subflowchart
    * The options of the steps in the loop were not set correctly if the loop was in a
      subflowchart in e.g. a substep step or training step.

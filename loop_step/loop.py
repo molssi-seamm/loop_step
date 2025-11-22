@@ -25,6 +25,16 @@ job = printing.getPrinter()
 printer = printing.getPrinter("loop")
 
 
+def _get_decimal_places(value):
+    """Get the number of decimal places in a float."""
+    if not isinstance(value, float):
+        return 0
+    parts = str(value).split(".")
+    if len(parts) == 2:
+        return len(parts[1])
+    return 0
+
+
 class BreakLoop(Exception):
     """Indicates that SEAMM should break from the loop"""
 
@@ -217,30 +227,33 @@ class Loop(seamm.Node):
             # Some local variables need each iteration
 
             # See if loop variables are all integers
-            integers = True
             start = P["start"]
             if isinstance(start, str):
                 start = float(start)
             if start.is_integer():
                 start = int(start)
-            else:
-                integers = False
+
             step = P["step"]
             if isinstance(step, str):
                 step = float(step)
             if step.is_integer():
                 step = int(step)
-            else:
-                integers = False
+
             end = P["end"]
             if isinstance(end, str):
                 end = float(end)
             if end.is_integer():
                 end = int(end)
-            else:
-                integers = False
 
-            if integers:
+            # If floating point, remove nasty extra digits
+            ndigits = max(
+                _get_decimal_places(start),
+                _get_decimal_places(step),
+                _get_decimal_places(end),
+            )
+            if ndigits > 0:
+                fmt = f".{ndigits}f"
+            else:
                 fmt = f"0{len(str(end))}d"
 
             if self._loop_value is None:
@@ -261,6 +274,8 @@ class Loop(seamm.Node):
                 while tmp <= end:
                     count += 1
                     tmp += step
+                    if ndigits > 0:
+                        tmp = round(tmp, ndigits)
                 self._loop_length = count
                 printer.important(
                     __(
@@ -520,12 +535,13 @@ class Loop(seamm.Node):
                     self._loop_count += 1
                     if self._loop_count > 1:
                         self._loop_value += step
+                        if ndigits > 0:
+                            self._loop_value = round(self._loop_value, ndigits)
 
                     self.set_variable(P["variable"], self._loop_value)
 
-                    # For integer loops, we can use the value for the directory names
-                    if integers:
-                        self._custom_directory_name = f"iter_{self._loop_value:{fmt}}"
+                    # Use the value for the directory names
+                    self._custom_directory_name = f"iter_{self._loop_value:{fmt}}"
 
                     # Set up the index variables
                     tmp = self.get_variable("_loop_indices")
