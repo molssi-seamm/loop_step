@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM Loop Plug-in 2025.7.23 documentation</title>
+    <title>History &#8212; SEAMM Loop Plug-in 2025.11.22 documentation</title>
   
   
   
@@ -49,7 +49,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=77a11b9d"></script>
+    <script src="_static/documentation_options.js?v=29860f53"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.7.23" />
+  <meta name="docsearch:version" content="2025.11.22" />
   </head>
   
   
@@ -481,6 +481,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2025.9.22: Bugfix: fixed floating-point precision issues in For loops</dt><dd><ul class="simple">
+<li><p>This fix addresses floating-point precision issues in For loops that caused early
+termination and generated malformed directory names (e.g., “3.00000000002” or
+“2.999999999998”). The fix calculates the number of decimal places from loop
+parameters and applies rounding to maintain precision throughout loop iterations.</p></li>
+</ul>
+</dd>
 <dt>2025.7.23: Bugfix: options not properly set if the loop is in a subflowchart</dt><dd><ul class="simple">
 <li><p>The options of the steps in the loop were not set correctly if the loop was in a
 subflowchart in e.g. a substep step or training step.</p></li>

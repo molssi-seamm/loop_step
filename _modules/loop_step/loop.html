@@ -7,7 +7,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2025.7.23 documentation</title>
+    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2025.11.22 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=77a11b9d"></script>
+    <script src="../../_static/documentation_options.js?v=29860f53"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2025.7.23" />
+  <meta name="docsearch:version" content="2025.11.22" />
   </head>
   
   
@@ -496,6 +496,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="n">printer</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">(</span><span class="s2">&quot;loop&quot;</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_decimal_places</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the number of decimal places in a float.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">float</span><span class="p">):</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="n">parts</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="n">parts</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="mi">0</span>
+
+
 <div class="viewcode-block" id="BreakLoop">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.BreakLoop">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">BreakLoop</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
@@ -716,30 +726,33 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="c1"># Some local variables need each iteration</span>
 
             <span class="c1"># See if loop variables are all integers</span>
-            <span class="n">integers</span> <span class="o">=</span> <span class="kc">True</span>
             <span class="n">start</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;start&quot;</span><span class="p">]</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">start</span><span class="o">.</span><span class="n">is_integer</span><span class="p">():</span>
                 <span class="n">start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">start</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">integers</span> <span class="o">=</span> <span class="kc">False</span>
+
             <span class="n">step</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;step&quot;</span><span class="p">]</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">step</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="n">step</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">step</span><span class="o">.</span><span class="n">is_integer</span><span class="p">():</span>
                 <span class="n">step</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">step</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">integers</span> <span class="o">=</span> <span class="kc">False</span>
+
             <span class="n">end</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">&quot;end&quot;</span><span class="p">]</span>
             <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">end</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
                 <span class="n">end</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">end</span><span class="o">.</span><span class="n">is_integer</span><span class="p">():</span>
                 <span class="n">end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">end</span><span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">integers</span> <span class="o">=</span> <span class="kc">False</span>
 
-            <span class="k">if</span> <span class="n">integers</span><span class="p">:</span>
+            <span class="c1"># If floating point, remove nasty extra digits</span>
+            <span class="n">ndigits</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+                <span class="n">_get_decimal_places</span><span class="p">(</span><span class="n">start</span><span class="p">),</span>
+                <span class="n">_get_decimal_places</span><span class="p">(</span><span class="n">step</span><span class="p">),</span>
+                <span class="n">_get_decimal_places</span><span class="p">(</span><span class="n">end</span><span class="p">),</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">ndigits</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">fmt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;.</span><span class="si">{</span><span class="n">ndigits</span><span class="si">}</span><span class="s2">f&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
                 <span class="n">fmt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;0</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">end</span><span class="p">))</span><span class="si">}</span><span class="s2">d&quot;</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -760,6 +773,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="k">while</span> <span class="n">tmp</span> <span class="o">&lt;=</span> <span class="n">end</span><span class="p">:</span>
                     <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
                     <span class="n">tmp</span> <span class="o">+=</span> <span class="n">step</span>
+                    <span class="k">if</span> <span class="n">ndigits</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">tmp</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">ndigits</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_loop_length</span> <span class="o">=</span> <span class="n">count</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
                     <span class="n">__</span><span class="p">(</span>
@@ -1019,12 +1034,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="bp">self</span><span class="o">.</span><span class="n">_loop_count</span> <span class="o">+=</span> <span class="mi">1</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_count</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">+=</span> <span class="n">step</span>
+                        <span class="k">if</span> <span class="n">ndigits</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span><span class="p">,</span> <span class="n">ndigits</span><span class="p">)</span>
 
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">&quot;variable&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span><span class="p">)</span>
 
-                    <span class="c1"># For integer loops, we can use the value for the directory names</span>
-                    <span class="k">if</span> <span class="n">integers</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_custom_directory_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;iter_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span><span class="si">:{</span><span class="n">fmt</span><span class="si">}}</span><span class="s2">&quot;</span>
+                    <span class="c1"># Use the value for the directory names</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_custom_directory_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;iter_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span><span class="si">:{</span><span class="n">fmt</span><span class="si">}}</span><span class="s2">&quot;</span>
 
                     <span class="c1"># Set up the index variables</span>
                     <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">&quot;_loop_indices&quot;</span><span class="p">)</span>
