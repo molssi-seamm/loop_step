@@ -1,7 +1,7 @@
 =======
 History
 =======
-2025.9.22: Bugfix: fixed floating-point precision issues in For loops
+2025.11.22: Bugfix: fixed floating-point precision issues in For loops
     * This fix addresses floating-point precision issues in For loops that caused early
       termination and generated malformed directory names (e.g., "3.00000000002" or
       "2.999999999998"). The fix calculates the number of decimal places from loop
