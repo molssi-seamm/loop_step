@@ -7,6 +7,34 @@ import seamm
 logger = logging.getLogger(__name__)
 
 
+# Legacy (pre-2026.9.18) names and values for the system selection, translated on
+# loading an old flowchart to the standard SEAMM structure-selection parameters.
+_legacy_keys = {
+    "where system name": "source systems",
+    "system name": "source system name",
+    "default configuration": "source configurations",
+    "configuration name": "source configuration name",
+}
+_legacy_values = {
+    "source systems": {
+        "is anything": "all",
+        "is": "name is",
+        "matches": "name matches",
+        "regexp": "name regexp",
+    },
+    "source configurations": {"-1": "last", "1": "first"},
+}
+
+_selection_parameters = {
+    key: dict(value)
+    for key, value in seamm.standard_parameters.structure_selection_parameters.items()
+}
+_selection_parameters["source systems"]["default"] = "all"
+_selection_parameters["source systems"]["description"] = "For systems:"
+_selection_parameters["source configurations"]["default"] = "last"
+_selection_parameters["source configurations"]["description"] = "using configuration:"
+
+
 class LoopParameters(seamm.Parameters):
     """The control parameters for loops"""
 
@@ -147,49 +175,9 @@ class LoopParameters(seamm.Parameters):
             "description": "Values as variables:",
             "help_text": "Whether to put the values for the row as seperate variables.",
         },
-        "where system name": {
-            "default": "is anything",
-            "kind": "string",
-            "default_units": "",
-            "enumeration": ("is anything", "is", "matches", "regexp"),
-            "format_string": "s",
-            "description": "where name:",
-            "help_text": "The filter for the system name, defaults to all systems.",
-        },
-        "system name": {
-            "default": "",
-            "kind": "string",
-            "default_units": "",
-            "enumeration": tuple(),
-            "format_string": "s",
-            "description": "",
-            "help_text": "The filter for the system name",
-        },
-        "default configuration": {
-            "default": "last",
-            "kind": "string",
-            "default_units": "",
-            "enumeration": (
-                "all",
-                "last",
-                "first",
-                "name is",
-                "name matches",
-                "name regexp",
-            ),
-            "format_string": "s",
-            "description": "Select configuration:",
-            "help_text": "The configuration to select as the default.",
-        },
-        "configuration name": {
-            "default": "",
-            "kind": "string",
-            "default_units": "",
-            "enumeration": tuple(),
-            "format_string": "s",
-            "description": "",
-            "help_text": "The filter for the configuration name",
-        },
+        # The standard SEAMM structure selection, but looping over every system
+        # and its last configuration by default, as this step always has.
+        **_selection_parameters,
         "directory name": {
             "default": "loop iteration",
             "kind": "string",
@@ -223,3 +211,19 @@ class LoopParameters(seamm.Parameters):
         parameters given in the class"""
 
         super().__init__(defaults={**LoopParameters.parameters, **defaults}, data=data)
+
+    def update(self, data):
+        """Update from a dictionary, translating the legacy system-selection keys
+        ('where system name', 'system name', 'default configuration',
+        'configuration name') and their values from flowcharts saved before
+        2026.9.18 to the standard structure-selection parameters."""
+        translated = {}
+        for key, value in data.items():
+            new_key = _legacy_keys.get(key, key)
+            if new_key in _legacy_values and isinstance(value, dict):
+                value = dict(value)
+                value["value"] = _legacy_values[new_key].get(
+                    str(value.get("value", "")).strip(), value.get("value")
+                )
+            translated[new_key] = value
+        super().update(translated)

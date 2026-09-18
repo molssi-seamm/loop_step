@@ -1,7 +1,20 @@
 =======
 History
 =======
-2025.9.22: Bugfix: fixed floating-point precision issues in For loops
+2026.9.18 -- Standard structure selection for loops over systems
+    * The "For systems in the database" loop now uses SEAMM's standard structure
+      selection: the systems to loop over (all, the current one, or those whose name
+      is / matches / matches a regular expression) and which configurations of each
+      (last, first, all, the current one, or by name), or a variable holding a list
+      of configurations or systems. The defaults -- every system, its last
+      configuration -- are unchanged, and flowcharts saved with the old options are
+      translated when loaded.
+    * Bugfix: selecting configurations by "name is" never matched (the name was
+      compared by identity, not equality), and "name matches" / "name regexp" fell
+      through to no selection at all.
+    * Requires seamm 2026.9.18.1 or later.
+
+2025.11.22: Bugfix: fixed floating-point precision issues in For loops
     * This fix addresses floating-point precision issues in For loops that caused early
       termination and generated malformed directory names (e.g., "3.00000000002" or
       "2.999999999998"). The fix calculates the number of decimal places from loop

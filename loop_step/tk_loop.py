@@ -135,11 +135,15 @@ class TkLoop(seamm.TkNode):
             "type",
             "where",
             "query-op",
-            "where system name",
-            "default configuration",
         ):
             self[widget].bind("<<ComboboxSelected>>", self.reset_dialog)
             self[widget].combobox.config(state="readonly")
+        # The structure selection: re-lay out when the choices change (they stay
+        # editable so a $variable can be typed).
+        for widget in ("source systems", "source configurations"):
+            self[widget].combobox.bind("<<ComboboxSelected>>", self.reset_dialog)
+            self[widget].combobox.bind("<Return>", self.reset_dialog)
+            self[widget].combobox.bind("<FocusOut>", self.reset_dialog)
 
         self["errors"].combobox.config(state="readonly")
 
@@ -224,24 +228,9 @@ class TkLoop(seamm.TkNode):
             # frame.rowconfigure(row, weight=1, minsize=100)
             # row += 1
 
-            self["where system name"].grid(
-                row=row, column=0, columnspan=2, sticky=tk.EW
-            )
-            choice = self["where system name"].get()
-            if choice != "is anything":
-                self["system name"].grid(row=row, column=2, columnspan=2, sticky=tk.EW)
-            row += 1
-
-            self["default configuration"].grid(
-                row=row, column=0, columnspan=2, sticky=tk.EW
-            )
-            op = self["default configuration"].get()
-            if "name" in op:
-                self["configuration name"].grid(
-                    row=row, column=2, columnspan=2, sticky=tk.EW
-                )
-            row += 1
-            frame.columnconfigure(3, weight=1)
+            row, widgets = self.layout_structure_selection(row=row, column=0)
+            sw.align_labels(widgets, sticky=tk.E)
+            frame.columnconfigure(1, weight=1)
             self["directory name"].grid(row=row, column=0, columnspan=3, sticky=tk.W)
             row += 1
         else:

@@ -2,7 +2,6 @@
 
 """Non-graphical part of the Loop step in a SEAMM flowchart"""
 
-import fnmatch
 import logging
 from pathlib import Path
 import re
@@ -187,7 +186,10 @@ class Loop(seamm.Node):
         elif P["type"] == "For rows in table":
             subtext = "For rows in table {table}\n"
         elif P["type"] == "For systems in the database":
-            subtext = "For system in the database\n"
+            subtext = seamm.standard_parameters.structure_selection_description(
+                P
+            ).replace("will be used", "will be looped over")
+            subtext += "\n"
         else:
             subtext = "Loop type defined by {type}\n"
 
@@ -423,65 +425,9 @@ class Loop(seamm.Node):
                     if index_is_int:
                         fmt = f"0{len(str(max(table_indices) + 1))}d"
         elif P["type"] == "For systems in the database":
-            # Get a list of all the matching systems and configurations
-            system_db = self.get_variable("_system_db")
-            systems = system_db.systems
-
-            # Filter on system names
-            choice = P["where system name"]
-            if choice == "is anything":
-                pass
-            elif choice == "is":
-                name = P["system name"]
-                systems = [s for s in systems if s.name == name]
-            elif choice == "matches":
-                pattern = P["system name"]
-                systems = [s for s in systems if fnmatch.fnmatch(s.name, pattern)]
-            elif choice == "regexp":
-                pattern = P["system name"]
-                systems = [s for s in systems if re.search(pattern, s.name) is not None]
-            else:
-                raise RuntimeError(
-                    f"Matching system names by '{choice}' is not supported"
-                )
-
-            # Finally, allow only systems that contain the requested configuration
-            choice = P["default configuration"]
-            if choice == "last" or choice == "-1":
-                systems = [s for s in systems if s.n_configurations > 0]
-                configurations = [s.configurations[-1] for s in systems]
-            elif choice == "first" or choice == "1":
-                systems = [s for s in systems if s.n_configurations > 0]
-                configurations = [s.configurations[0] for s in systems]
-            elif choice == "name is":
-                name = P["configuration name"]
-                systems = [s for s in systems if s.n_configurations > 0]
-                configurations = []
-                for s in systems:
-                    for c in s.configurations:
-                        if c.name is name:
-                            configurations.append(c)
-            elif choice == "matches":
-                pattern = P["configuration name"]
-                systems = [s for s in systems if s.n_configurations > 0]
-                configurations = []
-                for s in systems:
-                    for c in s.configurations:
-                        if fnmatch.fnmatch(c.name, pattern):
-                            configurations.append(c)
-            elif choice == "regexp":
-                pattern = P["configuration name"]
-                configurations = []
-                for s in systems:
-                    for c in s.configurations:
-                        if re.search(pattern, c.name) is not None:
-                            configurations.append(c)
-            elif choice == "all":
-                name = P["configuration name"]
-                systems = [s for s in systems if s.n_configurations > 0]
-                configurations = []
-                for s in systems:
-                    configurations.extend(s.configurations)
+            # The configurations to loop over: the standard SEAMM selection. An
+            # empty selection is simply a loop with no iterations.
+            configurations = self.select_configurations(P, errors=False)
 
             if self._loop_value is None:
                 self._loop_value = 0
