@@ -1,2 +1,2 @@
 psutil
-seamm
+seamm>=2026.9.18.1

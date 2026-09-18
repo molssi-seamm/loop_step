@@ -3,14 +3,20 @@ name: test
 channels:
   - conda-forge
 
+# The CI environment. The package under test is installed on top of it with
+# `pip install . --no-deps`, so everything the tests need must be listed here.
+# Pure-Python dependencies (the SEAMM packages) come from PyPI, which has a new
+# release within minutes; only compiled packages come from conda-forge.
 dependencies:
   # Base depends
   - python
   - pip
 
-  # Dependencies for this module
+  # Compiled packages: from conda-forge so the binaries are consistent
+  - numpy
+  - openbabel
   - psutil
-  - seamm
+  - rdkit
 
   # Testing
   - black
@@ -23,7 +29,8 @@ dependencies:
   - pydata-sphinx-theme
   - sphinx-design
 
-  # Pip-only installs
+  # Pure-Python packages: from PyPI
   - pip:
+    - seamm>=2026.9.18.1
     # Documentation
     - sphinx-copybutton
