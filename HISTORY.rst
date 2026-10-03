@@ -1,6 +1,13 @@
 =======
 History
 =======
+2026.10.3 -- Loops over tables in the job's database
+    * Loops over the rows of a table work with tables kept in the job's database (seamm
+      2026.10.3); the job's database is committed after each step of the loop body.
+    * Bugfix: selecting rows with a test on a numeric column failed when the second
+      value was empty, although only "between" uses it.
+    * Rows can be selected on the table's index column too.
+    * The values of ``_row`` and of the row variables are plain Python values.
 2026.9.18 -- Standard structure selection for loops over systems
     * The "For systems in the database" loop now uses SEAMM's standard structure
       selection: the systems to loop over (all, the current one, or those whose name
