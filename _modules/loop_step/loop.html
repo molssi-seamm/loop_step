@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 
 
@@ -7,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2026.9.18 documentation</title>
+    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2026.10.3 documentation</title>
   
   
   
@@ -26,8 +25,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../_static/styles/theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
-<link href="../../_static/styles/pydata-sphinx-theme.css?digest=cb8930eaaf36d9849b67" rel="stylesheet" />
+  <link href="../../_static/styles/theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
+<link href="../../_static/styles/pydata-sphinx-theme.css?digest=64cc4de3f052d77215f0" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
     <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
@@ -35,10 +34,10 @@
     <link rel="stylesheet" type="text/css" href="../../_static/css/custom.css?v=c224919a" />
   
   <!-- So that users can add custom icons -->
-  <script defer src="../../_static/scripts/fontawesome.js?digest=cb8930eaaf36d9849b67"></script>
+  <script defer src="../../_static/scripts/fontawesome.js?digest=64cc4de3f052d77215f0"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67" />
-<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67" />
+  <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0" />
+<link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0" />
 
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -48,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=4c890157"></script>
+    <script src="../../_static/documentation_options.js?v=f64fa391"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.9.18" />
+  <meta name="docsearch:version" content="2026.10.3" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -109,7 +108,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   
     <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
 <div class="bd-header__inner bd-page-width">
-  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+  <button type="button" class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
     <span class="fa-solid fa-bars"></span>
   </button>
   
@@ -227,7 +226,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div class="navbar-item navbar-persistent--container">
           
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -238,15 +237,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div class="navbar-item">
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
     <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
     <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
     <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
   </ul>
 </div></div>
       
@@ -283,7 +282,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   
     <div class="navbar-persistent--mobile">
 
-<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button type="button" class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
  <i class="fa-solid fa-magnifying-glass"></i>
  <span class="search-button__default-text">Search</span>
  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
@@ -388,15 +387,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           <div class="navbar-item">
 
 <div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
-  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+  <button type="button" class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
     <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
     <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
     <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
   </button>
   <ul class="dropdown-menu dropdown-menu-end">
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
-    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button type="button" class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
   </ul>
 </div></div>
         
@@ -588,7 +587,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">        """</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"Creating Loop </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="p">))</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">table_handle</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_loop_count</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">=</span> <span class="kc">None</span>
@@ -833,17 +831,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">"_loop_indices"</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,))</span>
         <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"For rows in table"</span><span class="p">:</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">table_handle</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"table"</span><span class="p">])</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table_handle</span><span class="p">[</span><span class="s2">"table"</span><span class="p">]</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">table_handle</span><span class="p">[</span><span class="s2">"loop index"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"table"</span><span class="p">],</span> <span class="n">create</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"loop index"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
 
                 <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                     <span class="s2">"Initialize loop over </span><span class="si">{}</span><span class="s2"> rows in table </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">P</span><span class="p">[</span><span class="s2">"table"</span><span class="p">]</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">n_rows</span><span class="p">,</span> <span class="n">P</span><span class="p">[</span><span class="s2">"table"</span><span class="p">]</span>
                     <span class="p">)</span>
                 <span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">=</span> <span class="mi">0</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">_loop_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_loop_length</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">n_rows</span>
                 <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">variable_exists</span><span class="p">(</span><span class="s2">"_loop_indices"</span><span class="p">):</span>
                     <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"_loop_indices"</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span>
@@ -857,77 +854,33 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">"_loop_indices"</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,))</span>
                 <span class="n">where</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"where"</span><span class="p">]</span>
                 <span class="k">if</span> <span class="n">where</span> <span class="o">==</span> <span class="s2">"Use all rows"</span><span class="p">:</span>
-                    <span class="n">table_indices</span> <span class="o">=</span> <span class="p">[</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">index</span><span class="p">]</span>
-                    <span class="n">n_table_indices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">table_indices</span><span class="p">)</span>
+                    <span class="n">table_rows</span> <span class="o">=</span> <span class="p">[</span><span class="n">row</span> <span class="k">for</span> <span class="n">row</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">rows</span><span class="p">()]</span>
                 <span class="k">elif</span> <span class="n">where</span> <span class="o">==</span> <span class="s2">"Select rows where column"</span><span class="p">:</span>
-                    <span class="n">tmp_col</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"query-column"</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
-                    <span class="n">column</span> <span class="o">=</span> <span class="kc">None</span>
                     <span class="n">op</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"query-op"</span><span class="p">]</span>
-
-                    <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">:</span>
-                        <span class="k">if</span> <span class="n">col</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">tmp_col</span><span class="p">:</span>
-                            <span class="n">column</span> <span class="o">=</span> <span class="n">col</span>
-                    <span class="k">if</span> <span class="n">column</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">op</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">seamm</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">operators</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loop query '</span><span class="si">{</span><span class="n">op</span><span class="si">}</span><span class="s2">' not implemented"</span><span class="p">)</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">selection</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">P</span><span class="p">[</span><span class="s2">"query-column"</span><span class="p">],</span>
+                            <span class="n">op</span><span class="p">,</span>
+                            <span class="n">P</span><span class="p">[</span><span class="s2">"query-value"</span><span class="p">],</span>
+                            <span class="n">P</span><span class="p">[</span><span class="s2">"query-value2"</span><span class="p">],</span>
+                        <span class="p">)</span>
+                        <span class="n">table_rows</span> <span class="o">=</span> <span class="p">[</span>
+                            <span class="n">row</span> <span class="k">for</span> <span class="n">row</span><span class="p">,</span> <span class="n">_</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">rows</span><span class="p">(</span><span class="n">where</span><span class="o">=</span><span class="n">selection</span><span class="p">)</span>
+                        <span class="p">]</span>
+                    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="s2">"has no column"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+                            <span class="k">raise</span>
                         <span class="n">column</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"query-column"</span><span class="p">]</span>
                         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                             <span class="sa">f</span><span class="s2">"Looping over table with criterion on column '</span><span class="si">{</span><span class="n">column</span><span class="si">}</span><span class="s2">': "</span>
                             <span class="s2">"that column does not exist."</span>
                         <span class="p">)</span>
-
-                    <span class="n">dtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">dtypes</span><span class="p">[</span><span class="n">column</span><span class="p">]</span>
-                    <span class="n">value</span> <span class="o">=</span> <span class="n">dtype</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"query-value"</span><span class="p">])</span>
-                    <span class="n">value2</span> <span class="o">=</span> <span class="n">dtype</span><span class="o">.</span><span class="n">type</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"query-value2"</span><span class="p">])</span>
-
-                    <span class="c1"># Find the indices</span>
-                    <span class="n">table_indices</span> <span class="o">=</span> <span class="p">[]</span>
-                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">row_value</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="n">column</span><span class="p">]):</span>
-                        <span class="k">if</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"=="</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">==</span> <span class="n">value</span><span class="p">:</span>
-                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"!="</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">!=</span> <span class="n">value</span><span class="p">:</span>
-                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"&gt;"</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">&gt;</span> <span class="n">value</span><span class="p">:</span>
-                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"&gt;="</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">&gt;=</span> <span class="n">value</span><span class="p">:</span>
-                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"&lt;"</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">&lt;</span> <span class="n">value</span><span class="p">:</span>
-                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"&lt;="</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">&lt;=</span> <span class="n">value</span><span class="p">:</span>
-                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"between"</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">&gt;=</span> <span class="n">value</span> <span class="ow">and</span> <span class="n">row_value</span> <span class="o">&lt;=</span> <span class="n">value2</span><span class="p">:</span>
-                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"contains"</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">row_value</span><span class="p">:</span>
-                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"does not contain"</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">value</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">row_value</span><span class="p">:</span>
-                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"contains regexp"</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">row_value</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"does not contain regexp"</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">search</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">row_value</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"is empty"</span><span class="p">:</span>
-                            <span class="c1"># Might be numpy.nan, and NaN != NaN hence odd test.</span>
-                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">==</span> <span class="s2">""</span> <span class="ow">or</span> <span class="n">row_value</span> <span class="o">!=</span> <span class="n">row_value</span><span class="p">:</span>
-                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                        <span class="k">elif</span> <span class="n">op</span> <span class="o">==</span> <span class="s2">"is not empty"</span><span class="p">:</span>
-                            <span class="k">if</span> <span class="n">row_value</span> <span class="o">!=</span> <span class="s2">""</span> <span class="ow">and</span> <span class="n">row_value</span> <span class="o">==</span> <span class="n">row_value</span><span class="p">:</span>
-                                <span class="n">table_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-                        <span class="k">else</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-                                <span class="sa">f</span><span class="s2">"Loop query '</span><span class="si">{</span><span class="n">op</span><span class="si">}</span><span class="s2">' not implemented"</span>
-                            <span class="p">)</span>
-                    <span class="n">n_table_indices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">table_indices</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Loop cannot handle '</span><span class="si">{</span><span class="n">where</span><span class="si">}</span><span class="s2">'"</span><span class="p">)</span>
+                <span class="n">table_indices</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">label</span><span class="p">(</span><span class="n">row</span><span class="p">)</span> <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">table_rows</span><span class="p">]</span>
+                <span class="n">n_table_indices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">table_indices</span><span class="p">)</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
                     <span class="n">__</span><span class="p">(</span>
                         <span class="sa">f</span><span class="s2">"The loop will have </span><span class="si">{</span><span class="n">n_table_indices</span><span class="si">}</span><span class="s2"> iterations.</span><span class="se">\n\n</span><span class="s2">"</span><span class="p">,</span>
@@ -1095,11 +1048,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                             <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">"_loop_indices"</span><span class="p">,</span> <span class="n">tmp</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
                             <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">"_loop_index"</span><span class="p">,</span> <span class="n">tmp</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">])</span>
 
-                        <span class="c1"># and the other info in the table handle</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">table_handle</span><span class="p">[</span><span class="s2">"loop index"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+                        <span class="c1"># and the other info in the table</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"loop index"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
 
                         <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="kc">None</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">table_handle</span> <span class="o">=</span> <span class="kc">None</span>
 
                         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
                             <span class="s2">"The loop over table "</span>
@@ -1120,7 +1072,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                         <span class="s2">"   --&gt; </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"_loop_indices"</span><span class="p">))</span>
                     <span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">"_loop_index"</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">table_handle</span><span class="p">[</span><span class="s2">"current index"</span><span class="p">]</span> <span class="o">=</span> <span class="n">index</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">current_row</span> <span class="o">=</span> <span class="n">table_rows</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span>
 
                     <span class="c1"># Name of directory is the index (+1 since tends to be 0 based)</span>
                     <span class="k">if</span> <span class="n">index_is_int</span><span class="p">:</span>
@@ -1128,7 +1080,11 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="k">else</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_custom_directory_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">safe_filename</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">index</span><span class="p">))</span>
 
-                    <span class="n">row</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">index</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">}</span>
+                    <span class="n">row</span> <span class="o">=</span> <span class="p">{</span>
+                        <span class="n">k</span><span class="p">:</span> <span class="n">v</span>
+                        <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">get_row</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="o">.</span><span class="n">index_column</span>
+                    <span class="p">}</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">"_row"</span><span class="p">,</span> <span class="n">row</span><span class="p">)</span>
                     <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"as variables"</span><span class="p">]:</span>
                         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">row</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
@@ -1211,7 +1167,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
             <span class="c1"># Run through the steps in the loop body</span>
             <span class="k">try</span><span class="p">:</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="n">next_node</span>
                 <span class="n">next_node</span> <span class="o">=</span> <span class="n">next_node</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+                <span class="n">seamm</span><span class="o">.</span><span class="n">step_completed</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">DeprecationWarning</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Deprecation warning: "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
                 <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
@@ -1410,8 +1368,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../_static/scripts/bootstrap.js?digest=cb8930eaaf36d9849b67"></script>
-<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=cb8930eaaf36d9849b67"></script>
+  <script defer src="../../_static/scripts/bootstrap.js?digest=64cc4de3f052d77215f0"></script>
+<script defer src="../../_static/scripts/pydata-sphinx-theme.js?digest=64cc4de3f052d77215f0"></script>
 
   <footer class="bd-footer">
 <div class="bd-footer__inner bd-page-width">
@@ -1423,7 +1381,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <div class="footer-item">
 <p class="theme-version">
   <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
-  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.21.0.
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.22.0.
 </p></div>
       
     </div>
