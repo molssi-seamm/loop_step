@@ -652,10 +652,9 @@ class Loop(seamm.Node):
 
             # Run through the steps in the loop body
             try:
+                node = next_node
                 next_node = next_node.run()
-                # Commit the step's table and structure changes, as the flowchart
-                # evaluator does for steps outside loops.
-                seamm.flowchart_variables.get_variable("_system_db").db.commit()
+                seamm.step_completed(node)
             except DeprecationWarning as e:
                 printer.normal("\nDeprecation warning: " + str(e))
                 traceback.print_exc(file=sys.stderr)
