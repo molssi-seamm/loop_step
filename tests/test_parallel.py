@@ -19,6 +19,10 @@ import textwrap
 import pytest
 
 BIN = Path(sys.executable).parent
+# The source under test first, for this process's tools and the iterations'
+SOURCE = Path(__file__).resolve().parents[1]
+BUILD = "import sys; from seamm.flowchart_cli import main; sys.exit(main())"
+RUN = "import sys; from seamm_exec import run; sys.argv[0] = 'run_flowchart'; run()"
 
 FAKE_STEP = textwrap.dedent('''
     """A step for testing parallel loops: a system, a table row, a file."""
@@ -136,7 +140,7 @@ def environment(site):
         if not k.startswith(("SEAMM_RESUME", "SEAMM_PARENT_JOB", "SEAMM_CE"))
     }
     env["PYTHONPATH"] = os.pathsep.join(
-        [str(site), *filter(None, [os.environ.get("PYTHONPATH")])]
+        [str(SOURCE), str(site), *filter(None, [os.environ.get("PYTHONPATH")])]
     )
     return env
 
@@ -148,15 +152,16 @@ def run(site, directory, parallel):
         text += "\n    iterations at once: '2'\n    memory per iteration: '0.2'"
     (directory / "spec.yaml").write_text(SPEC.format(parallel=text))
     env = environment(site)
-    subprocess.run(
-        [str(BIN / "seamm-flowchart"), "build", "spec.yaml", "-o", "test.flow"],
+    built = subprocess.run(
+        [sys.executable, "-c", BUILD, "build", "spec.yaml", "-o", "test.flow"],
         cwd=directory,
         env=env,
-        check=True,
         capture_output=True,
+        text=True,
     )
+    assert built.returncode == 0, built.stdout[-3000:] + built.stderr[-3000:]
     result = subprocess.run(
-        [str(BIN / "run_flowchart"), "test.flow"],
+        [sys.executable, "-c", RUN, "test.flow"],
         cwd=directory,
         env=env,
         capture_output=True,
@@ -184,8 +189,8 @@ def contents(directory):
 
 
 @pytest.mark.skipif(
-    not (BIN / "run_flowchart").exists() or not (BIN / "seamm-flowchart").exists(),
-    reason="run_flowchart and seamm-flowchart are not installed beside Python",
+    not (BIN / "run_flowchart").exists(),
+    reason="run_flowchart (for the iterations) is not installed beside Python",
 )
 def test_parallel_loop_gives_the_serial_result(fake_plugin, tmp_path):
     serial = run(fake_plugin, tmp_path / "serial", parallel=False)
