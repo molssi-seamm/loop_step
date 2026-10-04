@@ -209,6 +209,7 @@ def crash_and_resume(tmp_path, make, crash):
     assert checkpoint["state"] == "error"
 
     Step.runs = []
+    flowchart = make(crashed)  # a resume reads the flowchart again: new uuids
     execute(crashed, flowchart, resume=True)
     second = list(Step.runs)
     # The crashed step runs again; everything before it does not.
@@ -351,16 +352,15 @@ def test_crash_twice(tmp_path):
 
     root = tmp_path / "crashed"
     root.mkdir()
-    flowchart = make(root)
     runs = []
     for crash, resume in ((("B", (2,)), False), (("A", (4,)), True)):
         Step.runs = []
         Step.crash = crash
         with pytest.raises(Crash):
-            execute(root, flowchart, resume=resume)
+            execute(root, make(root), resume=resume)
         runs.extend(Step.runs[:-1])
     Step.runs = []
-    execute(root, flowchart, resume=True)
+    execute(root, make(root), resume=True)
     runs.extend(Step.runs)
     assert runs == expected
     assert database(root) == database(straight)
