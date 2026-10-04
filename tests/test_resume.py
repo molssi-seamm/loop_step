@@ -384,3 +384,48 @@ def test_errors_exit_the_loop_then_crash(tmp_path):
     expected, first, second = crash_and_resume(tmp_path, make, ("Last", None))
     assert [r[0] for r in second] == ["Last"]
     assert ("A", (4,)) not in expected
+
+
+def test_an_error_while_resuming_keeps_the_loop_position(tmp_path, monkeypatch):
+    """A resume that fails before the Loop re-enters its iteration must leave
+    the checkpoint where it was, so the next resume continues the loop rather
+    than starting it again over the committed iterations."""
+
+    def make(root):
+        return build(root, ["A", "B"], type="For", variable="i", start=1, end=5)
+
+    straight = tmp_path / "straight"
+    straight.mkdir()
+    execute(straight, make(straight))
+    expected = list(Step.runs)
+
+    root = tmp_path / "crashed"
+    root.mkdir()
+    Step.runs = []
+    Step.crash = ("B", (3,))
+    with pytest.raises(Crash):
+        execute(root, make(root))
+    runs = list(Step.runs[:-1])
+    before = seamm.read_checkpoint(root / "seamm.db")["position"]
+
+    # The resume fails inside the Loop, before it re-enters the iteration
+    original = loop_step.Loop._restore_state
+
+    def broken(self, state):
+        raise RuntimeError("cannot restore the loop")
+
+    monkeypatch.setattr(loop_step.Loop, "_restore_state", broken)
+    Step.runs = []
+    with pytest.raises(RuntimeError, match="cannot restore"):
+        execute(root, make(root), resume=True)
+    checkpoint = seamm.read_checkpoint(root / "seamm.db")
+    assert checkpoint["state"] == "error"
+    assert checkpoint["position"] == before
+
+    monkeypatch.setattr(loop_step.Loop, "_restore_state", original)
+    Step.runs = []
+    execute(root, make(root), resume=True)
+    runs.extend(Step.runs)
+    assert runs == expected
+    assert database(root) == database(straight)
+    assert directories(root) == directories(straight)

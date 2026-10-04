@@ -676,23 +676,6 @@ class Loop(seamm.Node):
                 if not advance:
                     self._custom_directory_name = state["directory"]
 
-                # Direct most output to iteration.out
-                # A handler for the file
-                iter_dir = self.working_path
-                iter_dir.mkdir(parents=True, exist_ok=True)
-
-                if self._file_handler is not None:
-                    self._file_handler.close()
-                    job.removeHandler(self._file_handler)
-                path = iter_dir / "iteration.out"
-                if advance:
-                    path.unlink(missing_ok=True)
-                self._file_handler = logging.FileHandler(path)
-                self._file_handler.setLevel(printing.NORMAL)
-                formatter = logging.Formatter(fmt="{message:s}", style="{")
-                self._file_handler.setFormatter(formatter)
-                job.addHandler(self._file_handler)
-
                 # Add the iteration to the ids so the directory structure is
                 # reasonable
                 self.flowchart.reset_visited()
@@ -700,7 +683,8 @@ class Loop(seamm.Node):
                 self.set_subids((*self._id, tmp))
 
                 # Checkpoint the start of the iteration, with what is needed to
-                # set it up again.
+                # set it up again -- before its directory exists, so a kill in
+                # between cannot leave a directory the checkpoint does not know.
                 if checkpointer is not None:
                     if not advance:
                         next_node = self._find_body_node(resume_node)
@@ -713,7 +697,25 @@ class Loop(seamm.Node):
                     checkpointer.enter_iteration(
                         self, self._checkpoint_state(P, *items), next_node
                     )
+                resuming_iteration = not advance
                 advance = True
+
+                # Direct most output to iteration.out
+                # A handler for the file
+                iter_dir = self.working_path
+                iter_dir.mkdir(parents=True, exist_ok=True)
+
+                if self._file_handler is not None:
+                    self._file_handler.close()
+                    job.removeHandler(self._file_handler)
+                path = iter_dir / "iteration.out"
+                if not resuming_iteration:
+                    path.unlink(missing_ok=True)
+                self._file_handler = logging.FileHandler(path)
+                self._file_handler.setLevel(printing.NORMAL)
+                formatter = logging.Formatter(fmt="{message:s}", style="{")
+                self._file_handler.setFormatter(formatter)
+                job.addHandler(self._file_handler)
 
             # Run through the steps in the loop body
             try:

@@ -6,7 +6,8 @@ History
       continues a loop at the iteration and step it had reached, with the same
       iteration directory and the same rows, structures or values to loop over as
       when the loop started; a finished iteration is not run again. An iteration that
-      failed and was skipped ("continue to next iteration") is not retried.
+      failed and was skipped ("continue to next iteration" or "exit the loop")
+      keeps what it wrote, as before, and is not retried.
     * Requires seamm 2026.10.4.
 
 2026.10.3 -- Loops over tables in the job's database
