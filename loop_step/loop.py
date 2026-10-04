@@ -1130,9 +1130,18 @@ class Loop(seamm.Node):
             checkpointer.parallel_loop(self, state)
             return (k, "exit")
 
-        merged = iterations.merge_database(
-            system_db, evaluator, merge_state, k, later_wins=later_wins
-        )
+        from molsystem.snapshot import MergeConflict
+
+        try:
+            merged = iterations.merge_database(
+                system_db, evaluator, merge_state, k, later_wins=later_wins
+            )
+        except MergeConflict as e:
+            text = str(e).replace(" (The Loop can let the later one win.)", "")
+            raise MergeConflict(
+                f"{text} Set the Loop's 'Two iterations writing one table cell' to "
+                "'the later iteration wins' to keep the later value instead."
+            ) from None
         if P["type"] == "For rows in table":
             # As a serial loop leaves it: the iteration's row, unless its body
             # moved on (below). The merge cannot see a move to the row that was
