@@ -48,18 +48,22 @@ Running iterations in parallel
 With "Run iterations in parallel" set to yes, the iterations run at the same
 time, each in an evaluator of its own, and what they did is brought back into
 the job afterwards. This is worthwhile when each iteration does a substantial
-calculation: starting an evaluator takes a few seconds, so for iterations of a
-second or two a serial loop is faster.
+calculation: starting an evaluator takes about five seconds, so for iterations
+of a few seconds a serial loop is as fast or faster.
 
 The contract
 ------------
 Choosing parallel declares that the iterations are independent:
 
-- Each iteration sees the job as it was when the loop started. An iteration
-  does not see what another one does, even an earlier one.
+- Each iteration sees the job's database as it was when the loop started. An
+  iteration does not see what another one does, even an earlier one. (A file in
+  the job's directory that an iteration reads, but has not written itself, is
+  read as it is at that moment.)
 - What comes back, merged in iteration order: new and changed structures
-  (systems and configurations, with new ids), properties, table rows and
-  cells, new tables and columns, and files written in the job's directory
+  (systems and configurations, with new ids), the current configuration of a
+  system, properties, table rows (appended after those of the iterations
+  before, as serially) and cells, new tables and columns, and files written in
+  the job's directory
   (``/name``). Files a step appends to, such as a structure file written by
   Write Structure in append mode, get each iteration's part in order; other
   files are those of the last iteration that wrote them, as for a serial loop;
@@ -99,14 +103,19 @@ Each iteration gets
    *selected structures* (the default): the structure the iteration works on (a
    loop over systems) and the current one, with all the tables. *Whole
    database*: a copy of the whole database, for a body that reads other
-   structures.
+   structures. Every iteration's copy is written when the loop starts, so a
+   long loop over a large database needs that much disk space.
 Calculations run
    *inline* (the default): each iteration's calculations run in its own share
-   of the machine. *Separate tasks*: they go to the job's target like any job's.
+   of the machine. *Separate tasks* (experimental, not yet tested on a cluster):
+   they go to the job's target like any job's.
 Two iterations writing one table cell
-   Two iterations setting the same cell of a row that existed before the loop
-   (or appending rows with the same index value) are an error by default; the
-   alternative keeps the later iteration's value, with a warning.
+   Two iterations changing the same thing that existed before the loop -- a
+   cell of a table row, or a structure: its atoms' coordinates, velocities or
+   other values, or the structure itself -- are an error by default; the
+   alternative keeps the later iteration's change, with a warning in the
+   output. For example, a loop over methods that each optimize the current
+   structure in place is an error unless the later iteration may win.
 
 Where things are
 ----------------

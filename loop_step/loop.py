@@ -40,6 +40,17 @@ printer = printing.getPrinter("loop")
 MAX_RETRIES = 2
 
 
+class _Collect(logging.Handler):
+    """Collects the warnings of a merge, for job.out."""
+
+    def __init__(self):
+        super().__init__(level=logging.WARNING)
+        self.messages = []
+
+    def emit(self, record):
+        self.messages.append(record.getMessage())
+
+
 def _yes(value):
     """A boolean parameter's value, as text or as a bool."""
     if isinstance(value, str):
@@ -947,6 +958,12 @@ class Loop(seamm.Node):
                 walltime=walltime,
                 placement=placement,
                 root_directory=self.flowchart.root_directory,
+                # A file the iteration has not written: this evaluator's, then
+                # those it reads itself
+                read_directories=[
+                    job_directory,
+                    *getattr(self.flowchart, "job_read_directories", []),
+                ],
             )
             task_set.add(task)
             keys[task.key] = k
@@ -1029,13 +1046,15 @@ class Loop(seamm.Node):
                         indent=self.indent + 4 * " ",
                     )
                 )
-        else:
-            # Tables the iterations exported, written again from the merged ones
-            for name, filename in state.get("exports", {}).items():
-                try:
-                    self.get_table(name, create=False).export(filename)
-                except Exception as e:
-                    printer.important(f"Could not export the table '{name}': {e}")
+        # Tables the iterations exported, written again from the merged ones
+        for name, filename in state.get("exports", {}).items():
+            try:
+                self.get_table(name, create=False).export(filename)
+            except Exception as e:
+                printer.important(f"Could not export the table '{name}': {e}")
+        if stopped is None or stopped[1] != "raise":
+            # Nothing more is dispatched (a resume after "stop the job" runs the
+            # failed iteration again, from the loop's entry)
             for suffix in ("", "-wal", "-shm"):
                 Path(str(entry) + suffix).unlink(missing_ok=True)
 
@@ -1132,6 +1151,17 @@ class Loop(seamm.Node):
 
         from molsystem.snapshot import MergeConflict
 
+        if P["type"] == "For systems in the database":
+            # As a serial loop leaves it: the iteration's configuration current,
+            # unless its body chose another (merged below). The merge cannot see
+            # a choice of the configuration that was current at the loop's entry.
+            configuration = context["configurations"][k - 1]
+            system_db.system = configuration.system
+            configuration.system.configuration = configuration
+        tables_before = set(system_db.user_tables)
+        warnings = _Collect()
+        merge_logger = logging.getLogger("molsystem.snapshot")
+        merge_logger.addHandler(warnings)
         try:
             merged = iterations.merge_database(
                 system_db, evaluator, merge_state, k, later_wins=later_wins
@@ -1142,6 +1172,14 @@ class Loop(seamm.Node):
                 f"{text} Set the Loop's 'Two iterations writing one table cell' to "
                 "'the later iteration wins' to keep the later value instead."
             ) from None
+        finally:
+            merge_logger.removeHandler(warnings)
+        for message in warnings.messages:
+            printer.job(f"    Warning: {message}")
+        # Tables made in the body are variables, as a serial loop leaves them
+        for table in set(system_db.user_tables) - tables_before:
+            if not self.variable_exists(table):
+                self.set_variable(table, seamm.Table(system_db, table))
         if P["type"] == "For rows in table":
             # As a serial loop leaves it: the iteration's row, unless its body
             # moved on (below). The merge cannot see a move to the row that was
