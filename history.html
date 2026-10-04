@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM Loop Plug-in 2026.10.3 documentation</title>
+    <title>History &#8212; SEAMM Loop Plug-in 2026.10.4 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=f64fa391"></script>
+    <script src="_static/documentation_options.js?v=3dc6335c"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.3" />
+  <meta name="docsearch:version" content="2026.10.4" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -505,6 +505,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.4 – Loops resume where they stopped</dt><dd><ul class="simple">
+<li><p>A job resumed from its checkpoint (seamm_exec 2026.10.4.1, <code class="docutils literal notranslate"><span class="pre">--resume</span></code>)
+continues a loop at the iteration and step it had reached, with the same
+iteration directory and the same rows, structures or values to loop over as
+when the loop started; a finished iteration is not run again. An iteration that
+failed and was skipped (“continue to next iteration” or “exit the loop”)
+keeps what it wrote, as before, and is not retried.</p></li>
+<li><p>Requires seamm 2026.10.4.</p></li>
+</ul>
+</dd>
 <dt>2026.10.3 – Loops over tables in the job’s database</dt><dd><ul class="simple">
 <li><p>Loops over the rows of a table work with tables kept in the job’s database (seamm
 2026.10.3); the job’s database is committed after each step of the loop body.</p></li>

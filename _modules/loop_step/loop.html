@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2026.10.3 documentation</title>
+    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2026.10.4 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=f64fa391"></script>
+    <script src="../../_static/documentation_options.js?v=3dc6335c"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.3" />
+  <meta name="docsearch:version" content="2026.10.4" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -508,6 +508,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 <span class="n">job</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_plain</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""A plain Python value for JSON, e.g. from a numpy scalar."""</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s2">"item"</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">,</span> <span class="nb">dict</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">value</span><span class="o">.</span><span class="n">item</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">value</span>
+
+
 <span class="n">printer</span> <span class="o">=</span> <span class="n">printing</span><span class="o">.</span><span class="n">getPrinter</span><span class="p">(</span><span class="s2">"loop"</span><span class="p">)</span>
 
 
@@ -735,6 +744,18 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="c1"># Reset variables to initial state.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_custom_directory_name</span> <span class="o">=</span> <span class="kc">None</span>
 
+        <span class="c1"># Resuming a job part way through this loop? Then the checkpoint holds</span>
+        <span class="c1"># the loop's state and the variables, so the set-up below is skipped and</span>
+        <span class="c1"># the iteration it was in is set up again rather than advanced to.</span>
+        <span class="n">checkpointer</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">get_checkpointer</span><span class="p">()</span>
+        <span class="n">resume</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">checkpointer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">resume</span> <span class="o">=</span> <span class="n">checkpointer</span><span class="o">.</span><span class="n">loop_resume</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="n">resume_node</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">resume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">state</span><span class="p">,</span> <span class="n">resume_node</span> <span class="o">=</span> <span class="n">resume</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_restore_state</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
         <span class="c1"># Print out header to the main output</span>
         <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span><span class="n">__</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">description_text</span><span class="p">(</span><span class="n">P</span><span class="p">),</span> <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span><span class="p">))</span>
 
@@ -830,6 +851,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">"_loop_indices"</span><span class="p">,</span> <span class="p">(</span><span class="kc">None</span><span class="p">,))</span>
         <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"For rows in table"</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">resume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"table"</span><span class="p">],</span> <span class="n">create</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+                <span class="n">table_rows</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">"items"</span><span class="p">]</span>
+                <span class="n">table_indices</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">"indices"</span><span class="p">]</span>
+                <span class="n">n_table_indices</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">table_indices</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">n_table_indices</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">index_is_int</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">table_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">int</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">index_is_int</span><span class="p">:</span>
+                        <span class="n">fmt</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"0</span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="n">table_indices</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">))</span><span class="si">}</span><span class="s2">d"</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">table</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_table</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"table"</span><span class="p">],</span> <span class="n">create</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">table</span><span class="p">[</span><span class="s2">"loop index"</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
@@ -896,7 +926,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"For systems in the database"</span><span class="p">:</span>
             <span class="c1"># The configurations to loop over: the standard SEAMM selection. An</span>
             <span class="c1"># empty selection is simply a loop with no iterations.</span>
-            <span class="n">configurations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_configurations</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">resume</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">system_db</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_variable</span><span class="p">(</span><span class="s2">"_system_db"</span><span class="p">)</span>
+                <span class="n">configurations</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">system_db</span><span class="o">.</span><span class="n">get_configuration</span><span class="p">(</span><span class="n">cid</span><span class="p">)</span> <span class="k">for</span> <span class="n">cid</span> <span class="ow">in</span> <span class="n">state</span><span class="p">[</span><span class="s2">"items"</span><span class="p">]</span>
+                <span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">configurations</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_configurations</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="n">errors</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">=</span> <span class="mi">0</span>
@@ -940,18 +976,22 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="n">out_level</span> <span class="o">=</span> <span class="n">out_handler</span><span class="o">.</span><span class="n">level</span>
                 <span class="n">out_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">printing</span><span class="o">.</span><span class="n">JOB</span><span class="p">)</span>
 
-        <span class="c1"># Cycle through the iterations</span>
+        <span class="c1"># Cycle through the iterations. Resuming in the middle of an iteration,</span>
+        <span class="c1"># set it up again without advancing, then start its body at the step</span>
+        <span class="c1"># that had not finished.</span>
         <span class="n">next_node</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">advance</span> <span class="o">=</span> <span class="n">resume</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">resume_node</span> <span class="ow">is</span> <span class="kc">None</span>
         <span class="k">while</span> <span class="n">next_node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">next_node</span> <span class="ow">is</span> <span class="bp">self</span><span class="p">:</span>
                 <span class="n">next_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">loop_node</span><span class="p">()</span>
 
                 <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"For"</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_loop_count</span> <span class="o">+=</span> <span class="mi">1</span>
-                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_count</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
-                        <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">+=</span> <span class="n">step</span>
-                        <span class="k">if</span> <span class="n">ndigits</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-                            <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span><span class="p">,</span> <span class="n">ndigits</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">advance</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_loop_count</span> <span class="o">+=</span> <span class="mi">1</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_count</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">+=</span> <span class="n">step</span>
+                            <span class="k">if</span> <span class="n">ndigits</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span><span class="p">,</span> <span class="n">ndigits</span><span class="p">)</span>
 
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"variable"</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span><span class="p">)</span>
 
@@ -995,7 +1035,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"Foreach"</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Foreach </span><span class="si">{</span><span class="n">P</span><span class="p">[</span><span class="s1">'variable'</span><span class="p">]</span><span class="si">}</span><span class="s2"> in </span><span class="si">{</span><span class="n">P</span><span class="p">[</span><span class="s1">'values'</span><span class="p">]</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">advance</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">+=</span> <span class="mi">1</span>
 
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_length</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1033,7 +1074,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="s2">"_loop_index"</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">"    Loop value = </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
                 <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"For rows in table"</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">advance</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">+=</span> <span class="mi">1</span>
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">&gt;</span> <span class="n">n_table_indices</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">=</span> <span class="kc">None</span>
 
@@ -1093,7 +1135,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                             <span class="bp">self</span><span class="o">.</span><span class="n">set_variable</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">"   _row = </span><span class="si">{}</span><span class="s2">"</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
                 <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"For systems in the database"</span><span class="p">:</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">+=</span> <span class="mi">1</span>
+                    <span class="k">if</span> <span class="n">advance</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">+=</span> <span class="mi">1</span>
 
                     <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_length</span><span class="p">:</span>
                         <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">=</span> <span class="kc">None</span>
@@ -1143,6 +1186,35 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"       system = </span><span class="si">{</span><span class="n">system</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">"configuration = </span><span class="si">{</span><span class="n">configuration</span><span class="o">.</span><span class="n">name</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
+                <span class="c1"># Resuming this iteration: its directory is the one it had, not</span>
+                <span class="c1"># a new unique name next to it.</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">advance</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_custom_directory_name</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">"directory"</span><span class="p">]</span>
+
+                <span class="c1"># Add the iteration to the ids so the directory structure is</span>
+                <span class="c1"># reasonable</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">reset_visited</span><span class="p">()</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">working_path</span><span class="o">.</span><span class="n">name</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_subids</span><span class="p">((</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">tmp</span><span class="p">))</span>
+
+                <span class="c1"># Checkpoint the start of the iteration, with what is needed to</span>
+                <span class="c1"># set it up again -- before its directory exists, so a kill in</span>
+                <span class="c1"># between cannot leave a directory the checkpoint does not know.</span>
+                <span class="k">if</span> <span class="n">checkpointer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">advance</span><span class="p">:</span>
+                        <span class="n">next_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_body_node</span><span class="p">(</span><span class="n">resume_node</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"For rows in table"</span><span class="p">:</span>
+                        <span class="n">items</span> <span class="o">=</span> <span class="p">(</span><span class="n">table_rows</span><span class="p">,</span> <span class="n">table_indices</span><span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">P</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"For systems in the database"</span><span class="p">:</span>
+                        <span class="n">items</span> <span class="o">=</span> <span class="p">([</span><span class="n">c</span><span class="o">.</span><span class="n">id</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">configurations</span><span class="p">],</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">items</span> <span class="o">=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                    <span class="n">checkpointer</span><span class="o">.</span><span class="n">enter_iteration</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_checkpoint_state</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="o">*</span><span class="n">items</span><span class="p">),</span> <span class="n">next_node</span>
+                    <span class="p">)</span>
+                <span class="n">resuming_iteration</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">advance</span>
+                <span class="n">advance</span> <span class="o">=</span> <span class="kc">True</span>
+
                 <span class="c1"># Direct most output to iteration.out</span>
                 <span class="c1"># A handler for the file</span>
                 <span class="n">iter_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">working_path</span>
@@ -1152,24 +1224,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                     <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
                     <span class="n">job</span><span class="o">.</span><span class="n">removeHandler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="p">)</span>
                 <span class="n">path</span> <span class="o">=</span> <span class="n">iter_dir</span> <span class="o">/</span> <span class="s2">"iteration.out"</span>
-                <span class="n">path</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">resuming_iteration</span><span class="p">:</span>
+                    <span class="n">path</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">missing_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">printing</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">)</span>
                 <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="n">fmt</span><span class="o">=</span><span class="s2">"</span><span class="si">{message:s}</span><span class="s2">"</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s2">"{"</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
                 <span class="n">job</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span><span class="p">)</span>
 
-                <span class="c1"># Add the iteration to the ids so the directory structure is</span>
-                <span class="c1"># reasonable</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">reset_visited</span><span class="p">()</span>
-                <span class="n">tmp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">working_path</span><span class="o">.</span><span class="n">name</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">set_subids</span><span class="p">((</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">_id</span><span class="p">,</span> <span class="n">tmp</span><span class="p">))</span>
-
             <span class="c1"># Run through the steps in the loop body</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="n">node</span> <span class="o">=</span> <span class="n">next_node</span>
                 <span class="n">next_node</span> <span class="o">=</span> <span class="n">next_node</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-                <span class="n">seamm</span><span class="o">.</span><span class="n">step_completed</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                <span class="n">seamm</span><span class="o">.</span><span class="n">step_completed</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">next_node</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">DeprecationWarning</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
                 <span class="n">printer</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="s2">"</span><span class="se">\n</span><span class="s2">Deprecation warning: "</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
                 <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">(</span><span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
@@ -1189,9 +1256,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="k">if</span> <span class="s2">"continue"</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">"errors"</span><span class="p">]:</span>
                     <span class="n">next_node</span> <span class="o">=</span> <span class="bp">self</span>
                 <span class="k">elif</span> <span class="s2">"exit"</span> <span class="ow">in</span> <span class="n">P</span><span class="p">[</span><span class="s2">"errors"</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">checkpointer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">checkpointer</span><span class="o">.</span><span class="n">iteration_failed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
                     <span class="k">break</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="k">raise</span>
+                <span class="c1"># Keep what the failed iteration wrote, as before; a resume</span>
+                <span class="c1"># carries on with the next iteration.</span>
+                <span class="k">if</span> <span class="n">checkpointer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">checkpointer</span><span class="o">.</span><span class="n">iteration_failed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node</span><span class="p">)</span>
 
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">isEnabledFor</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">):</span>
                 <span class="n">p</span> <span class="o">=</span> <span class="n">psutil</span><span class="o">.</span><span class="n">Process</span><span class="p">()</span>
@@ -1200,6 +1273,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Bottom of loop </span><span class="si">{</span><span class="n">next_node</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
 
         <span class="c1"># Return to the normally scheduled step, i.e. fall out of the loop.</span>
+        <span class="k">if</span> <span class="n">checkpointer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">checkpointer</span><span class="o">.</span><span class="n">leave_loop</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
         <span class="c1"># Remove any redirection of printing.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_handler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1213,6 +1288,42 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exit_node</span><span class="p">()</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_checkpoint_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">P</span><span class="p">,</span> <span class="n">items</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The loop's state at the start of an iteration, for the checkpoint."""</span>
+        <span class="k">if</span> <span class="n">P</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span> <span class="o">==</span> <span class="s2">"For"</span><span class="p">:</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_count</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">count</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">"type"</span><span class="p">:</span> <span class="n">P</span><span class="p">[</span><span class="s2">"type"</span><span class="p">],</span>
+            <span class="s2">"count"</span><span class="p">:</span> <span class="n">count</span><span class="p">,</span>
+            <span class="s2">"length"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_length</span><span class="p">,</span>
+            <span class="s2">"loop_count"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_loop_count</span><span class="p">,</span>
+            <span class="s2">"loop_value"</span><span class="p">:</span> <span class="n">_plain</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span><span class="p">),</span>
+            <span class="s2">"directory"</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_custom_directory_name</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">items</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">"items"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">_plain</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">items</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">"indices"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">_plain</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">indices</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">state</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_restore_state</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Restore the loop's state from the checkpoint, to resume it."""</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loop_count</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">"loop_count"</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loop_value</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">"loop_value"</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_loop_length</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">"length"</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_custom_directory_name</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">"directory"</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_find_body_node</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">node_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""The node of the loop's body with the given id (a list of strings)."""</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">seamm</span><span class="o">.</span><span class="n">checkpoint</span><span class="o">.</span><span class="n">find_node</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="p">,</span> <span class="n">node_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">node</span>
+        <span class="k">raise</span> <span class="n">seamm</span><span class="o">.</span><span class="n">CheckpointError</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">"Cannot find step </span><span class="si">{</span><span class="s1">'.'</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">node_id</span><span class="p">)</span><span class="si">}</span><span class="s2"> in the loop to resume at."</span>
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="Loop.default_edge_subtype">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.Loop.default_edge_subtype">[docs]</a>
