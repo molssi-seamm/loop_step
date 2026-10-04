@@ -35,6 +35,10 @@ def _plain(value):
 
 printer = printing.getPrinter("loop")
 
+# How many times an iteration of a parallel loop whose evaluator stopped early
+# (killed, out of memory) is run again, resuming from its checkpoint
+MAX_RETRIES = 2
+
 
 def _yes(value):
     """A boolean parameter's value, as text or as a bool."""
@@ -957,35 +961,55 @@ class Loop(seamm.Node):
                 )
             )
 
-        # Merge the iterations in order as they finish
+        # Merge the iterations in order as they finish. An iteration whose
+        # evaluator stopped before the iteration ended (killed, out of memory,
+        # a lost node) runs again, resuming from its own checkpoint.
         results = {}
-        runs = task_set.run() if n > 0 else iter(())
-        try:
-            for result in runs:
-                results[keys[result.key]] = result
-                while state["next"] in results:
-                    k = state["next"]
-                    stopped = self._merge_iteration(
-                        P,
-                        context,
-                        state,
-                        merge_state,
-                        k,
-                        results.pop(k),
-                        checkpointer,
-                        system_db,
-                        loop_directory,
-                        job_directory,
-                        later_wins,
-                    )
+        retries = {}
+        to_run = task_set if n > 0 else None
+        while to_run is not None:
+            again = []
+            runs = to_run.run()
+            try:
+                for result in runs:
+                    k = keys[result.key]
+                    if self._stopped_early(state, k, loop_directory):
+                        if retries.get(k, 0) < MAX_RETRIES:
+                            retries[k] = retries.get(k, 0) + 1
+                            printer.job(
+                                f"    Loop iteration {state['directories'][str(k)]} "
+                                "stopped before it ended; running it again."
+                            )
+                            again.append(task_set.tasks[result.key])
+                            continue
+                    results[k] = result
+                    while state["next"] in results:
+                        k = state["next"]
+                        stopped = self._merge_iteration(
+                            P,
+                            context,
+                            state,
+                            merge_state,
+                            k,
+                            results.pop(k),
+                            checkpointer,
+                            system_db,
+                            loop_directory,
+                            job_directory,
+                            later_wins,
+                        )
+                        if stopped is not None:
+                            break
                     if stopped is not None:
                         break
-                if stopped is not None:
-                    break
-        finally:
-            # Cancels the iterations still running
-            if n > 0:
+            finally:
+                # Cancels the iterations still running
                 runs.close()
+            to_run = None
+            if stopped is None and len(again) > 0:
+                to_run = TaskSet(self, local=pool, root=root)
+                for task in again:
+                    to_run.add(task)
 
         if stopped is not None:
             k, why = stopped
@@ -1034,6 +1058,30 @@ class Loop(seamm.Node):
                 )
         checkpointer.leave_loop(self)
 
+    def _evaluator_directory(self, state, k, loop_directory):
+        from seamm_exec import iteration as iterations
+
+        return (
+            loop_directory
+            / state["directories"][str(k)]
+            / iterations.EVALUATOR_DIRECTORY
+        )
+
+    def _stopped_early(self, state, k, loop_directory):
+        """Whether iteration ``k``'s evaluator stopped before the iteration ended.
+
+        It did if its checkpoint is still 'running': an evaluator that ends,
+        with an error or not, says so in its checkpoint.
+        """
+        path = self._evaluator_directory(state, k, loop_directory) / "seamm.db"
+        if not path.exists():
+            return False
+        try:
+            checkpoint = seamm.read_checkpoint(path)
+        except Exception:
+            return False
+        return checkpoint is not None and checkpoint.get("state") == "running"
+
     def _merge_iteration(
         self,
         P,
@@ -1060,7 +1108,9 @@ class Loop(seamm.Node):
         name = state["directories"][str(k)]
         iter_dir = loop_directory / name
         evaluator = iter_dir / iterations.EVALUATOR_DIRECTORY
-        outcome = iterations.iteration_outcome(evaluator) if result.ok else None
+        # The iteration's own final checkpoint says whether it ended: an
+        # evaluator killed as it exited, after finishing, did its work.
+        outcome = iterations.iteration_outcome(evaluator)
         if outcome is None:
             reason = result.reason or f"return code {result.returncode}"
             printer.job(
