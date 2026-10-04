@@ -1,6 +1,15 @@
 =======
 History
 =======
+2026.10.4 -- Loops resume where they stopped
+    * A job resumed from its checkpoint (seamm_exec 2026.10.4.1, ``--resume``)
+      continues a loop at the iteration and step it had reached, with the same
+      iteration directory and the same rows, structures or values to loop over as
+      when the loop started; a finished iteration is not run again. An iteration that
+      failed and was skipped ("continue to next iteration" or "exit the loop")
+      keeps what it wrote, as before, and is not retried.
+    * Requires seamm 2026.10.4.
+
 2026.10.3 -- Loops over tables in the job's database
     * Loops over the rows of a table work with tables kept in the job's database (seamm
       2026.10.3); the job's database is committed after each step of the loop body.
