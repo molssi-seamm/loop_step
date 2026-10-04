@@ -21,6 +21,15 @@ from seamm_util.printing import FormattedText as __
 
 logger = logging.getLogger(__name__)
 job = printing.getPrinter()
+
+
+def _plain(value):
+    """A plain Python value for JSON, e.g. from a numpy scalar."""
+    if hasattr(value, "item") and not isinstance(value, (list, tuple, dict)):
+        return value.item()
+    return value
+
+
 printer = printing.getPrinter("loop")
 
 
@@ -220,6 +229,18 @@ class Loop(seamm.Node):
         # Reset variables to initial state.
         self._custom_directory_name = None
 
+        # Resuming a job part way through this loop? Then the checkpoint holds
+        # the loop's state and the variables, so the set-up below is skipped and
+        # the iteration it was in is set up again rather than advanced to.
+        checkpointer = seamm.checkpoint.get_checkpointer()
+        resume = None
+        if checkpointer is not None:
+            resume = checkpointer.loop_resume(self)
+        resume_node = None
+        if resume is not None:
+            state, resume_node = resume
+            self._restore_state(state)
+
         # Print out header to the main output
         printer.important(__(self.description_text(P), indent=self.indent))
 
@@ -315,6 +336,15 @@ class Loop(seamm.Node):
                 else:
                     self.set_variable("_loop_indices", (None,))
         elif P["type"] == "For rows in table":
+            if resume is not None:
+                self.table = self.get_table(P["table"], create=False)
+                table_rows = state["items"]
+                table_indices = state["indices"]
+                n_table_indices = len(table_indices)
+                if n_table_indices > 0:
+                    index_is_int = isinstance(table_indices[0], int)
+                    if index_is_int:
+                        fmt = f"0{len(str(max(table_indices) + 1))}d"
             if self._loop_value is None:
                 self.table = self.get_table(P["table"], create=False)
                 self.table["loop index"] = True
@@ -381,7 +411,13 @@ class Loop(seamm.Node):
         elif P["type"] == "For systems in the database":
             # The configurations to loop over: the standard SEAMM selection. An
             # empty selection is simply a loop with no iterations.
-            configurations = self.select_configurations(P, errors=False)
+            if resume is not None:
+                system_db = self.get_variable("_system_db")
+                configurations = [
+                    system_db.get_configuration(cid) for cid in state["items"]
+                ]
+            else:
+                configurations = self.select_configurations(P, errors=False)
 
             if self._loop_value is None:
                 self._loop_value = 0
@@ -425,18 +461,22 @@ class Loop(seamm.Node):
                 out_level = out_handler.level
                 out_handler.setLevel(printing.JOB)
 
-        # Cycle through the iterations
+        # Cycle through the iterations. Resuming in the middle of an iteration,
+        # set it up again without advancing, then start its body at the step
+        # that had not finished.
         next_node = self
+        advance = resume is None or resume_node is None
         while next_node is not None:
             if next_node is self:
                 next_node = self.loop_node()
 
                 if P["type"] == "For":
-                    self._loop_count += 1
-                    if self._loop_count > 1:
-                        self._loop_value += step
-                        if ndigits > 0:
-                            self._loop_value = round(self._loop_value, ndigits)
+                    if advance:
+                        self._loop_count += 1
+                        if self._loop_count > 1:
+                            self._loop_value += step
+                            if ndigits > 0:
+                                self._loop_value = round(self._loop_value, ndigits)
 
                     self.set_variable(P["variable"], self._loop_value)
 
@@ -480,7 +520,8 @@ class Loop(seamm.Node):
                 elif P["type"] == "Foreach":
                     self.logger.debug(f"Foreach {P['variable']} in {P['values']}")
 
-                    self._loop_value += 1
+                    if advance:
+                        self._loop_value += 1
 
                     if self._loop_value > self._loop_length:
                         self._loop_value = None
@@ -518,7 +559,8 @@ class Loop(seamm.Node):
                     self.set_variable("_loop_index", self._loop_value)
                     self.logger.info("    Loop value = {}".format(value))
                 elif P["type"] == "For rows in table":
-                    self._loop_value += 1
+                    if advance:
+                        self._loop_value += 1
                     if self._loop_value > n_table_indices:
                         self._loop_value = None
 
@@ -578,7 +620,8 @@ class Loop(seamm.Node):
                             self.set_variable(key, value)
                     self.logger.debug("   _row = {}".format(row))
                 elif P["type"] == "For systems in the database":
-                    self._loop_value += 1
+                    if advance:
+                        self._loop_value += 1
 
                     if self._loop_value > self._loop_length:
                         self._loop_value = None
@@ -628,6 +671,11 @@ class Loop(seamm.Node):
                     self.logger.info(f"       system = {system.name}")
                     self.logger.info(f"configuration = {configuration.name}")
 
+                # Resuming this iteration: its directory is the one it had, not
+                # a new unique name next to it.
+                if not advance:
+                    self._custom_directory_name = state["directory"]
+
                 # Direct most output to iteration.out
                 # A handler for the file
                 iter_dir = self.working_path
@@ -637,7 +685,8 @@ class Loop(seamm.Node):
                     self._file_handler.close()
                     job.removeHandler(self._file_handler)
                 path = iter_dir / "iteration.out"
-                path.unlink(missing_ok=True)
+                if advance:
+                    path.unlink(missing_ok=True)
                 self._file_handler = logging.FileHandler(path)
                 self._file_handler.setLevel(printing.NORMAL)
                 formatter = logging.Formatter(fmt="{message:s}", style="{")
@@ -650,11 +699,27 @@ class Loop(seamm.Node):
                 tmp = self.working_path.name
                 self.set_subids((*self._id, tmp))
 
+                # Checkpoint the start of the iteration, with what is needed to
+                # set it up again.
+                if checkpointer is not None:
+                    if not advance:
+                        next_node = self._find_body_node(resume_node)
+                    if P["type"] == "For rows in table":
+                        items = (table_rows, table_indices)
+                    elif P["type"] == "For systems in the database":
+                        items = ([c.id for c in configurations], None)
+                    else:
+                        items = (None, None)
+                    checkpointer.enter_iteration(
+                        self, self._checkpoint_state(P, *items), next_node
+                    )
+                advance = True
+
             # Run through the steps in the loop body
             try:
                 node = next_node
                 next_node = next_node.run()
-                seamm.step_completed(node)
+                seamm.step_completed(node, next_node)
             except DeprecationWarning as e:
                 printer.normal("\nDeprecation warning: " + str(e))
                 traceback.print_exc(file=sys.stderr)
@@ -674,9 +739,15 @@ class Loop(seamm.Node):
                 if "continue" in P["errors"]:
                     next_node = self
                 elif "exit" in P["errors"]:
+                    if checkpointer is not None:
+                        checkpointer.iteration_failed(self, node)
                     break
                 else:
                     raise
+                # Keep what the failed iteration wrote, as before; a resume
+                # carries on with the next iteration.
+                if checkpointer is not None:
+                    checkpointer.iteration_failed(self, node)
 
             if self.logger.isEnabledFor(logging.DEBUG):
                 p = psutil.Process()
@@ -685,6 +756,8 @@ class Loop(seamm.Node):
             self.logger.debug(f"Bottom of loop {next_node}")
 
         # Return to the normally scheduled step, i.e. fall out of the loop.
+        if checkpointer is not None:
+            checkpointer.leave_loop(self)
 
         # Remove any redirection of printing.
         if self._file_handler is not None:
@@ -697,6 +770,42 @@ class Loop(seamm.Node):
             out_handler.setLevel(out_level)
 
         return self.exit_node()
+
+    def _checkpoint_state(self, P, items=None, indices=None):
+        """The loop's state at the start of an iteration, for the checkpoint."""
+        if P["type"] == "For":
+            count = self._loop_count
+        else:
+            count = self._loop_value
+        state = {
+            "type": P["type"],
+            "count": count,
+            "length": self._loop_length,
+            "loop_count": self._loop_count,
+            "loop_value": _plain(self._loop_value),
+            "directory": self._custom_directory_name,
+        }
+        if items is not None:
+            state["items"] = [_plain(x) for x in items]
+        if indices is not None:
+            state["indices"] = [_plain(x) for x in indices]
+        return state
+
+    def _restore_state(self, state):
+        """Restore the loop's state from the checkpoint, to resume it."""
+        self._loop_count = state["loop_count"]
+        self._loop_value = state["loop_value"]
+        self._loop_length = state["length"]
+        self._custom_directory_name = state["directory"]
+
+    def _find_body_node(self, node_id):
+        """The node of the loop's body with the given id (a list of strings)."""
+        node = seamm.checkpoint.find_node(self.flowchart, node_id)
+        if node is not None:
+            return node
+        raise seamm.CheckpointError(
+            f"Cannot find step {'.'.join(node_id)} in the loop to resume at."
+        )
 
     def default_edge_subtype(self):
         """Return the default subtype of the edge. Usually this is 'next'
