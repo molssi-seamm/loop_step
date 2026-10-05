@@ -49,6 +49,18 @@ search_fields = {
 }
 
 
+# The settings of a parallel loop, shown when its iterations run in parallel
+PARALLEL_PARAMETERS = (
+    "iterations at once",
+    "cores per iteration",
+    "memory per iteration",
+    "time per iteration",
+    "snapshot",
+    "placement",
+    "same-cell writes",
+)
+
+
 class TkLoop(seamm.TkNode):
     """The node_class is the class of the 'real' node that this
     class is the Tk graphics partner for
@@ -147,6 +159,12 @@ class TkLoop(seamm.TkNode):
 
         self["errors"].combobox.config(state="readonly")
 
+        # Parallel iterations: their settings only when asked for
+        self["parallel"].combobox.bind("<<ComboboxSelected>>", self.reset_dialog)
+        self["parallel"].combobox.config(state="readonly")
+        for widget in ("snapshot", "placement", "same-cell writes"):
+            self[widget].combobox.config(state="readonly")
+
     def criteria_callback(self, widget, criterion, event, what):
         """Handle changes in the search criteria widget.
 
@@ -237,6 +255,15 @@ class TkLoop(seamm.TkNode):
             raise RuntimeError("Don't recognize the loop_type {}".format(loop_type))
         self["errors"].grid(row=row, column=0, columnspan=4, sticky=tk.W)
         row += 1
+        self["parallel"].grid(row=row, column=0, columnspan=4, sticky=tk.W)
+        row += 1
+        if self["parallel"].get() == "yes":
+            widgets = []
+            for key in PARALLEL_PARAMETERS:
+                self[key].grid(row=row, column=1, columnspan=4, sticky=tk.W)
+                widgets.append(self[key])
+                row += 1
+            sw.align_labels(widgets, sticky=tk.E)
         frame.columnconfigure(0, minsize=40)
 
     def right_click(self, event):

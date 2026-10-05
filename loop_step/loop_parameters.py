@@ -204,6 +204,104 @@ class LoopParameters(seamm.Parameters):
             "description": "On errors",
             "help_text": ("How to handle errors"),
         },
+        # Parallel iterations (phase 6 of the parallel-execution campaign)
+        "parallel": {
+            "default": "no",
+            "kind": "boolean",
+            "default_units": "",
+            "enumeration": ("no", "yes"),
+            "format_string": "",
+            "description": "Run iterations in parallel:",
+            "help_text": (
+                "Run the iterations at the same time, each in its own evaluator. "
+                "They must be independent: each sees the job as it was when the "
+                "loop started, and variables set in the body are not visible "
+                "after the loop. Tables, properties, structures and files come "
+                "back, merged in iteration order."
+            ),
+        },
+        "iterations at once": {
+            "default": "as many as fit",
+            "kind": "integer",
+            "default_units": "",
+            "enumeration": ("as many as fit",),
+            "format_string": "",
+            "description": "Iterations at once:",
+            "help_text": (
+                "How many iterations run at the same time on this machine. By "
+                "default as many as the cores and memory allow, given the cores "
+                "and memory per iteration."
+            ),
+        },
+        "cores per iteration": {
+            "default": 1,
+            "kind": "integer",
+            "default_units": "",
+            "enumeration": tuple(),
+            "format_string": "",
+            "description": "Cores per iteration:",
+            "help_text": "The cores each iteration uses for its calculations.",
+        },
+        "memory per iteration": {
+            "default": 2.0,
+            "kind": "float",
+            "default_units": "GB",
+            "enumeration": tuple(),
+            "format_string": ".1f",
+            "description": "Memory per iteration:",
+            "help_text": "The memory each iteration needs at most.",
+        },
+        "time per iteration": {
+            "default": "not given",
+            "kind": "float",
+            "default_units": "h",
+            "enumeration": ("not given",),
+            "format_string": ".2f",
+            "description": "Time per iteration:",
+            "help_text": (
+                "An estimate of the time each iteration takes, used to bundle "
+                "iterations into queue jobs."
+            ),
+        },
+        "snapshot": {
+            "default": "selected structures",
+            "kind": "enumeration",
+            "default_units": "",
+            "enumeration": ("selected structures", "whole database"),
+            "format_string": "s",
+            "description": "Each iteration gets:",
+            "help_text": (
+                "What of the job's database each iteration starts with: the "
+                "structure it works on (and the current one) with all the "
+                "tables, or a copy of the whole database."
+            ),
+        },
+        "placement": {
+            "default": "inline",
+            "kind": "enumeration",
+            "default_units": "",
+            "enumeration": ("inline", "separate tasks"),
+            "format_string": "s",
+            "description": "Calculations run:",
+            "help_text": (
+                "Where each iteration's calculations run: inline, in the "
+                "iteration's own share of the machine, or as separate tasks on "
+                "the job's target."
+            ),
+        },
+        "same-cell writes": {
+            "default": "are an error",
+            "kind": "enumeration",
+            "default_units": "",
+            "enumeration": ("are an error", "the later iteration wins"),
+            "format_string": "s",
+            "description": "Two iterations writing one table cell:",
+            "help_text": (
+                "What to do when two iterations write the same cell of a table "
+                "row that existed before the loop: stop with an error, or keep "
+                "the value from the later iteration, with a warning."
+            ),
+        },
     }
 
     def __init__(self, defaults={}, data=None):
