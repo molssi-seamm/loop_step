@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM Loop Plug-in 2026.10.4 documentation</title>
+    <title>History &#8212; SEAMM Loop Plug-in 2026.10.5 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=3dc6335c"></script>
+    <script src="_static/documentation_options.js?v=99beb745"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -62,7 +62,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="prev" title="Development Team" href="authors.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.4" />
+  <meta name="docsearch:version" content="2026.10.5" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -505,6 +505,32 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.5 – Run a loop’s iterations in parallel</dt><dd><ul class="simple">
+<li><p>New option “Run iterations in parallel” (off by default). Each iteration then
+runs in an evaluator of its own, at the same time as others, on this machine or
+bundled into queue jobs, and what it did – structures, properties, table rows
+and cells, files written in the job’s directory – is merged back in iteration
+order. The iterations must be independent: each sees the job’s database as it
+was when the loop started (a job-level file it reads is read as it is at that
+moment), and variables set in the loop are not visible after it. <code class="docutils literal notranslate"><span class="pre">break</span></code>,
+<code class="docutils literal notranslate"><span class="pre">continue</span></code> and skipping work as before; a failed iteration is never merged.
+Two iterations changing the same table cell or structure are an error unless
+“the later iteration wins” is chosen, which keeps the later change and writes a
+warning to <code class="docutils literal notranslate"><span class="pre">job.out</span></code>.</p></li>
+<li><p>Its settings, shown only for a parallel loop: iterations at once (by default
+as many as cores and memory allow), cores, memory and time per iteration, what
+each iteration gets (the structures it works on, or the whole database – every
+iteration’s copy is written as the loop starts, which needs disk space), where
+calculations run (inline, or as separate tasks – experimental) and same-cell
+writes. Starting an evaluator takes about five seconds, so short iterations are
+better run serially.</p></li>
+<li><p>A job stopped part way through a parallel loop resumes it: merged iterations are
+not run again and running ones resume where they were; an iteration whose
+evaluator was killed is run again, up to twice.</p></li>
+<li><p>A user guide for the Loop step.</p></li>
+<li><p>Requires molsystem, seamm and seamm-exec 2026.10.5.</p></li>
+</ul>
+</dd>
 <dt>2026.10.4 – Loops resume where they stopped</dt><dd><ul class="simple">
 <li><p>A job resumed from its checkpoint (seamm_exec 2026.10.4.1, <code class="docutils literal notranslate"><span class="pre">--resume</span></code>)
 continues a loop at the iteration and step it had reached, with the same

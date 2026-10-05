@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>loop_step.loop_parameters &#8212; SEAMM Loop Plug-in 2026.10.4 documentation</title>
+    <title>loop_step.loop_parameters &#8212; SEAMM Loop Plug-in 2026.10.5 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=3dc6335c"></script>
+    <script src="../../_static/documentation_options.js?v=99beb745"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -60,7 +60,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.4" />
+  <meta name="docsearch:version" content="2026.10.5" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -692,6 +692,104 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">"s"</span><span class="p">,</span>
             <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"On errors"</span><span class="p">,</span>
             <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"How to handle errors"</span><span class="p">),</span>
+        <span class="p">},</span>
+        <span class="c1"># Parallel iterations (phase 6 of the parallel-execution campaign)</span>
+        <span class="s2">"parallel"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"no"</span><span class="p">,</span>
+            <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"boolean"</span><span class="p">,</span>
+            <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"no"</span><span class="p">,</span> <span class="s2">"yes"</span><span class="p">),</span>
+            <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Run iterations in parallel:"</span><span class="p">,</span>
+            <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"Run the iterations at the same time, each in its own evaluator. "</span>
+                <span class="s2">"They must be independent: each sees the job as it was when the "</span>
+                <span class="s2">"loop started, and variables set in the body are not visible "</span>
+                <span class="s2">"after the loop. Tables, properties, structures and files come "</span>
+                <span class="s2">"back, merged in iteration order."</span>
+            <span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">"iterations at once"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"as many as fit"</span><span class="p">,</span>
+            <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
+            <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"as many as fit"</span><span class="p">,),</span>
+            <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Iterations at once:"</span><span class="p">,</span>
+            <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"How many iterations run at the same time on this machine. By "</span>
+                <span class="s2">"default as many as the cores and memory allow, given the cores "</span>
+                <span class="s2">"and memory per iteration."</span>
+            <span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">"cores per iteration"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+            <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
+            <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"enumeration"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
+            <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Cores per iteration:"</span><span class="p">,</span>
+            <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The cores each iteration uses for its calculations."</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">"memory per iteration"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span>
+            <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
+            <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"GB"</span><span class="p">,</span>
+            <span class="s2">"enumeration"</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(),</span>
+            <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">".1f"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Memory per iteration:"</span><span class="p">,</span>
+            <span class="s2">"help_text"</span><span class="p">:</span> <span class="s2">"The memory each iteration needs at most."</span><span class="p">,</span>
+        <span class="p">},</span>
+        <span class="s2">"time per iteration"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"not given"</span><span class="p">,</span>
+            <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"float"</span><span class="p">,</span>
+            <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">"h"</span><span class="p">,</span>
+            <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"not given"</span><span class="p">,),</span>
+            <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">".2f"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Time per iteration:"</span><span class="p">,</span>
+            <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"An estimate of the time each iteration takes, used to bundle "</span>
+                <span class="s2">"iterations into queue jobs."</span>
+            <span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">"snapshot"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"selected structures"</span><span class="p">,</span>
+            <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"enumeration"</span><span class="p">,</span>
+            <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"selected structures"</span><span class="p">,</span> <span class="s2">"whole database"</span><span class="p">),</span>
+            <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">"s"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Each iteration gets:"</span><span class="p">,</span>
+            <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"What of the job's database each iteration starts with: the "</span>
+                <span class="s2">"structure it works on (and the current one) with all the "</span>
+                <span class="s2">"tables, or a copy of the whole database."</span>
+            <span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">"placement"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"inline"</span><span class="p">,</span>
+            <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"enumeration"</span><span class="p">,</span>
+            <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"inline"</span><span class="p">,</span> <span class="s2">"separate tasks"</span><span class="p">),</span>
+            <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">"s"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Calculations run:"</span><span class="p">,</span>
+            <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"Where each iteration's calculations run: inline, in the "</span>
+                <span class="s2">"iteration's own share of the machine, or as separate tasks on "</span>
+                <span class="s2">"the job's target."</span>
+            <span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">"same-cell writes"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"are an error"</span><span class="p">,</span>
+            <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"enumeration"</span><span class="p">,</span>
+            <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"are an error"</span><span class="p">,</span> <span class="s2">"the later iteration wins"</span><span class="p">),</span>
+            <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">"s"</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Two iterations writing one table cell:"</span><span class="p">,</span>
+            <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"What to do when two iterations write the same cell of a table "</span>
+                <span class="s2">"row that existed before the loop: stop with an error, or keep "</span>
+                <span class="s2">"the value from the later iteration, with a warning."</span>
+            <span class="p">),</span>
         <span class="p">},</span>
     <span class="p">}</span>
 
