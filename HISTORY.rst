@@ -1,6 +1,30 @@
 =======
 History
 =======
+2026.10.5 -- Run a loop's iterations in parallel
+    * New option "Run iterations in parallel" (off by default). Each iteration then
+      runs in an evaluator of its own, at the same time as others, on this machine or
+      bundled into queue jobs, and what it did -- structures, properties, table rows
+      and cells, files written in the job's directory -- is merged back in iteration
+      order. The iterations must be independent: each sees the job's database as it
+      was when the loop started (a job-level file it reads is read as it is at that
+      moment), and variables set in the loop are not visible after it. ``break``,
+      ``continue`` and skipping work as before; a failed iteration is never merged.
+      Two iterations changing the same table cell or structure are an error unless
+      "the later iteration wins" is chosen, which keeps the later change and writes a
+      warning to ``job.out``.
+    * Its settings, shown only for a parallel loop: iterations at once (by default
+      as many as cores and memory allow), cores, memory and time per iteration, what
+      each iteration gets (the structures it works on, or the whole database -- every
+      iteration's copy is written as the loop starts, which needs disk space), where
+      calculations run (inline, or as separate tasks -- experimental) and same-cell
+      writes. Starting an evaluator takes about five seconds, so short iterations are
+      better run serially.
+    * A job stopped part way through a parallel loop resumes it: merged iterations are
+      not run again and running ones resume where they were; an iteration whose
+      evaluator was killed is run again, up to twice.
+    * A user guide for the Loop step.
+    * Requires molsystem, seamm and seamm-exec 2026.10.5.
 2026.10.4 -- Loops resume where they stopped
     * A job resumed from its checkpoint (seamm_exec 2026.10.4.1, ``--resume``)
       continues a loop at the iteration and step it had reached, with the same

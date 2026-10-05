@@ -54,7 +54,7 @@ setup(
     install_requires=requirements,
 
     # The resume tests run flowcharts through the evaluator
-    extras_require={"test": ["seamm-exec>=2026.10.4.1"]},
+    extras_require={"test": ["seamm-exec>=2026.10.5"]},
 
     test_suite='tests',
 
