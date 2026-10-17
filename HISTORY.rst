@@ -1,6 +1,12 @@
 =======
 History
 =======
+2026.10.17.1 -- Warn about a fixed random seed in a loop
+    * A step in a loop's body that uses a fixed random seed, such as LAMMPS's
+      Velocities, gives every iteration the same random numbers: iterations that start
+      from the same structure are then the same run, not independent replicas. The
+      check before the job runs warns about it, with a fix setting the seed to random.
+
 2026.10.17 -- Parallel loops: MD runs kept for analysis, and a check before running
     * The record of the MD runs that analysis steps read (Viscosity, Diffusivity,
       Liquid Structure, Dielectric Constant, Ionic Conductivity) now comes back from
