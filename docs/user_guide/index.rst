@@ -68,7 +68,14 @@ Choosing parallel declares that the iterations are independent:
   Write Structure in append mode, get each iteration's part in order; other
   files are those of the last iteration that wrote them, as for a serial loop;
   a table saved inside the loop is saved again after the merge.
-- Variables set in the body are not visible after the loop.
+- Variables set in the body are not visible after the loop, with one exception:
+  the record of the MD runs (``_md_runs``) that analysis steps such as
+  Viscosity, Diffusivity, Liquid Structure, Dielectric Constant and Ionic
+  Conductivity read. Each iteration's runs are added to it, in iteration order,
+  as a serial loop leaves it, so a loop of independent MD runs can run in
+  parallel and the steps after it analyse all of them ("the last MD run of each
+  loop iteration"). The runs of a skipped iteration, whose directory is removed,
+  are left out, in a serial loop too.
 - ``break``, ``continue`` and skipping an iteration work as in a serial loop:
   after a break in iteration *k* the iterations after *k* are not merged, so
   the result is the serial one.

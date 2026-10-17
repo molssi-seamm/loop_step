@@ -216,7 +216,8 @@ class LoopParameters(seamm.Parameters):
                 "Run the iterations at the same time, each in its own evaluator. "
                 "They must be independent: each sees the job as it was when the "
                 "loop started, and variables set in the body are not visible "
-                "after the loop. Tables, properties, structures and files come "
+                "after the loop, except the record of MD runs that analysis steps "
+                "read. Tables, properties, structures, files and MD runs come "
                 "back, merged in iteration order."
             ),
         },

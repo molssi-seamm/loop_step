@@ -1,6 +1,18 @@
 =======
 History
 =======
+2026.10.17 -- The MD runs of a parallel loop are kept for the analysis steps
+    * The record of the MD runs that analysis steps read (Viscosity, Diffusivity,
+      Liquid Structure, Dielectric Constant, Ionic Conductivity) now comes back from
+      a parallel loop: each iteration's runs are added in iteration order, as after a
+      serial loop. Independent MD runs in a loop can now run in parallel and be
+      analyzed together after it, with "the last MD run of each loop iteration".
+      Before, the steps after a parallel loop did not see its runs.
+    * Bugfix: the runs of a skipped iteration, whose directory is removed, are no
+      longer left in the record, where they named files that no longer existed.
+    * Internal: the source distribution now includes the files needed to build the
+      package from it.
+
 2026.10.5 -- Run a loop's iterations in parallel
     * New option "Run iterations in parallel" (off by default). Each iteration then
       runs in an evaluator of its own, at the same time as others, on this machine or
