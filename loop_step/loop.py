@@ -1303,7 +1303,7 @@ class Loop(seamm.Node):
         [str]
             The warnings, as seamm.Problem with their fixes; empty if none.
         """
-        return self._overwriting_steps()
+        return self._overwriting_steps() + self._fixed_seeds()
 
     def _overwriting_steps(self):
         """The warnings for the body's steps that overwrite the shared structure."""
@@ -1343,6 +1343,42 @@ class Loop(seamm.Node):
                     "keep each iteration's structure -- or run the loop serially.",
                     severity=WARNING,
                     fixes=fixes,
+                )
+            )
+        return problems
+
+    def _fixed_seeds(self):
+        """Warnings for steps in the body that seed their random numbers with a
+        fixed value: every iteration gets the same random numbers, so runs that
+        start from the same structure are the same run."""
+        try:
+            from seamm.problems import WARNING, Edit, Fix, Problem
+        except ImportError:  # seamm before 2026.10.17
+            return []
+        if _static(self.parameters, "type") in (None, "For systems in the database"):
+            return []
+        problems = []
+        for node in self._body_nodes():
+            seed = _static(node.parameters, "seed")
+            if seed is None or str(seed).strip().lower() == "random":
+                continue
+            if node.parameters is not None and hasattr(node.parameters, "applies"):
+                values = {k: p.value for k, p in node.parameters.items()}
+                if not node.parameters.applies("seed", values):
+                    continue
+            fix = Fix(
+                f"Use a random seed in '{node.title}'",
+                [Edit(node, "seed", "random")],
+            )
+            problems.append(
+                Problem(
+                    f"'{node.title}' in the loop '{self.title}' uses the fixed random "
+                    f"seed {seed}, so every iteration gets the same random numbers: "
+                    "iterations that start from the same structure are the same run, "
+                    "not independent replicas. Use a random seed, or one that depends "
+                    "on the loop variable.",
+                    severity=WARNING,
+                    fixes=[fix],
                 )
             )
         return problems

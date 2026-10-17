@@ -102,3 +102,57 @@ def test_a_step_inside_a_body_step():
 def test_no_warning(settings):
     flowchart, loop, step = make(**settings)
     assert validate(flowchart, warnings=True) == []
+
+
+class Velocities(seamm.Node):
+    """A step with a random seed, as LAMMPS's Velocities sub-step has."""
+
+    def __init__(self, flowchart, seed="random"):
+        super().__init__(flowchart=flowchart, title="Velocities", extension="Step")
+        self.parameters = seamm.Parameters(
+            defaults={
+                "seed": {
+                    "default": "random",
+                    "kind": "integer",
+                    "default_units": None,
+                    "enumeration": ("random",),
+                    "format_string": "",
+                    "description": "Random seed:",
+                    "help_text": "The seed.",
+                }
+            }
+        )
+        self.parameters["seed"].value = seed
+
+
+def seeded(seed, parallel="no", kind="For"):
+    flowchart = seamm.Flowchart()
+    loop = loop_step.Loop(flowchart=flowchart)
+    flowchart.add_node(loop)
+    _connect(flowchart, flowchart.get_node("1"), loop, "next")
+    step = Velocities(flowchart, seed)
+    flowchart.add_node(step)
+    _connect(flowchart, loop, step, "loop")
+    _connect(flowchart, step, loop, "next")
+    loop.parameters["parallel"].value = parallel
+    loop.parameters["type"].value = kind
+    return flowchart, step
+
+
+@pytest.mark.parametrize("parallel", ["no", "yes"])
+def test_a_fixed_seed_in_a_loop(parallel):
+    flowchart, step = seeded("12345", parallel)
+    (problem,) = validate(flowchart, warnings=True)
+    assert "fixed random seed 12345" in problem
+    problem.fixes[0].apply()
+    assert step.parameters["seed"].value == "random"
+    assert validate(flowchart, warnings=True) == []
+
+
+@pytest.mark.parametrize(
+    "seed, kind",
+    [("random", "For"), ("$seed", "For"), ("12345", "For systems in the database")],
+)
+def test_no_seed_warning(seed, kind):
+    flowchart, step = seeded(seed, kind=kind)
+    assert validate(flowchart, warnings=True) == []
