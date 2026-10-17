@@ -76,6 +76,13 @@ Choosing parallel declares that the iterations are independent:
   parallel and the steps after it analyse all of them ("the last MD run of each
   loop iteration"). The runs of a skipped iteration, whose directory is removed,
   are left out, in a serial loop too.
+
+  For such replicas, set the MD steps' "structure handling" to "Discard the
+  structure", so each iteration starts from the same structure with new
+  velocities. By default each MD step writes its final structure over the
+  current configuration, which in a serial loop makes each iteration continue
+  from the last, and in a parallel loop is an error (two iterations changing
+  one configuration).
 - ``break``, ``continue`` and skipping an iteration work as in a serial loop:
   after a break in iteration *k* the iterations after *k* are not merged, so
   the result is the serial one.
