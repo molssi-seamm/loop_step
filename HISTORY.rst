@@ -10,6 +10,9 @@ History
       Before, the steps after a parallel loop did not see its runs.
     * Bugfix: the runs of a skipped iteration, whose directory is removed, are no
       longer left in the record, where they named files that no longer existed.
+    * Requires seamm 2026.10.17, in which the sub-steps of steps such as LAMMPS keep
+      their citations and files in their own iteration; before, iterations running
+      together could fail on the job's shared citations.
     * Internal: the source distribution now includes the files needed to build the
       package from it.
 
