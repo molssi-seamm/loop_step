@@ -1,7 +1,7 @@
 =======
 History
 =======
-2026.10.17 -- The MD runs of a parallel loop are kept for the analysis steps
+2026.10.17 -- Parallel loops: MD runs kept for analysis, and a check before running
     * The record of the MD runs that analysis steps read (Viscosity, Diffusivity,
       Liquid Structure, Dielectric Constant, Ionic Conductivity) now comes back from
       a parallel loop: each iteration's runs are added in iteration order, as after a
@@ -10,9 +10,17 @@ History
       Before, the steps after a parallel loop did not see its runs.
     * Bugfix: the runs of a skipped iteration, whose directory is removed, are no
       longer left in the record, where they named files that no longer existed.
+    * A parallel loop over one structure now warns, before the job runs, about each
+      step in its body that writes its structure over the current configuration --
+      the default of MD and optimization steps -- since two iterations changing the
+      structure cannot be merged. The warning offers to discard the structure (for
+      independent runs such as MD replicas) or to create a new configuration. The
+      warning is repeated in the job's output when the loop starts.
     * Requires seamm 2026.10.17, in which the sub-steps of steps such as LAMMPS keep
       their citations and files in their own iteration; before, iterations running
-      together could fail on the job's shared citations.
+      together could fail on the job's shared citations. Requires molsystem
+      2026.10.17, in which iterations that change a structure in the same way (for
+      example by reading its spin multiplicity) no longer conflict.
     * Internal: the source distribution now includes the files needed to build the
       package from it.
 

@@ -47,6 +47,21 @@ MAX_RETRIES = 2
 APPENDED_VARIABLES = ("_md_runs",)
 
 
+#: The structure handling that writes a step's structure over the current
+#: configuration, which the iterations of a parallel loop over one structure share
+OVERWRITE = "Overwrite the current configuration"
+
+
+def _static(parameters, key):
+    """A parameter's value as given, or None if it is a variable or expression."""
+    if parameters is None or key not in parameters:
+        return None
+    value = parameters[key].value
+    if isinstance(value, str) and value.strip().startswith(("$", "=")):
+        return None
+    return value
+
+
 def _added_records(before, after):
     """The records an iteration added to a list that it started as ``before``."""
     before = list(before or [])
@@ -894,6 +909,10 @@ class Loop(seamm.Node):
                 state["items"] = [_plain(x) for x in items]
             if indices is not None:
                 state["indices"] = [_plain(x) for x in indices]
+            for problem in self._overwriting_steps():
+                printer.important(
+                    __(f"Warning: {problem}", indent=self.indent + 4 * " ")
+                )
         else:
             state = json.loads(json.dumps(state))
             printer.important(
@@ -1264,6 +1283,98 @@ class Loop(seamm.Node):
             shutil.rmtree(iter_dir, ignore_errors=True)
         printer.job(f"    Merged loop iteration {name}.")
         return stop
+
+    def check_flowchart(self, preceding):
+        """Check, before the job runs, that a parallel loop's iterations can merge.
+
+        The steps in the body of a parallel loop over one structure must not all
+        write their structure over it: two iterations changing the same
+        configuration cannot be merged. Each such step is reported as a warning --
+        some steps that may write the structure do not change it -- with fixes that
+        set its structure handling.
+
+        Parameters
+        ----------
+        preceding : [seamm.Node]
+            The steps that run before this one (not used).
+
+        Returns
+        -------
+        [str]
+            The warnings, as seamm.Problem with their fixes; empty if none.
+        """
+        return self._overwriting_steps()
+
+    def _overwriting_steps(self):
+        """The warnings for the body's steps that overwrite the shared structure."""
+        try:
+            from seamm.problems import WARNING, Edit, Fix, Problem
+        except ImportError:  # seamm before 2026.10.17
+            return []
+        P = self.parameters
+        if not _yes(_static(P, "parallel") or "no"):
+            return []
+        if _static(P, "type") in (None, "For systems in the database"):
+            return []
+        if "later" in str(_static(P, "same-cell writes")):
+            return []
+        problems = []
+        for node in self._body_nodes():
+            if _static(node.parameters, "structure handling") != OVERWRITE:
+                continue
+            fixes = [
+                Fix(
+                    f"Discard the structure in '{node.title}'",
+                    [Edit(node, "structure handling", "Discard the structure")],
+                ),
+                Fix(
+                    f"Create a new configuration in '{node.title}'",
+                    [Edit(node, "structure handling", "Create a new configuration")],
+                ),
+            ]
+            problems.append(
+                Problem(
+                    f"'{node.title}' in the parallel loop '{self.title}' writes its "
+                    "structure over the current configuration, which all the "
+                    "iterations share; if it changes the structure, two iterations "
+                    "changing it cannot be merged and the job stops after the "
+                    "iterations have run. Discard the structure for independent "
+                    "runs such as MD replicas, or create a new configuration to "
+                    "keep each iteration's structure -- or run the loop serially.",
+                    severity=WARNING,
+                    fixes=fixes,
+                )
+            )
+        return problems
+
+    def _body_nodes(self):
+        """The steps in the loop's body, including those inside sub-flowcharts."""
+        from seamm import format3
+
+        def find(items):
+            for item in items:
+                if item.node is self:
+                    return item.body or []
+                for inner in (item.body or [], _sub_items(item.node)):
+                    found = find(inner)
+                    if found is not None:
+                        return found
+            return None
+
+        def _sub_items(node):
+            sub = format3.subflowchart(node)
+            return [] if sub is None else format3.tree(sub)[0]
+
+        nodes = []
+
+        def collect(items):
+            for item in items:
+                nodes.append(item.node)
+                collect(item.body or [])
+                collect(_sub_items(item.node))
+
+        collect(find(format3.tree(self.flowchart)[0]) or [])
+        return nodes
 
     def _drop_records_in(self, directory):
         """Drop the records whose files are in a directory about to be removed."""

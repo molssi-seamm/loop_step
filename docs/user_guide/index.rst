@@ -82,7 +82,9 @@ Choosing parallel declares that the iterations are independent:
   velocities. By default each MD step writes its final structure over the
   current configuration, which in a serial loop makes each iteration continue
   from the last, and in a parallel loop is an error (two iterations changing
-  one configuration).
+  one configuration). The check before the job runs warns about each such step
+  in the body of a parallel loop over one structure, and the editor offers to
+  change it with one click (``seamm-flowchart validate --fix`` does the same).
 - ``break``, ``continue`` and skipping an iteration work as in a serial loop:
   after a break in iteration *k* the iterations after *k* are not merged, so
   the result is the serial one.

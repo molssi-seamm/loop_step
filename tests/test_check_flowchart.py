@@ -1,0 +1,104 @@
+# -*- coding: utf-8 -*-
+
+"""The check of a parallel loop's body before the job runs: steps writing their
+structure over the configuration the iterations share."""
+
+import pytest
+
+import seamm
+from seamm import edit
+from seamm.builder import validate
+
+import loop_step
+
+pytest.importorskip("seamm.problems")
+
+
+class Step(seamm.Node):
+    """A step with the standard structure handling, as MD or optimization has."""
+
+    def __init__(self, flowchart, title):
+        super().__init__(flowchart=flowchart, title=title, extension="Step")
+        self.parameters = seamm.Parameters(
+            defaults=dict(seamm.standard_parameters.structure_handling_parameters)
+        )
+
+
+def _connect(flowchart, a, b, subtype):
+    flowchart.add_edge(a, b, edge_type="execution", edge_subtype=subtype)
+
+
+def make(parallel="yes", kind="For", later=False, inside=False):
+    """Start -> Loop, whose body is a step, or a step holding it in a sub-flowchart."""
+    flowchart = seamm.Flowchart()
+    loop = loop_step.Loop(flowchart=flowchart)
+    flowchart.add_node(loop)
+    _connect(flowchart, flowchart.get_node("1"), loop, "next")
+    if inside:
+        body = seamm.Node(flowchart=flowchart, title="LAMMPS", extension="Code")
+        body.subflowchart = seamm.Flowchart(parent=body)
+        step = Step(body.subflowchart, "NVT")
+        body.subflowchart.add_node(step)
+        _connect(body.subflowchart, body.subflowchart.get_node("1"), step, "next")
+    else:
+        body = step = Step(flowchart, "Optimization")
+    flowchart.add_node(body)
+    _connect(flowchart, loop, body, "loop")
+    _connect(flowchart, body, loop, "next")
+    loop.parameters["parallel"].value = parallel
+    loop.parameters["type"].value = kind
+    if later:
+        loop.parameters["same-cell writes"].value = "the later iteration wins"
+    return flowchart, loop, step
+
+
+def test_a_parallel_loop_warns_and_offers_fixes():
+    flowchart, loop, step = make()
+    assert validate(flowchart) == []  # a warning, not an error
+    (problem,) = validate(flowchart, warnings=True)
+    assert problem.severity == "warning"
+    assert "'Optimization' in the parallel loop 'Loop'" in problem
+    (described,) = edit.describe_problems(flowchart, [problem])
+    assert [f["set"] for f in described["fixes"]] == [
+        [
+            {
+                "step": "1.1",
+                "parameter": "structure handling",
+                "value": "Discard the structure",
+            }
+        ],
+        [
+            {
+                "step": "1.1",
+                "parameter": "structure handling",
+                "value": "Create a new configuration",
+            }
+        ],
+    ]
+    problem.fixes[1].apply()
+    assert step.parameters["structure handling"].value == "Create a new configuration"
+    assert validate(flowchart, warnings=True) == []
+
+
+def test_a_step_inside_a_body_step():
+    flowchart, loop, step = make(inside=True)
+    (problem,) = validate(flowchart, warnings=True)
+    (described,) = edit.describe_problems(flowchart, [problem])
+    assert described["fixes"][0]["set"][0]["step"] == "1.1.1"
+    problem.fixes[0].apply()
+    assert step.parameters["structure handling"].value == "Discard the structure"
+    assert validate(flowchart, warnings=True) == []
+
+
+@pytest.mark.parametrize(
+    "settings",
+    [
+        {"parallel": "no"},
+        {"kind": "For systems in the database"},
+        {"later": True},
+        {"parallel": "$parallel"},
+    ],
+)
+def test_no_warning(settings):
+    flowchart, loop, step = make(**settings)
+    assert validate(flowchart, warnings=True) == []
