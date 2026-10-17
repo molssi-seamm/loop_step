@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM Loop Plug-in 2026.10.17 documentation</title>
+    <title>User Guide &#8212; SEAMM Loop Plug-in 2026.10.17.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=fed69469"></script>
+    <script src="../_static/documentation_options.js?v=62bfd45e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17" />
+  <meta name="docsearch:version" content="2026.10.17.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -584,7 +584,10 @@ current configuration, which in a serial loop makes each iteration continue
 from the last, and in a parallel loop is an error (two iterations changing
 one configuration). The check before the job runs warns about each such step
 in the body of a parallel loop over one structure, and the editor offers to
-change it with one click (<code class="docutils literal notranslate"><span class="pre">seamm-flowchart</span> <span class="pre">validate</span> <span class="pre">--fix</span></code> does the same).</p>
+change it with one click (<code class="docutils literal notranslate"><span class="pre">seamm-flowchart</span> <span class="pre">validate</span> <span class="pre">--fix</span></code> does the same).
+Replicas need different random numbers too: the check also warns about a step
+in the body with a fixed random seed, such as LAMMPS’s Velocities, which by
+default draws a new one each time.</p>
 </li>
 <li><p><code class="docutils literal notranslate"><span class="pre">break</span></code>, <code class="docutils literal notranslate"><span class="pre">continue</span></code> and skipping an iteration work as in a serial loop:
 after a break in iteration <em>k</em> the iterations after <em>k</em> are not merged, so
