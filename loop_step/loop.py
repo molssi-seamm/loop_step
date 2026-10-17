@@ -39,6 +39,57 @@ printer = printing.getPrinter("loop")
 # (killed, out of memory) is run again, resuming from its checkpoint
 MAX_RETRIES = 2
 
+#: Workspace variables that steps add records to, one after another, such as
+#: ``_md_runs``: a record of each MD run and its data file, which analysis steps
+#: read. A parallel loop appends each iteration's records, in iteration order, as a
+#: serial loop leaves them; the records of a skipped iteration, whose directory is
+#: removed, are dropped in both.
+APPENDED_VARIABLES = ("_md_runs",)
+
+
+#: The structure handling that writes a step's structure over the current
+#: configuration, which the iterations of a parallel loop over one structure share
+OVERWRITE = "Overwrite the current configuration"
+
+
+def _static(parameters, key):
+    """A parameter's value as given, or None if it is a variable or expression."""
+    if parameters is None or key not in parameters:
+        return None
+    value = parameters[key].value
+    if isinstance(value, str) and value.strip().startswith(("$", "=")):
+        return None
+    return value
+
+
+def _added_records(before, after):
+    """The records an iteration added to a list that it started as ``before``."""
+    before = list(before or [])
+    after = list(after or [])
+    if after[: len(before)] == before:
+        return after[len(before) :]
+    return [record for record in after if record not in before]
+
+
+def _checkpoint_variable(path, name):
+    """A variable as the checkpoint in the database ``path`` holds it, or None."""
+    from seamm.checkpoint import decode_value
+
+    checkpoint = seamm.read_checkpoint(path)
+    if checkpoint is None:
+        return None
+    data = checkpoint.get("variables", {}).get(name)
+    return None if data is None else decode_value(data)
+
+
+def _inside(path, directory):
+    """Whether ``path`` is in ``directory``."""
+    try:
+        Path(path).resolve().relative_to(Path(directory).resolve())
+    except (TypeError, ValueError):
+        return False
+    return True
+
 
 class _Collect(logging.Handler):
     """Collects the warnings of a merge, for job.out."""
@@ -747,6 +798,7 @@ class Loop(seamm.Node):
                     # The parent removes the iteration's directory
                     raise seamm.IterationDone(skipped=True)
                 next_node = self
+                self._drop_records_in(iter_dir)
                 shutil.rmtree(iter_dir, ignore_errors=True)
             except Exception as e:
                 tmp = self.working_path.name
@@ -857,6 +909,10 @@ class Loop(seamm.Node):
                 state["items"] = [_plain(x) for x in items]
             if indices is not None:
                 state["indices"] = [_plain(x) for x in indices]
+            for problem in self._overwriting_steps():
+                printer.important(
+                    __(f"Warning: {problem}", indent=self.indent + 4 * " ")
+                )
         else:
             state = json.loads(json.dumps(state))
             printer.important(
@@ -1151,6 +1207,16 @@ class Loop(seamm.Node):
 
         from molsystem.snapshot import MergeConflict
 
+        added = {}
+        if not outcome.get("skip"):
+            for variable in APPENDED_VARIABLES:
+                records = _added_records(
+                    _checkpoint_variable(evaluator / "baseline.db", variable),
+                    _checkpoint_variable(evaluator / "seamm.db", variable),
+                )
+                if len(records) > 0:
+                    added[variable] = records
+
         if P["type"] == "For systems in the database":
             # As a serial loop leaves it: the iteration's configuration current,
             # unless its body chose another (merged below). The merge cannot see
@@ -1196,6 +1262,12 @@ class Loop(seamm.Node):
             system_id = merged["maps"].get("system", {}).get(system_id, system_id)
             if system_id in system_db.system_ids:
                 system_db.system = system_id
+        # Committed with the database merge, in the checkpoint below
+        for variable, records in added.items():
+            current = []
+            if self.variable_exists(variable):
+                current = list(self.get_variable(variable))
+            self.set_variable(variable, current + records)
         plan = iterations.plan_files(evaluator, job_directory, outcome.get("run_id"))
         state["files"] = {"iteration": k, "directory": name, "plan": plan}
         state["next"] = k + 1
@@ -1211,6 +1283,112 @@ class Loop(seamm.Node):
             shutil.rmtree(iter_dir, ignore_errors=True)
         printer.job(f"    Merged loop iteration {name}.")
         return stop
+
+    def check_flowchart(self, preceding):
+        """Check, before the job runs, that a parallel loop's iterations can merge.
+
+        The steps in the body of a parallel loop over one structure must not all
+        write their structure over it: two iterations changing the same
+        configuration cannot be merged. Each such step is reported as a warning --
+        some steps that may write the structure do not change it -- with fixes that
+        set its structure handling.
+
+        Parameters
+        ----------
+        preceding : [seamm.Node]
+            The steps that run before this one (not used).
+
+        Returns
+        -------
+        [str]
+            The warnings, as seamm.Problem with their fixes; empty if none.
+        """
+        return self._overwriting_steps()
+
+    def _overwriting_steps(self):
+        """The warnings for the body's steps that overwrite the shared structure."""
+        try:
+            from seamm.problems import WARNING, Edit, Fix, Problem
+        except ImportError:  # seamm before 2026.10.17
+            return []
+        P = self.parameters
+        if not _yes(_static(P, "parallel") or "no"):
+            return []
+        if _static(P, "type") in (None, "For systems in the database"):
+            return []
+        if "later" in str(_static(P, "same-cell writes")):
+            return []
+        problems = []
+        for node in self._body_nodes():
+            if _static(node.parameters, "structure handling") != OVERWRITE:
+                continue
+            fixes = [
+                Fix(
+                    f"Discard the structure in '{node.title}'",
+                    [Edit(node, "structure handling", "Discard the structure")],
+                ),
+                Fix(
+                    f"Create a new configuration in '{node.title}'",
+                    [Edit(node, "structure handling", "Create a new configuration")],
+                ),
+            ]
+            problems.append(
+                Problem(
+                    f"'{node.title}' in the parallel loop '{self.title}' writes its "
+                    "structure over the current configuration, which all the "
+                    "iterations share; if it changes the structure, two iterations "
+                    "changing it cannot be merged and the job stops after the "
+                    "iterations have run. Discard the structure for independent "
+                    "runs such as MD replicas, or create a new configuration to "
+                    "keep each iteration's structure -- or run the loop serially.",
+                    severity=WARNING,
+                    fixes=fixes,
+                )
+            )
+        return problems
+
+    def _body_nodes(self):
+        """The steps in the loop's body, including those inside sub-flowcharts."""
+        from seamm import format3
+
+        def find(items):
+            for item in items:
+                if item.node is self:
+                    return item.body or []
+                for inner in (item.body or [], _sub_items(item.node)):
+                    found = find(inner)
+                    if found is not None:
+                        return found
+            return None
+
+        def _sub_items(node):
+            sub = format3.subflowchart(node)
+            return [] if sub is None else format3.tree(sub)[0]
+
+        nodes = []
+
+        def collect(items):
+            for item in items:
+                nodes.append(item.node)
+                collect(item.body or [])
+                collect(_sub_items(item.node))
+
+        collect(find(format3.tree(self.flowchart)[0]) or [])
+        return nodes
+
+    def _drop_records_in(self, directory):
+        """Drop the records whose files are in a directory about to be removed."""
+        for variable in APPENDED_VARIABLES:
+            if not self.variable_exists(variable):
+                continue
+            records = list(self.get_variable(variable))
+            kept = [
+                r
+                for r in records
+                if not (isinstance(r, dict) and _inside(r.get("path"), directory))
+            ]
+            if len(kept) < len(records):
+                self.set_variable(variable, kept)
 
     def _merge_iteration_files(self, pending, loop_directory, job_directory):
         """The job-level files and citations of a merged iteration.

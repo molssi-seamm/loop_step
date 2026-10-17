@@ -4,11 +4,13 @@
 
 A tiny step plug-in, installed for the test on PYTHONPATH (a module and its
 dist-info with the entry points), makes a system named after the loop's value,
-appends a row to a table it creates if needed, and writes a job-level file. The
+appends a row to a table it creates if needed, writes a job-level file, and records
+a run in ``_md_runs`` as an MD step does, with a data file in its directory. The
 same flowchart is run serially and in parallel, each by ``run_flowchart`` in its
 own directory, and the databases and files are compared.
 """
 
+import json
 import os
 from pathlib import Path
 import sqlite3
@@ -25,7 +27,10 @@ BUILD = "import sys; from seamm.flowchart_cli import main; sys.exit(main())"
 RUN = "import sys; from seamm_exec import run; sys.argv[0] = 'run_flowchart'; run()"
 
 FAKE_STEP = textwrap.dedent('''
-    """A step for testing parallel loops: a system, a table row, a file."""
+    """A step for testing parallel loops: a system, a table row, a file, a run."""
+
+    import json
+    from pathlib import Path
 
     import seamm
 
@@ -67,6 +72,17 @@ FAKE_STEP = textwrap.dedent('''
                 context=seamm.flowchart_variables._data
             )
             name = str(P["name"])
+            if name == "report":
+                # The runs recorded so far, with their paths relative to the job
+                runs = []
+                if self.variable_exists("_md_runs"):
+                    runs = self.get_variable("_md_runs")
+                job = Path(self.flowchart.root_directory).resolve()
+                text = [
+                    dict(r, path=str(Path(r["path"]).relative_to(job))) for r in runs
+                ]
+                (self.job_path / "md_runs.json").write_text(json.dumps(text))
+                return next_node
             db = self.get_variable("_system_db")
             system = db.create_system(name=name)
             configuration = system.create_configuration(name=name)
@@ -79,6 +95,26 @@ FAKE_STEP = textwrap.dedent('''
                 table.add_column("name", "string", "")
             table.append_row(name=name)
             (self.job_path / "last.txt").write_text(name + "\\n")
+            # A run, as an MD step records it
+            directory = Path(self.directory)
+            directory.mkdir(parents=True, exist_ok=True)
+            path = directory / "md.h5md"
+            path.write_text(name + "\\n")
+            runs = []
+            if self.variable_exists("_md_runs"):
+                runs = list(self.get_variable("_md_runs"))
+            runs.append(
+                {
+                    "path": str(path.resolve()),
+                    "step": f"{'.'.join(str(i) for i in self._id)} {self.title}",
+                    "name": name,
+                }
+            )
+            self.set_variable("_md_runs", runs)
+            if name == "skipped":
+                from loop_step import skip_iteration
+
+                skip_iteration()
             return next_node
 
 
@@ -108,12 +144,12 @@ SPEC = textwrap.dedent("""\
     - Loop:
         type: Foreach
         variable: name
-        values: alpha beta gamma delta
+        values: {values}
         {parallel}
         body:
         - Fake:
             name: $name
-    """)
+    {after}""")
 
 
 @pytest.fixture(scope="module")
@@ -145,12 +181,14 @@ def environment(site):
     return env
 
 
-def run(site, directory, parallel):
+def run(site, directory, parallel, values="alpha beta gamma delta", after=""):
     directory.mkdir()
     text = "parallel: 'yes'" if parallel else ""
     if parallel:
         text += "\n    iterations at once: '2'\n    memory per iteration: '0.2'"
-    (directory / "spec.yaml").write_text(SPEC.format(parallel=text))
+    (directory / "spec.yaml").write_text(
+        SPEC.format(parallel=text, values=values, after=after)
+    )
     env = environment(site)
     built = subprocess.run(
         [sys.executable, "-c", BUILD, "build", "spec.yaml", "-o", "test.flow"],
@@ -201,3 +239,27 @@ def test_parallel_loop_gives_the_serial_result(fake_plugin, tmp_path):
     # Each iteration ran in an evaluator of its own
     evaluators = sorted(p.parent.name for p in parallel.rglob("_evaluator/job.out"))
     assert len(evaluators) == 4
+
+
+AFTER = """\
+- Fake:
+      name: report
+"""
+
+
+@pytest.mark.skipif(
+    not (BIN / "run_flowchart").exists(),
+    reason="run_flowchart (for the iterations) is not installed beside Python",
+)
+def test_parallel_loop_keeps_the_runs_of_its_iterations(fake_plugin, tmp_path):
+    """The runs recorded in ``_md_runs`` in the iterations are there after the
+    loop, in order, as after a serial loop; a skipped iteration's are not."""
+    values = "alpha beta skipped delta"
+    serial = run(fake_plugin, tmp_path / "serial", False, values, AFTER)
+    parallel = run(fake_plugin, tmp_path / "parallel", True, values, AFTER)
+    expected = json.loads((serial / "md_runs.json").read_text())
+    assert [r["name"] for r in expected] == ["alpha", "beta", "delta"]
+    assert json.loads((parallel / "md_runs.json").read_text()) == expected
+    for directory in (serial, parallel):
+        for record in expected:
+            assert (directory / record["path"]).read_text() == record["name"] + "\n"
