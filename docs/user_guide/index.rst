@@ -111,7 +111,11 @@ Iterations at once
    How many iterations run at the same time on this machine. By default as
    many as the cores and memory allow, given the cores and memory per iteration.
 Cores per iteration
-   The cores each iteration's calculations use (default 1).
+   The cores each iteration's calculations use. The default, *automatic*, shares
+   the job's cores among the iterations that run at once: 16 each for 4
+   replicas in a 64-core job, 8 each in a 32-core one. A number is used as
+   given. (Before 2026.10.22 the default was 1, which left most of the job's cores
+   idle.)
 Memory per iteration
    The most memory an iteration needs (default 2 GB), so that the iterations
    running together fit in the machine's memory.
@@ -149,6 +153,11 @@ A job stopped while its parallel loop runs resumes it: iterations already merged
 are not run again, finished ones are merged, and running ones resume from their
 own checkpoints. An iteration whose evaluator was killed while the job ran on
 (out of memory, say) is run again, resuming where it was, up to twice.
+
+The settings above that say only how the iterations run -- iterations at once,
+cores, memory and time per iteration, and where the calculations run -- can be
+changed before resuming, e.g. to give the iterations more cores; changing any
+other setting makes the job start again from the top.
 
 Index
 =====

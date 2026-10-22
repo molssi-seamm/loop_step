@@ -222,6 +222,7 @@ class LoopParameters(seamm.Parameters):
             ),
         },
         "iterations at once": {
+            "resource": True,
             "default": "as many as fit",
             "kind": "integer",
             "default_units": "",
@@ -235,15 +236,21 @@ class LoopParameters(seamm.Parameters):
             ),
         },
         "cores per iteration": {
-            "default": 1,
+            "resource": True,
+            "default": "automatic",
             "kind": "integer",
             "default_units": "",
-            "enumeration": tuple(),
+            "enumeration": ("automatic",),
             "format_string": "",
             "description": "Cores per iteration:",
-            "help_text": "The cores each iteration uses for its calculations.",
+            "help_text": (
+                "The cores each iteration uses for its calculations. 'automatic' "
+                "shares the job's cores among the iterations that run at once, "
+                "e.g. 16 each for 4 iterations in a 64-core job."
+            ),
         },
         "memory per iteration": {
+            "resource": True,
             "default": 2.0,
             "kind": "float",
             "default_units": "GB",
@@ -253,6 +260,7 @@ class LoopParameters(seamm.Parameters):
             "help_text": "The memory each iteration needs at most.",
         },
         "time per iteration": {
+            "resource": True,
             "default": "not given",
             "kind": "float",
             "default_units": "h",
@@ -278,6 +286,7 @@ class LoopParameters(seamm.Parameters):
             ),
         },
         "placement": {
+            "resource": True,
             "default": "inline",
             "kind": "enumeration",
             "default_units": "",

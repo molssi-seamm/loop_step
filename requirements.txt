@@ -1,4 +1,4 @@
 molsystem>=2026.10.17
 psutil
-seamm>=2026.10.17
+seamm>=2026.10.22
 seamm-exec>=2026.10.5
