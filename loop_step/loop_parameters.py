@@ -238,6 +238,8 @@ class LoopParameters(seamm.Parameters):
         "cores per iteration": {
             "resource": True,
             "default": "automatic",
+            # Until 2026.10.22: checkpoints written then still resume
+            "former defaults": ("1",),
             "kind": "integer",
             "default_units": "",
             "enumeration": ("automatic",),

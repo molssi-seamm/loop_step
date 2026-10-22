@@ -55,3 +55,5 @@ def test_resource_parameters_are_marked():
     ):
         assert P[key]._data.get("resource") is True, key
     assert P["cores per iteration"].default == "automatic"
+    # Its default until 2026.10.22, for checkpoints written then
+    assert P["cores per iteration"]._data.get("former defaults") == ("1",)

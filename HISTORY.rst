@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.10.22.1 -- Bugfix: loops checkpointed before 2026.10.22 could not resume
+    * A job with a loop that was checkpointed before 2026.10.22 refused to resume
+      unless its cores per iteration was changed to automatic. It now resumes
+      unchanged too (needs seamm 2026.10.22.1). Its other settings of how the
+      iterations run must still be as they were.
+    * The user guide now says that a resume refused because a setting changed runs
+      nothing, rather than starting the job from the top.
+
 2026.10.22 -- Bugfix: a parallel loop's iterations share the job's cores
     * A parallel loop gave each iteration one core by default, so four replicas in a
       64-core job ran on four cores (job 5368). "Cores per iteration" now defaults to
