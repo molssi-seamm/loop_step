@@ -102,6 +102,43 @@ class _Collect(logging.Handler):
         self.messages.append(record.getMessage())
 
 
+def iteration_cores(
+    setting, job_cores, n_iterations, at_once=None, job_memory=0, memory=None
+):
+    """The cores of each iteration of a parallel loop.
+
+    Parameters
+    ----------
+    setting : int or str
+        "Cores per iteration": a number, or "automatic" to share the job's cores
+        among the iterations that run at once.
+    job_cores : int
+        The job's cores (its tasks).
+    n_iterations : int
+        The iterations to run.
+    at_once : int or None
+        "Iterations at once", or None for as many as fit.
+    job_memory, memory : int
+        The job's memory and each iteration's, bytes; 0 or None if not known.
+
+    Returns
+    -------
+    (int, int or None)
+        The cores per iteration, and how many iterations share the job's cores
+        (None when the number was given). A parallel loop gave each iteration one
+        core by default, so 4 replicas ran on 4 of a job's 64 cores (SEAMM job
+        5368, 2026-10-22).
+    """
+    if not (isinstance(setting, str) and setting.strip().lower() == "automatic"):
+        return max(1, int(setting)), None
+    shared = max(1, n_iterations)
+    if at_once:
+        shared = min(shared, int(at_once))
+    if job_memory and memory:
+        shared = min(shared, max(1, int(job_memory // memory)))
+    return max(1, int(job_cores) // shared), shared
+
+
 def _yes(value):
     """A boolean parameter's value, as text or as a bool."""
     if isinstance(value, str):
@@ -946,7 +983,6 @@ class Loop(seamm.Node):
             self._merge_iteration_files(pending, loop_directory, job_directory)
 
         # The resources of each iteration
-        cores = max(1, int(P["cores per iteration"]))
         memory = _in_units(P["memory per iteration"], "byte")
         walltime = _in_units(P["time per iteration"], "s")
         at_once = P["iterations at once"]
@@ -967,6 +1003,15 @@ class Loop(seamm.Node):
         if state.get("stopped") is not None:
             stopped = tuple(state["stopped"])
         last = length if stopped is None else 0
+
+        cores, shared = iteration_cores(
+            P["cores per iteration"],
+            pool.cores,
+            max(0, last - state["next"] + 1),
+            at_once,
+            pool.memory,
+            memory,
+        )
 
         # Set each iteration up, write its snapshot and checkpoint, add its task
         keys = {}
@@ -1029,7 +1074,13 @@ class Loop(seamm.Node):
             printer.important(
                 __(
                     f"Running {n} iterations in parallel, each with {cores} cores "
-                    f"and {P['memory per iteration']} of memory.",
+                    f"and {P['memory per iteration']} of memory"
+                    + (
+                        f": the job's {pool.cores} cores shared among the "
+                        f"{shared} that run at once."
+                        if shared
+                        else "."
+                    ),
                     indent=self.indent + 4 * " ",
                 )
             )

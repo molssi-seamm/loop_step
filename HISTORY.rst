@@ -1,6 +1,16 @@
 =======
 History
 =======
+2026.10.22 -- Bugfix: a parallel loop's iterations share the job's cores
+    * A parallel loop gave each iteration one core by default, so four replicas in a
+      64-core job ran on four cores (job 5368). "Cores per iteration" now defaults to
+      automatic: the job's cores shared among the iterations that run at once, e.g.
+      16 each for four replicas in a 64-core job. A number is used as given;
+      flowcharts saved with 1 keep it, so set them to automatic.
+    * The settings that say only how the iterations run -- iterations at once, cores,
+      memory and time per iteration, and where the calculations run -- can now be
+      changed before resuming the job (needs seamm 2026.10.22).
+
 2026.10.17.1 -- Warn about a fixed random seed in a loop
     * A step in a loop's body that uses a fixed random seed, such as LAMMPS's
       Velocities, gives every iteration the same random numbers: iterations that start
