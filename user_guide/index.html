@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM Loop Plug-in 2026.10.22 documentation</title>
+    <title>User Guide &#8212; SEAMM Loop Plug-in 2026.10.22.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=0b8f7a1b"></script>
+    <script src="../_static/documentation_options.js?v=3804f50c"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.22" />
+  <meta name="docsearch:version" content="2026.10.22.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -657,8 +657,11 @@ own checkpoints. An iteration whose evaluator was killed while the job ran on
 (out of memory, say) is run again, resuming where it was, up to twice.</p>
 <p>The settings above that say only how the iterations run – iterations at once,
 cores, memory and time per iteration, and where the calculations run – can be
-changed before resuming, e.g. to give the iterations more cores; changing any
-other setting makes the job start again from the top.</p>
+changed before resuming, e.g. to give the iterations more cores. Changing any
+other setting stops the resume: nothing is run, and <code class="docutils literal notranslate"><span class="pre">job.out</span></code> says why. A job
+checkpointed before seamm 2026.10.22 resumes only with these settings as they
+were, except that cores per iteration 1, the default then, may be set to
+automatic.</p>
 </section>
 </section>
 <section id="index">

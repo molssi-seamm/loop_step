@@ -156,8 +156,11 @@ own checkpoints. An iteration whose evaluator was killed while the job ran on
 
 The settings above that say only how the iterations run -- iterations at once,
 cores, memory and time per iteration, and where the calculations run -- can be
-changed before resuming, e.g. to give the iterations more cores; changing any
-other setting makes the job start again from the top.
+changed before resuming, e.g. to give the iterations more cores. Changing any
+other setting stops the resume: nothing is run, and ``job.out`` says why. A job
+checkpointed before seamm 2026.10.22 resumes only with these settings as they
+were, except that cores per iteration 1, the default then, may be set to
+automatic.
 
 Index
 =====
