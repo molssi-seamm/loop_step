@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM Loop Plug-in 2026.10.17.1 documentation</title>
+    <title>User Guide &#8212; SEAMM Loop Plug-in 2026.10.22 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=62bfd45e"></script>
+    <script src="../_static/documentation_options.js?v=0b8f7a1b"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17.1" />
+  <meta name="docsearch:version" content="2026.10.22" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -611,7 +611,11 @@ independent.</p>
 <dt>Iterations at once</dt><dd><p>How many iterations run at the same time on this machine. By default as
 many as the cores and memory allow, given the cores and memory per iteration.</p>
 </dd>
-<dt>Cores per iteration</dt><dd><p>The cores each iteration’s calculations use (default 1).</p>
+<dt>Cores per iteration</dt><dd><p>The cores each iteration’s calculations use. The default, <em>automatic</em>, shares
+the job’s cores among the iterations that run at once: 16 each for 4
+replicas in a 64-core job, 8 each in a 32-core one. A number is used as
+given. (Before 2026.10.22 the default was 1, which left most of the job’s cores
+idle.)</p>
 </dd>
 <dt>Memory per iteration</dt><dd><p>The most memory an iteration needs (default 2 GB), so that the iterations
 running together fit in the machine’s memory.</p>
@@ -651,6 +655,10 @@ in <code class="docutils literal notranslate"><span class="pre">&lt;loop&gt;/&lt
 are not run again, finished ones are merged, and running ones resume from their
 own checkpoints. An iteration whose evaluator was killed while the job ran on
 (out of memory, say) is run again, resuming where it was, up to twice.</p>
+<p>The settings above that say only how the iterations run – iterations at once,
+cores, memory and time per iteration, and where the calculations run – can be
+changed before resuming, e.g. to give the iterations more cores; changing any
+other setting makes the job start again from the top.</p>
 </section>
 </section>
 <section id="index">

@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2026.10.17.1 documentation</title>
+    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2026.10.22 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=62bfd45e"></script>
+    <script src="../../_static/documentation_options.js?v=0b8f7a1b"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.17.1" />
+  <meta name="docsearch:version" content="2026.10.22" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -588,6 +588,46 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
     <span class="k">def</span><span class="w"> </span><span class="nf">emit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">record</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">record</span><span class="o">.</span><span class="n">getMessage</span><span class="p">())</span>
+
+
+<div class="viewcode-block" id="iteration_cores">
+<a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.iteration_cores">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">iteration_cores</span><span class="p">(</span>
+    <span class="n">setting</span><span class="p">,</span> <span class="n">job_cores</span><span class="p">,</span> <span class="n">n_iterations</span><span class="p">,</span> <span class="n">at_once</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">job_memory</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">memory</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">"""The cores of each iteration of a parallel loop.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    setting : int or str</span>
+<span class="sd">        "Cores per iteration": a number, or "automatic" to share the job's cores</span>
+<span class="sd">        among the iterations that run at once.</span>
+<span class="sd">    job_cores : int</span>
+<span class="sd">        The job's cores (its tasks).</span>
+<span class="sd">    n_iterations : int</span>
+<span class="sd">        The iterations to run.</span>
+<span class="sd">    at_once : int or None</span>
+<span class="sd">        "Iterations at once", or None for as many as fit.</span>
+<span class="sd">    job_memory, memory : int</span>
+<span class="sd">        The job's memory and each iteration's, bytes; 0 or None if not known.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    (int, int or None)</span>
+<span class="sd">        The cores per iteration, and how many iterations share the job's cores</span>
+<span class="sd">        (None when the number was given). A parallel loop gave each iteration one</span>
+<span class="sd">        core by default, so 4 replicas ran on 4 of a job's 64 cores (SEAMM job</span>
+<span class="sd">        5368, 2026-10-22).</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">setting</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">and</span> <span class="n">setting</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">"automatic"</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">setting</span><span class="p">)),</span> <span class="kc">None</span>
+    <span class="n">shared</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_iterations</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">at_once</span><span class="p">:</span>
+        <span class="n">shared</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">shared</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">at_once</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">job_memory</span> <span class="ow">and</span> <span class="n">memory</span><span class="p">:</span>
+        <span class="n">shared</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">shared</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">job_memory</span> <span class="o">//</span> <span class="n">memory</span><span class="p">)))</span>
+    <span class="k">return</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">job_cores</span><span class="p">)</span> <span class="o">//</span> <span class="n">shared</span><span class="p">),</span> <span class="n">shared</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_yes</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
@@ -1463,7 +1503,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="bp">self</span><span class="o">.</span><span class="n">_merge_iteration_files</span><span class="p">(</span><span class="n">pending</span><span class="p">,</span> <span class="n">loop_directory</span><span class="p">,</span> <span class="n">job_directory</span><span class="p">)</span>
 
         <span class="c1"># The resources of each iteration</span>
-        <span class="n">cores</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"cores per iteration"</span><span class="p">]))</span>
         <span class="n">memory</span> <span class="o">=</span> <span class="n">_in_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"memory per iteration"</span><span class="p">],</span> <span class="s2">"byte"</span><span class="p">)</span>
         <span class="n">walltime</span> <span class="o">=</span> <span class="n">_in_units</span><span class="p">(</span><span class="n">P</span><span class="p">[</span><span class="s2">"time per iteration"</span><span class="p">],</span> <span class="s2">"s"</span><span class="p">)</span>
         <span class="n">at_once</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"iterations at once"</span><span class="p">]</span>
@@ -1484,6 +1523,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"stopped"</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">stopped</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">state</span><span class="p">[</span><span class="s2">"stopped"</span><span class="p">])</span>
         <span class="n">last</span> <span class="o">=</span> <span class="n">length</span> <span class="k">if</span> <span class="n">stopped</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">0</span>
+
+        <span class="n">cores</span><span class="p">,</span> <span class="n">shared</span> <span class="o">=</span> <span class="n">iteration_cores</span><span class="p">(</span>
+            <span class="n">P</span><span class="p">[</span><span class="s2">"cores per iteration"</span><span class="p">],</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">cores</span><span class="p">,</span>
+            <span class="nb">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">last</span> <span class="o">-</span> <span class="n">state</span><span class="p">[</span><span class="s2">"next"</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+            <span class="n">at_once</span><span class="p">,</span>
+            <span class="n">pool</span><span class="o">.</span><span class="n">memory</span><span class="p">,</span>
+            <span class="n">memory</span><span class="p">,</span>
+        <span class="p">)</span>
 
         <span class="c1"># Set each iteration up, write its snapshot and checkpoint, add its task</span>
         <span class="n">keys</span> <span class="o">=</span> <span class="p">{}</span>
@@ -1546,7 +1594,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="n">printer</span><span class="o">.</span><span class="n">important</span><span class="p">(</span>
                 <span class="n">__</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">"Running </span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> iterations in parallel, each with </span><span class="si">{</span><span class="n">cores</span><span class="si">}</span><span class="s2"> cores "</span>
-                    <span class="sa">f</span><span class="s2">"and </span><span class="si">{</span><span class="n">P</span><span class="p">[</span><span class="s1">'memory per iteration'</span><span class="p">]</span><span class="si">}</span><span class="s2"> of memory."</span><span class="p">,</span>
+                    <span class="sa">f</span><span class="s2">"and </span><span class="si">{</span><span class="n">P</span><span class="p">[</span><span class="s1">'memory per iteration'</span><span class="p">]</span><span class="si">}</span><span class="s2"> of memory"</span>
+                    <span class="o">+</span> <span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">": the job's </span><span class="si">{</span><span class="n">pool</span><span class="o">.</span><span class="n">cores</span><span class="si">}</span><span class="s2"> cores shared among the "</span>
+                        <span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">shared</span><span class="si">}</span><span class="s2"> that run at once."</span>
+                        <span class="k">if</span> <span class="n">shared</span>
+                        <span class="k">else</span> <span class="s2">"."</span>
+                    <span class="p">),</span>
                     <span class="n">indent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">indent</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">*</span> <span class="s2">" "</span><span class="p">,</span>
                 <span class="p">)</span>
             <span class="p">)</span>
