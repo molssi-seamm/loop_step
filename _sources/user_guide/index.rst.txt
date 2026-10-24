@@ -34,6 +34,12 @@ Errors
 next iteration (the default), leave the loop and carry on with the rest of the
 flowchart, or stop the job.
 
+A loop whose iterations *all* failed does not count as done, whatever "On errors"
+says: the steps after it would have nothing to work on. The job stops at the end
+of the loop, and resuming it, once the cause is fixed, runs the loop again (in
+parallel, the failed iterations, each from where it failed). A loop with no
+iterations at all is done.
+
 Restarting
 ==========
 A job stopped part way through a loop (killed, out of time) resumes in the
@@ -132,6 +138,13 @@ Calculations run
    *inline* (the default): each iteration's calculations run in its own share
    of the machine. *Separate tasks* (experimental, not yet tested on a cluster):
    they go to the job's target like any job's.
+On resume, rerun failed iterations
+   *no* (the default): a failed iteration is reported and the job carries on
+   without it. *Yes*: if any iteration failed, the job stops at the end of the
+   loop instead, and resuming it runs the failed iterations again, each from
+   where it failed, and merges them after the others. It can be turned on just
+   for the resume of a job whose iterations failed. A loop whose iterations all
+   failed always stops like this.
 Two iterations writing one table cell
    Two iterations changing the same thing that existed before the loop -- a
    cell of a table row, or a structure: its atoms' coordinates, velocities or
@@ -155,8 +168,8 @@ own checkpoints. An iteration whose evaluator was killed while the job ran on
 (out of memory, say) is run again, resuming where it was, up to twice.
 
 The settings above that say only how the iterations run -- iterations at once,
-cores, memory and time per iteration, and where the calculations run -- can be
-changed before resuming, e.g. to give the iterations more cores. Changing any
+cores, memory and time per iteration, where the calculations run, and rerunning
+failed iterations -- can be changed before resuming, e.g. to give the iterations more cores. Changing any
 other setting stops the resume: nothing is run, and ``job.out`` says why. A job
 checkpointed before seamm 2026.10.22 resumes only with these settings as they
 were, except that cores per iteration 1, the default then, may be set to

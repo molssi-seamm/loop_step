@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM Loop Plug-in 2026.10.22.1 documentation</title>
+    <title>History &#8212; SEAMM Loop Plug-in 2026.10.24 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=3804f50c"></script>
+    <script src="_static/documentation_options.js?v=647e6ecf"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.22.1" />
+  <meta name="docsearch:version" content="2026.10.24" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,19 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.24 – Bugfix: a loop whose iterations all failed counted as done</dt><dd><ul class="simple">
+<li><p>A loop whose iterations had all failed – e.g. four replica MD runs that each
+stopped with an error – carried on as if it were done, so the steps after it
+ran on nothing and a resume skipped it (SEAMM job 5366). Now the job stops at
+the end of such a loop, and resuming it runs the loop again; a parallel loop
+runs the failed iterations again, each from where it failed. A loop with no
+iterations is still done.</p></li>
+<li><p>New for parallel loops: “On resume, rerun failed iterations”. With it, a loop
+with any failed iteration stops the job at its end, and the resume runs just
+those iterations again and merges them after the others. It can be turned on
+for the resume of a job that has already stopped.</p></li>
+</ul>
+</dd>
 <dt>2026.10.22.1 – Bugfix: loops checkpointed before 2026.10.22 could not resume</dt><dd><ul class="simple">
 <li><p>A job with a loop that was checkpointed before 2026.10.22 refused to resume
 unless its cores per iteration was changed to automatic. It now resumes

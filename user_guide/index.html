@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM Loop Plug-in 2026.10.22.1 documentation</title>
+    <title>User Guide &#8212; SEAMM Loop Plug-in 2026.10.24 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=3804f50c"></script>
+    <script src="../_static/documentation_options.js?v=647e6ecf"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.22.1" />
+  <meta name="docsearch:version" content="2026.10.24" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -537,6 +537,11 @@ be named after the systems or configurations.</p>
 <p>“On errors” says what happens when a step in the body fails: continue with the
 next iteration (the default), leave the loop and carry on with the rest of the
 flowchart, or stop the job.</p>
+<p>A loop whose iterations <em>all</em> failed does not count as done, whatever “On errors”
+says: the steps after it would have nothing to work on. The job stops at the end
+of the loop, and resuming it, once the cause is fixed, runs the loop again (in
+parallel, the failed iterations, each from where it failed). A loop with no
+iterations at all is done.</p>
 </section>
 <section id="restarting">
 <h2>Restarting<a class="headerlink" href="#restarting" title="Link to this heading">#</a></h2>
@@ -633,6 +638,13 @@ long loop over a large database needs that much disk space.</p>
 of the machine. <em>Separate tasks</em> (experimental, not yet tested on a cluster):
 they go to the job’s target like any job’s.</p>
 </dd>
+<dt>On resume, rerun failed iterations</dt><dd><p><em>no</em> (the default): a failed iteration is reported and the job carries on
+without it. <em>Yes</em>: if any iteration failed, the job stops at the end of the
+loop instead, and resuming it runs the failed iterations again, each from
+where it failed, and merges them after the others. It can be turned on just
+for the resume of a job whose iterations failed. A loop whose iterations all
+failed always stops like this.</p>
+</dd>
 <dt>Two iterations writing one table cell</dt><dd><p>Two iterations changing the same thing that existed before the loop – a
 cell of a table row, or a structure: its atoms’ coordinates, velocities or
 other values, or the structure itself – are an error by default; the
@@ -656,8 +668,8 @@ are not run again, finished ones are merged, and running ones resume from their
 own checkpoints. An iteration whose evaluator was killed while the job ran on
 (out of memory, say) is run again, resuming where it was, up to twice.</p>
 <p>The settings above that say only how the iterations run – iterations at once,
-cores, memory and time per iteration, and where the calculations run – can be
-changed before resuming, e.g. to give the iterations more cores. Changing any
+cores, memory and time per iteration, where the calculations run, and rerunning
+failed iterations – can be changed before resuming, e.g. to give the iterations more cores. Changing any
 other setting stops the resume: nothing is run, and <code class="docutils literal notranslate"><span class="pre">job.out</span></code> says why. A job
 checkpointed before seamm 2026.10.22 resumes only with these settings as they
 were, except that cores per iteration 1, the default then, may be set to
