@@ -72,6 +72,9 @@ FAKE_STEP = textwrap.dedent('''
                 context=seamm.flowchart_variables._data
             )
             name = str(P["name"])
+            # A marker file in the job asks this iteration to fail
+            if (Path(self.flowchart.root_directory) / f"fail_{name}").exists():
+                raise RuntimeError(f"failing {name}, as asked")
             if name == "report":
                 # The runs recorded so far, with their paths relative to the job
                 runs = []
@@ -263,3 +266,103 @@ def test_parallel_loop_keeps_the_runs_of_its_iterations(fake_plugin, tmp_path):
     for directory in (serial, parallel):
         for record in expected:
             assert (directory / record["path"]).read_text() == record["name"] + "\n"
+
+
+def job(site, directory, values, loop="", after="", resume=False, fail=()):
+    """Build (once) and run the parallel-loop flowchart; return the result."""
+    env = environment(site)
+    if not resume:
+        directory.mkdir()
+        text = (
+            "parallel: 'yes'\n    iterations at once: '2'\n"
+            "    memory per iteration: '0.2'" + loop
+        )
+        (directory / "spec.yaml").write_text(
+            SPEC.format(parallel=text, values=values, after=after)
+        )
+        built = subprocess.run(
+            [sys.executable, "-c", BUILD, "build", "spec.yaml", "-o", "test.flow"],
+            cwd=directory,
+            env=env,
+            capture_output=True,
+            text=True,
+        )
+        assert built.returncode == 0, built.stdout[-3000:] + built.stderr[-3000:]
+    for name in fail:
+        (directory / f"fail_{name}").write_text("")
+    return subprocess.run(
+        [sys.executable, "-c", RUN, "test.flow", *(["--resume"] if resume else [])],
+        cwd=directory,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=600,
+    )
+
+
+def system_names(directory):
+    db = sqlite3.connect(f"file:{directory / 'seamm.db'}?mode=ro", uri=True)
+    try:
+        return [s for (s,) in db.execute("SELECT name FROM system ORDER BY id")]
+    finally:
+        db.close()
+
+
+@pytest.mark.skipif(
+    not (BIN / "run_flowchart").exists(),
+    reason="run_flowchart (for the iterations) is not installed beside Python",
+)
+def test_parallel_all_failed_stops_and_resume_reruns(fake_plugin, tmp_path):
+    """SEAMM job 5366, 2026-10-24: every iteration failed and the loop counted
+    as done. Now the job stops at the loop, and a resume runs the iterations
+    again, each from where it failed."""
+    d = tmp_path / "job"
+    result = job(fake_plugin, d, "alpha beta", after=AFTER, fail=("alpha", "beta"))
+    assert result.returncode != 0
+    out = (d / "job.out").read_text()
+    assert "All 2 iterations of the loop failed" in out
+    assert not (d / "md_runs.json").exists()  # the step after the loop did not run
+
+    for name in ("alpha", "beta"):
+        (d / f"fail_{name}").unlink()
+    result = job(fake_plugin, d, "alpha beta", after=AFTER, resume=True)
+    assert result.returncode == 0, result.stdout[-3000:] + result.stderr[-3000:]
+    assert system_names(d) == ["alpha", "beta"]
+    assert [r["name"] for r in json.loads((d / "md_runs.json").read_text())] == [
+        "alpha",
+        "beta",
+    ]
+
+
+@pytest.mark.skipif(
+    not (BIN / "run_flowchart").exists(),
+    reason="run_flowchart (for the iterations) is not installed beside Python",
+)
+def test_parallel_rerun_failed_iterations(fake_plugin, tmp_path):
+    """With 'rerun failed', one failed iteration stops the job at the end of the
+    loop; the resume runs only it again and merges it after the others."""
+    d = tmp_path / "job"
+    loop = "\n    rerun failed: 'yes'"
+    result = job(fake_plugin, d, "alpha beta gamma", loop=loop, fail=("beta",))
+    assert result.returncode != 0
+    assert "1 of 3 iterations of the loop failed" in (d / "job.out").read_text()
+    assert system_names(d) == ["alpha", "gamma"]
+
+    (d / "fail_beta").unlink()
+    result = job(fake_plugin, d, "alpha beta gamma", loop=loop, resume=True)
+    assert result.returncode == 0, result.stdout[-3000:] + result.stderr[-3000:]
+    assert system_names(d) == ["alpha", "gamma", "beta"]
+    # Only the failed iteration ran again
+    evaluators = sorted(p.parent.parent.name for p in d.rglob("_evaluator/job.out"))
+    assert len(evaluators) == 3
+
+
+@pytest.mark.skipif(
+    not (BIN / "run_flowchart").exists(),
+    reason="run_flowchart (for the iterations) is not installed beside Python",
+)
+def test_parallel_some_failed_carries_on_by_default(fake_plugin, tmp_path):
+    d = tmp_path / "job"
+    result = job(fake_plugin, d, "alpha beta gamma", fail=("beta",))
+    assert result.returncode == 0, result.stdout[-3000:] + result.stderr[-3000:]
+    assert system_names(d) == ["alpha", "gamma"]

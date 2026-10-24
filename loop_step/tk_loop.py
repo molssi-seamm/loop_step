@@ -57,6 +57,7 @@ PARALLEL_PARAMETERS = (
     "time per iteration",
     "snapshot",
     "placement",
+    "rerun failed",
     "same-cell writes",
 )
 
@@ -162,7 +163,7 @@ class TkLoop(seamm.TkNode):
         # Parallel iterations: their settings only when asked for
         self["parallel"].combobox.bind("<<ComboboxSelected>>", self.reset_dialog)
         self["parallel"].combobox.config(state="readonly")
-        for widget in ("snapshot", "placement", "same-cell writes"):
+        for widget in ("snapshot", "placement", "rerun failed", "same-cell writes"):
             self[widget].combobox.config(state="readonly")
 
     def criteria_callback(self, widget, criterion, event, what):
