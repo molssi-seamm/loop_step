@@ -301,6 +301,20 @@ class LoopParameters(seamm.Parameters):
                 "the job's target."
             ),
         },
+        "max queued": {
+            "resource": True,
+            "default": "no limit",
+            "kind": "integer",
+            "default_units": "",
+            "enumeration": ("no limit",),
+            "format_string": "",
+            "description": "Queued at most:",
+            "help_text": (
+                "When the iterations go to a cluster's queue: the most of this "
+                "loop's queue jobs waiting or running at once. The queue's own "
+                "limit, shared fairly between jobs, applies as well."
+            ),
+        },
         "rerun failed": {
             # How a resume treats the job, not what it computes: it can be
             # changed for a resume without the flowchart counting as changed

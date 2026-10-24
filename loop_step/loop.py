@@ -1045,7 +1045,13 @@ class Loop(seamm.Node):
         except Exception:
             pass
         pool = LocalPool(self.flowchart.executor, root=root, max_concurrent=at_once)
-        task_set = TaskSet(self, local=pool, root=root)
+        max_queued = P["max queued"]
+        if isinstance(max_queued, str):
+            max_queued = None if "no limit" in max_queued else int(max_queued)
+        try:
+            task_set = TaskSet(self, local=pool, root=root, max_queued=max_queued)
+        except TypeError:  # seamm-exec before 2026.10.24
+            task_set = TaskSet(self, local=pool, root=root)
 
         # A loop that had stopped (a break, or an error) dispatches nothing more
         stopped = None

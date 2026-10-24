@@ -1,6 +1,12 @@
 =======
 History
 =======
+2026.10.24.1 -- How many of a loop's queue jobs may wait at once
+    * New setting for parallel loops whose iterations go to a cluster's queue:
+      "Queued at most", the most of the loop's queue jobs waiting or running at
+      once (default no limit). The queue's own limit, now shared fairly between
+      jobs (seamm-exec 2026.10.24), applies as well.
+
 2026.10.24 -- Bugfix: a loop whose iterations all failed counted as done
     * A loop whose iterations had all failed -- e.g. four replica MD runs that each
       stopped with an error -- carried on as if it were done, so the steps after it
