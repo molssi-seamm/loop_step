@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2026.10.24 documentation</title>
+    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2026.10.24.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=647e6ecf"></script>
+    <script src="../../_static/documentation_options.js?v=c78a4e9b"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.24" />
+  <meta name="docsearch:version" content="2026.10.24.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -1565,7 +1565,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
             <span class="k">pass</span>
         <span class="n">pool</span> <span class="o">=</span> <span class="n">LocalPool</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">flowchart</span><span class="o">.</span><span class="n">executor</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">,</span> <span class="n">max_concurrent</span><span class="o">=</span><span class="n">at_once</span><span class="p">)</span>
-        <span class="n">task_set</span> <span class="o">=</span> <span class="n">TaskSet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="n">pool</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
+        <span class="n">max_queued</span> <span class="o">=</span> <span class="n">P</span><span class="p">[</span><span class="s2">"max queued"</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">max_queued</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">max_queued</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="s2">"no limit"</span> <span class="ow">in</span> <span class="n">max_queued</span> <span class="k">else</span> <span class="nb">int</span><span class="p">(</span><span class="n">max_queued</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">task_set</span> <span class="o">=</span> <span class="n">TaskSet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="n">pool</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">,</span> <span class="n">max_queued</span><span class="o">=</span><span class="n">max_queued</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>  <span class="c1"># seamm-exec before 2026.10.24</span>
+            <span class="n">task_set</span> <span class="o">=</span> <span class="n">TaskSet</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">local</span><span class="o">=</span><span class="n">pool</span><span class="p">,</span> <span class="n">root</span><span class="o">=</span><span class="n">root</span><span class="p">)</span>
 
         <span class="c1"># A loop that had stopped (a break, or an error) dispatches nothing more</span>
         <span class="n">stopped</span> <span class="o">=</span> <span class="kc">None</span>

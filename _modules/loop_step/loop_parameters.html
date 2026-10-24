@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>loop_step.loop_parameters &#8212; SEAMM Loop Plug-in 2026.10.24 documentation</title>
+    <title>loop_step.loop_parameters &#8212; SEAMM Loop Plug-in 2026.10.24.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=647e6ecf"></script>
+    <script src="../../_static/documentation_options.js?v=c78a4e9b"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.24" />
+  <meta name="docsearch:version" content="2026.10.24.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -789,6 +789,20 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
                 <span class="s2">"Where each iteration's calculations run: inline, in the "</span>
                 <span class="s2">"iteration's own share of the machine, or as separate tasks on "</span>
                 <span class="s2">"the job's target."</span>
+            <span class="p">),</span>
+        <span class="p">},</span>
+        <span class="s2">"max queued"</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">"resource"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+            <span class="s2">"default"</span><span class="p">:</span> <span class="s2">"no limit"</span><span class="p">,</span>
+            <span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"integer"</span><span class="p">,</span>
+            <span class="s2">"default_units"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"enumeration"</span><span class="p">:</span> <span class="p">(</span><span class="s2">"no limit"</span><span class="p">,),</span>
+            <span class="s2">"format_string"</span><span class="p">:</span> <span class="s2">""</span><span class="p">,</span>
+            <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"Queued at most:"</span><span class="p">,</span>
+            <span class="s2">"help_text"</span><span class="p">:</span> <span class="p">(</span>
+                <span class="s2">"When the iterations go to a cluster's queue: the most of this "</span>
+                <span class="s2">"loop's queue jobs waiting or running at once. The queue's own "</span>
+                <span class="s2">"limit, shared fairly between jobs, applies as well."</span>
             <span class="p">),</span>
         <span class="p">},</span>
         <span class="s2">"rerun failed"</span><span class="p">:</span> <span class="p">{</span>
