@@ -1,6 +1,18 @@
 =======
 History
 =======
+2026.10.24 -- Bugfix: a loop whose iterations all failed counted as done
+    * A loop whose iterations had all failed -- e.g. four replica MD runs that each
+      stopped with an error -- carried on as if it were done, so the steps after it
+      ran on nothing and a resume skipped it (SEAMM job 5366). Now the job stops at
+      the end of such a loop, and resuming it runs the loop again; a parallel loop
+      runs the failed iterations again, each from where it failed. A loop with no
+      iterations is still done.
+    * New for parallel loops: "On resume, rerun failed iterations". With it, a loop
+      with any failed iteration stops the job at its end, and the resume runs just
+      those iterations again and merges them after the others. It can be turned on
+      for the resume of a job that has already stopped.
+
 2026.10.22.1 -- Bugfix: loops checkpointed before 2026.10.22 could not resume
     * A job with a loop that was checkpointed before 2026.10.22 refused to resume
       unless its cores per iteration was changed to automatic. It now resumes

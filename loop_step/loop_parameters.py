@@ -301,6 +301,24 @@ class LoopParameters(seamm.Parameters):
                 "the job's target."
             ),
         },
+        "rerun failed": {
+            # How a resume treats the job, not what it computes: it can be
+            # changed for a resume without the flowchart counting as changed
+            "resource": True,
+            "default": "no",
+            "kind": "boolean",
+            "default_units": "",
+            "enumeration": ("no", "yes"),
+            "format_string": "s",
+            "description": "On resume, rerun failed iterations:",
+            "help_text": (
+                "For iterations run in parallel: if any iteration failed, stop the "
+                "job at the end of the loop instead of carrying on, so that "
+                "resuming the job runs the failed iterations again, each from "
+                "where it failed. They are merged after the others. A loop whose "
+                "iterations all failed always does this."
+            ),
+        },
         "same-cell writes": {
             "default": "are an error",
             "kind": "enumeration",

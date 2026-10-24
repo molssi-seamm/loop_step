@@ -771,6 +771,7 @@ class Loop(seamm.Node):
         advance = not resuming or resume_node is None
         ran = False
         iter_dir = None
+        n_failed = 0  # in this run; a checkpoint also has those of earlier runs
         while next_node is not None:
             if next_node is self:
                 if only and ran:
@@ -781,6 +782,16 @@ class Loop(seamm.Node):
                     k += 1
                 if k > length:
                     self._end_loop(P, context)
+                    if self._all_failed(length, checkpointer, n_failed):
+                        if checkpointer is not None:
+                            # Back to the loop's start, so a resume runs it again
+                            checkpointer.leave_loop(self)
+                            checkpointer.write()
+                        raise RuntimeError(
+                            f"All {length} iterations of the loop failed (see "
+                            "'Caught exception in loop iteration' above), so the "
+                            "job stops here. Resuming it runs the loop again."
+                        )
                     break
                 self._setup_iteration(P, context, k)
 
@@ -845,6 +856,7 @@ class Loop(seamm.Node):
                 if only:
                     # The parent decides what a failed iteration means
                     raise
+                n_failed += 1
                 if "continue" in P["errors"]:
                     next_node = self
                 elif "exit" in P["errors"]:
@@ -867,6 +879,24 @@ class Loop(seamm.Node):
         # Return to the normally scheduled step, i.e. fall out of the loop.
         if checkpointer is not None:
             checkpointer.leave_loop(self)
+
+    def _all_failed(self, length, checkpointer, n_failed):
+        """Whether every iteration of a loop that ran to its end failed.
+
+        Such a loop does not count as done: the steps after it would run on
+        nothing (SEAMM job 5366, 2026-10-24: all four replica MD runs failed, the
+        loop "completed", and the analyses found no runs). An empty loop is done.
+        """
+        if length <= 0:
+            return False
+        if checkpointer is not None:
+            level = checkpointer._level(self)
+            if level is not None:
+                # Includes the failures before a resume
+                n_failed = max(
+                    n_failed, len(checkpointer.frames[level].get("failed", []))
+                )
+        return n_failed >= length
 
     # ------------------------------------------------------------------
     # Iterations in parallel
@@ -964,8 +994,27 @@ class Loop(seamm.Node):
         # Commit the loop's set-up with its frame, then keep the database as the
         # loop starts: every iteration's snapshot is taken from it.
         checkpointer.parallel_loop(self, state)
+        # Failed iterations to run again: with "rerun failed", or when every
+        # iteration failed. Each resumes from its own checkpoint, where it failed.
+        rerun = list(state.get("rerun", []))
+        if len(state["failed"]) > 0 and (
+            _yes(P["rerun failed"])
+            or (state["next"] > length and len(state["failed"]) >= length)
+        ):
+            rerun = sorted(set(rerun) | set(state["failed"]))
+            state["failed"] = []
+        state["rerun"] = rerun
+        if len(rerun) > 0:
+            names = ", ".join(state["directories"][str(k)] for k in rerun)
+            printer.important(
+                __(
+                    f"Running the failed iterations again: {names}.",
+                    indent=self.indent + 4 * " ",
+                )
+            )
+
         entry = loop_directory / "loop_entry.db"
-        if state["next"] <= length and not entry.exists():
+        if (state["next"] <= length or len(rerun) > 0) and not entry.exists():
             loop_directory.mkdir(parents=True, exist_ok=True)
             tmp = entry.with_name(entry.name + ".tmp")
             snapshot(self._job_database_path(system_db), tmp, whole=True)
@@ -1007,7 +1056,7 @@ class Loop(seamm.Node):
         cores, shared = iteration_cores(
             P["cores per iteration"],
             pool.cores,
-            max(0, last - state["next"] + 1),
+            max(0, last - state["next"] + 1) + len(rerun),
             at_once,
             pool.memory,
             memory,
@@ -1015,7 +1064,7 @@ class Loop(seamm.Node):
 
         # Set each iteration up, write its snapshot and checkpoint, add its task
         keys = {}
-        for k in range(state["next"], last + 1):
+        for k in [*rerun, *range(state["next"], last + 1)]:
             self._setup_iteration(P, context, k)
             name = state["directories"].get(str(k))
             if name is None:
@@ -1107,8 +1156,16 @@ class Loop(seamm.Node):
                             again.append(task_set.tasks[result.key])
                             continue
                     results[k] = result
-                    while state["next"] in results:
-                        k = state["next"]
+                    while True:
+                        # The iterations run again first, in order; then the rest
+                        advance = True
+                        if len(state["rerun"]) > 0 and state["rerun"][0] in results:
+                            k = state["rerun"].pop(0)
+                            advance = False
+                        elif state["next"] in results:
+                            k = state["next"]
+                        else:
+                            break
                         stopped = self._merge_iteration(
                             P,
                             context,
@@ -1121,6 +1178,7 @@ class Loop(seamm.Node):
                             loop_directory,
                             job_directory,
                             later_wins,
+                            advance=advance,
                         )
                         if stopped is not None:
                             break
@@ -1159,19 +1217,33 @@ class Loop(seamm.Node):
                 self.get_table(name, create=False).export(filename)
             except Exception as e:
                 printer.important(f"Could not export the table '{name}': {e}")
-        if stopped is None or stopped[1] != "raise":
+        n_failed = len(state["failed"])
+        # Failed iterations that stop the job, so a resume runs them again
+        stop_for_rerun = (
+            stopped is None
+            and n_failed > 0
+            and (_yes(P["rerun failed"]) or n_failed >= length)
+        )
+        if (stopped is None or stopped[1] != "raise") and not stop_for_rerun:
             # Nothing more is dispatched (a resume after "stop the job" runs the
             # failed iteration again, from the loop's entry)
             for suffix in ("", "-wal", "-shm"):
                 Path(str(entry) + suffix).unlink(missing_ok=True)
 
-        n_failed = len(state["failed"])
         text = f"Merged {state['next'] - 1 - n_failed} of {length} iterations"
         if n_failed > 0:
             failed = ", ".join(state["directories"][str(i)] for i in state["failed"])
             text += f"; {n_failed} failed and were not merged: {failed}"
         printer.important(__(text + ".", indent=self.indent + 4 * " "))
 
+        if stop_for_rerun:
+            # The loop's frame stays in the checkpoint, so a resume reruns them
+            which = "All" if n_failed >= length else f"{n_failed} of"
+            raise RuntimeError(
+                f"{which} {length} iterations of the loop failed, so the job stops "
+                "here. Resuming it runs the failed iterations again, each from "
+                "where it failed."
+            )
         if stopped is None:
             self._end_loop(P, context)
         else:
@@ -1221,8 +1293,12 @@ class Loop(seamm.Node):
         loop_directory,
         job_directory,
         later_wins,
+        advance=True,
     ):
         """Merge iteration ``k``, or record that it failed.
+
+        ``advance`` is False for a failed iteration run again after the loop had
+        gone past it: the next iteration to merge stays as it is.
 
         Returns
         -------
@@ -1247,6 +1323,9 @@ class Loop(seamm.Node):
                 # The job fails here; a resume runs the iteration again
                 return (k, "raise")
             state["failed"].append(k)
+            if not advance:
+                checkpointer.parallel_loop(self, state)
+                return None
             state["next"] = k + 1
             state["count"] = k
             if "continue" in P["errors"]:
@@ -1321,8 +1400,9 @@ class Loop(seamm.Node):
             self.set_variable(variable, current + records)
         plan = iterations.plan_files(evaluator, job_directory, outcome.get("run_id"))
         state["files"] = {"iteration": k, "directory": name, "plan": plan}
-        state["next"] = k + 1
-        state["count"] = k
+        if advance:
+            state["next"] = k + 1
+            state["count"] = k
         state["merge"] = iterations.encode_merge_state(merge_state)
         stop = None
         if outcome.get("break"):

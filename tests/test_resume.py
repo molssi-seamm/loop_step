@@ -429,3 +429,91 @@ def test_an_error_while_resuming_keeps_the_loop_position(tmp_path, monkeypatch):
     assert runs == expected
     assert database(root) == database(straight)
     assert directories(root) == directories(straight)
+
+
+def test_all_iterations_failed_stops_and_resume_reruns(tmp_path):
+    """SEAMM job 5366, 2026-10-24: every iteration of a loop failed, the loop
+    counted as done, and the steps after it ran on nothing. Now the job stops at
+    the loop, and a resume runs it again."""
+
+    def make(root):
+        return build(
+            root,
+            ["A"],
+            type="For",
+            variable="i",
+            start=1,
+            end=3,
+            errors="continue to next iteration",
+        )
+
+    Step.fail = {("A", (1,)), ("A", (2,)), ("A", (3,))}
+    flowchart = make(tmp_path)
+    with pytest.raises(Exception, match="All 3 iterations of the loop failed"):
+        execute(tmp_path, flowchart)
+    assert ("After", ()) not in Step.runs
+    assert seamm.read_checkpoint(tmp_path / "seamm.db")["state"] == "error"
+
+    # The cause is fixed; the resume runs the loop again, then what follows it
+    Step.fail = set()
+    Step.runs = []
+    execute(tmp_path, make(tmp_path), resume=True)
+    assert Step.runs == [("A", (1,)), ("A", (2,)), ("A", (3,)), ("After", ())]
+    assert seamm.read_checkpoint(tmp_path / "seamm.db")["state"] == "finished"
+
+
+def test_some_iterations_failed_still_completes(tmp_path):
+    def make(root):
+        return build(
+            root,
+            ["A"],
+            type="For",
+            variable="i",
+            start=1,
+            end=3,
+            errors="continue to next iteration",
+        )
+
+    Step.fail = {("A", (1,)), ("A", (3,))}
+    execute(tmp_path, make(tmp_path))
+    assert Step.runs[-1] == ("After", ())
+
+
+def test_all_failed_across_a_resume(tmp_path):
+    """The failures before a crash count too."""
+
+    def make(root):
+        return build(
+            root,
+            ["A", "B"],
+            type="For",
+            variable="i",
+            start=1,
+            end=2,
+            errors="continue to next iteration",
+        )
+
+    Step.fail = {("A", (1,)), ("A", (2,))}
+    Step.crash = ("A", (2,))
+    with pytest.raises(Crash):
+        execute(tmp_path, make(tmp_path))
+    Step.runs = []
+    with pytest.raises(Exception, match="All 2 iterations of the loop failed"):
+        execute(tmp_path, make(tmp_path), resume=True)
+    assert ("After", ()) not in Step.runs
+
+
+def test_an_empty_loop_completes(tmp_path):
+    def make(root):
+        return build(
+            root,
+            ["A"],
+            type="For",
+            variable="i",
+            start=1,
+            end=0,
+            errors="continue to next iteration",
+        )
+
+    execute(tmp_path, make(tmp_path))
+    assert Step.runs == [("After", ())]
