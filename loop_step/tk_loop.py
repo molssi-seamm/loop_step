@@ -57,6 +57,7 @@ PARALLEL_PARAMETERS = (
     "time per iteration",
     "snapshot",
     "placement",
+    "max queued",
     "rerun failed",
     "same-cell writes",
 )

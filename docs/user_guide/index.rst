@@ -138,6 +138,10 @@ Calculations run
    *inline* (the default): each iteration's calculations run in its own share
    of the machine. *Separate tasks* (experimental, not yet tested on a cluster):
    they go to the job's target like any job's.
+Queued at most
+   When the iterations go to a cluster's queue: the most of this loop's queue
+   jobs waiting or running at once (default no limit). The queue's own limit,
+   shared fairly between the jobs using it, applies as well.
 On resume, rerun failed iterations
    *no* (the default): a failed iteration is reported and the job carries on
    without it. *Yes*: if any iteration failed, the job stops at the end of the
@@ -168,8 +172,8 @@ own checkpoints. An iteration whose evaluator was killed while the job ran on
 (out of memory, say) is run again, resuming where it was, up to twice.
 
 The settings above that say only how the iterations run -- iterations at once,
-cores, memory and time per iteration, where the calculations run, and rerunning
-failed iterations -- can be changed before resuming, e.g. to give the iterations more cores. Changing any
+cores, memory and time per iteration, where the calculations run, how many
+may be queued, and rerunning failed iterations -- can be changed before resuming, e.g. to give the iterations more cores. Changing any
 other setting stops the resume: nothing is run, and ``job.out`` says why. A job
 checkpointed before seamm 2026.10.22 resumes only with these settings as they
 were, except that cores per iteration 1, the default then, may be set to
