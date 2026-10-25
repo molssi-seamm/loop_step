@@ -1,6 +1,12 @@
 =======
 History
 =======
+2026.10.25 -- Bugfix: one wording for a failed loop iteration
+    * A parallel loop reported a failed iteration as "Caught an error in loop
+      iteration", a serial loop as "Caught exception in loop iteration", which is the
+      text the documentation tells you to search job.out for. Both now use "Caught
+      exception in loop iteration", so one search finds every failed iteration.
+
 2026.10.24.1 -- How many of a loop's queue jobs may wait at once
     * New setting for parallel loops whose iterations go to a cluster's queue:
       "Queued at most", the most of the loop's queue jobs waiting or running at

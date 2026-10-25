@@ -321,6 +321,8 @@ def test_parallel_all_failed_stops_and_resume_reruns(fake_plugin, tmp_path):
     assert result.returncode != 0
     out = (d / "job.out").read_text()
     assert "All 2 iterations of the loop failed" in out
+    # The same wording as a serial loop's, which the docs tell users to look for
+    assert out.count("Caught exception in loop iteration") == 2
     assert not (d / "md_runs.json").exists()  # the step after the loop did not run
 
     for name in ("alpha", "beta"):

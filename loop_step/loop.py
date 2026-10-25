@@ -1322,7 +1322,7 @@ class Loop(seamm.Node):
         if outcome is None:
             reason = result.reason or f"return code {result.returncode}"
             printer.job(
-                f"Caught an error in loop iteration {name} ({reason}); see "
+                f"Caught exception in loop iteration {name} ({reason}); see "
                 f"{evaluator / 'job.out'}."
             )
             if "stop" in P["errors"]:
