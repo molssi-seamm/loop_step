@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM Loop Plug-in 2026.10.29 documentation</title>
+    <title>History &#8212; SEAMM Loop Plug-in 2026.10.29.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=1fe4c37e"></script>
+    <script src="_static/documentation_options.js?v=923375ad"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.29" />
+  <meta name="docsearch:version" content="2026.10.29.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.29.1 – Bugfix: a system-name regexp with braces stopped the job</dt><dd><ul class="simple">
+<li><p>A Loop over systems whose system name is a regular expression with a <code class="docutils literal notranslate"><span class="pre">{m}</span></code> or
+<code class="docutils literal notranslate"><span class="pre">{m,n}</span></code> quantifier, such as <code class="docutils literal notranslate"><span class="pre">^(CBH:)?C{6,8}$</span></code>, stopped the job before it ran
+(KeyError: ‘6,8’): the description took the braces for a format field. The
+names and expressions are now printed as given.</p></li>
+</ul>
+</dd>
 <dt>2026.10.29 – Bugfix: iteration directories named with spaces stopped a job</dt><dd><ul class="simple">
 <li><p>When the iterations’ directories are named from the systems or configurations,
 the names are made safe for paths and batch scripts: only letters, digits and
