@@ -67,3 +67,17 @@ def test_new_keys_pass_through():
         P.current_values_to_dict()
     )
     assert text == "All configurations of the current system will be used."
+
+
+def test_description_keeps_braces_in_a_regexp():
+    """A system-name regexp with a {m,n} quantifier is the user's text, not a format
+    field (it raised KeyError: '6,8' before the job ran, ChemAI 5446)."""
+    flowchart = seamm.Flowchart()
+    loop = loop_step.Loop(flowchart=flowchart)
+    loop._id = ("1",)
+    P = loop.parameters.values_to_dict()
+    P["type"] = "For systems in the database"
+    P["source systems"] = "name regexp"
+    P["source system name"] = "^(CBH:)?C{6,8}$"
+    text = loop.description_text(P)
+    assert "^(CBH:)?C{6,8}$" in text

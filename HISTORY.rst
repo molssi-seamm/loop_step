@@ -1,6 +1,12 @@
 =======
 History
 =======
+2026.10.29.1 -- Bugfix: a system-name regexp with braces stopped the job
+    * A Loop over systems whose system name is a regular expression with a ``{m}`` or
+      ``{m,n}`` quantifier, such as ``^(CBH:)?C{6,8}$``, stopped the job before it ran
+      (KeyError: '6,8'): the description took the braces for a format field. The
+      names and expressions are now printed as given.
+
 2026.10.29 -- Bugfix: iteration directories named with spaces stopped a job
     * When the iterations' directories are named from the systems or configurations,
       the names are made safe for paths and batch scripts: only letters, digits and

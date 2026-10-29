@@ -326,7 +326,8 @@ class Loop(seamm.Node):
             subtext = seamm.standard_parameters.structure_selection_description(
                 P
             ).replace("will be used", "will be looped over")
-            subtext += "\n"
+            # The names and regexps in it are the user's text, not format fields
+            subtext = subtext.replace("{", "{{").replace("}", "}}") + "\n"
         else:
             subtext = "Loop type defined by {type}\n"
 
