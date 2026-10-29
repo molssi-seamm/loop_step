@@ -1709,7 +1709,15 @@ class Loop(seamm.Node):
         return None
 
     def safe_filename(self, filename):
-        clean = re.sub(r"[/\\?%*:|\"<>\x7F\x00-\x1F]", "-", filename)
+        """A directory name for an iteration from a value or a system's or
+        configuration's name: only letters, digits and ``. _ + @ , -``, with
+        anything else (spaces, '=', quotes, slashes, shell characters) as '_', so
+        that the path is safe in batch scripts. Names can hold anything, e.g. an
+        extended-XYZ title read as 'Li_toO=pbc=F F F', and a path with spaces
+        stops a job sent to a cluster's queue."""
+        clean = re.sub(r"[^A-Za-z0-9._+@,-]+", "_", str(filename)).strip("_")
+        if clean in ("", ".", ".."):
+            clean = "iter"
 
         # Check for duplicates...
         path = Path(self.directory) / clean

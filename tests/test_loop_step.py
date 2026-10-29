@@ -57,3 +57,26 @@ def test_resource_parameters_are_marked():
     assert P["cores per iteration"].default == "automatic"
     # Its default until 2026.10.22, for checkpoints written then
     assert P["cores per iteration"]._data.get("former defaults") == ("1",)
+
+
+def test_safe_directory_names(tmp_path):
+    """Iteration directories named from systems or configurations are safe in
+    batch scripts: no spaces, '=' or shell characters (a name with spaces stopped
+    a job on a cluster queue)."""
+    import types
+
+    node = types.SimpleNamespace(directory=str(tmp_path))
+    safe = loop_step.Loop.safe_filename
+    assert (
+        safe(node, "LiDMCct_chel_ctmin_toO=pbc=F F F")
+        == "LiDMCct_chel_ctmin_toO_pbc_F_F_F"
+    )
+    assert safe(node, "B2PLYP-D3(0)/cc-pVTZ") == "B2PLYP-D3_0_cc-pVTZ"
+    assert safe(node, 'a "quoted" $name; rm') == "a_quoted_name_rm"
+    assert safe(node, "CCO") == "CCO"
+    assert safe(node, "c1ccccc1+0.5,run@2") == "c1ccccc1+0.5,run@2"
+    assert safe(node, "   ") == "iter"
+    assert safe(node, "..") == "iter"
+    # duplicates get a count
+    (tmp_path / "CCO").mkdir()
+    assert safe(node, "CCO") == "CCO_2"

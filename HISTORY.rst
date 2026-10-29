@@ -1,6 +1,15 @@
 =======
 History
 =======
+2026.10.29 -- Bugfix: iteration directories named with spaces stopped a job
+    * When the iterations' directories are named from the systems or configurations,
+      the names are made safe for paths and batch scripts: only letters, digits and
+      ``. _ + @ , -`` are kept, and anything else -- spaces, '=', quotes, slashes,
+      shell characters -- becomes '_'. A configuration named
+      'LiDMCct_chel_ctmin_toO=pbc=F F F' gave a directory with spaces, which stopped
+      a parallel loop sent to a cluster's queue at its start. A job checkpointed with
+      such a name and resumed starts those iterations in the new directories.
+
 2026.10.25 -- Bugfix: one wording for a failed loop iteration
     * A parallel loop reported a failed iteration as "Caught an error in loop
       iteration", a serial loop as "Caught exception in loop iteration", which is the
