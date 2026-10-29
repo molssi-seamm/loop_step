@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM Loop Plug-in 2026.10.25 documentation</title>
+    <title>History &#8212; SEAMM Loop Plug-in 2026.10.29 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=c006ead6"></script>
+    <script src="_static/documentation_options.js?v=1fe4c37e"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.25" />
+  <meta name="docsearch:version" content="2026.10.29" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.29 – Bugfix: iteration directories named with spaces stopped a job</dt><dd><ul class="simple">
+<li><p>When the iterations’ directories are named from the systems or configurations,
+the names are made safe for paths and batch scripts: only letters, digits and
+<code class="docutils literal notranslate"><span class="pre">.</span> <span class="pre">_</span> <span class="pre">+</span> <span class="pre">&#64;</span> <span class="pre">,</span> <span class="pre">-</span></code> are kept, and anything else – spaces, ‘=’, quotes, slashes,
+shell characters – becomes ‘_’. A configuration named
+‘LiDMCct_chel_ctmin_toO=pbc=F F F’ gave a directory with spaces, which stopped
+a parallel loop sent to a cluster’s queue at its start. A job checkpointed with
+such a name and resumed starts those iterations in the new directories.</p></li>
+</ul>
+</dd>
 <dt>2026.10.25 – Bugfix: one wording for a failed loop iteration</dt><dd><ul class="simple">
 <li><p>A parallel loop reported a failed iteration as “Caught an error in loop
 iteration”, a serial loop as “Caught exception in loop iteration”, which is the

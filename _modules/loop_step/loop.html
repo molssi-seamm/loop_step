@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2026.10.25 documentation</title>
+    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2026.10.29 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=c006ead6"></script>
+    <script src="../../_static/documentation_options.js?v=1fe4c37e"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.25" />
+  <meta name="docsearch:version" content="2026.10.29" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -2252,7 +2252,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <div class="viewcode-block" id="Loop.safe_filename">
 <a class="viewcode-back" href="../../api/loop_step.html#loop_step.loop.Loop.safe_filename">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">safe_filename</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
-        <span class="n">clean</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[/</span><span class="se">\\</span><span class="s2">?%*:|</span><span class="se">\"</span><span class="s2">&lt;&gt;\x7F\x00-\x1F]"</span><span class="p">,</span> <span class="s2">"-"</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">"""A directory name for an iteration from a value or a system's or</span>
+<span class="sd">        configuration's name: only letters, digits and ``. _ + @ , -``, with</span>
+<span class="sd">        anything else (spaces, '=', quotes, slashes, shell characters) as '_', so</span>
+<span class="sd">        that the path is safe in batch scripts. Names can hold anything, e.g. an</span>
+<span class="sd">        extended-XYZ title read as 'Li_toO=pbc=F F F', and a path with spaces</span>
+<span class="sd">        stops a job sent to a cluster's queue."""</span>
+        <span class="n">clean</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">"[^A-Za-z0-9._+@,-]+"</span><span class="p">,</span> <span class="s2">"_"</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">))</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s2">"_"</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">clean</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">""</span><span class="p">,</span> <span class="s2">"."</span><span class="p">,</span> <span class="s2">".."</span><span class="p">):</span>
+            <span class="n">clean</span> <span class="o">=</span> <span class="s2">"iter"</span>
 
         <span class="c1"># Check for duplicates...</span>
         <span class="n">path</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">directory</span><span class="p">)</span> <span class="o">/</span> <span class="n">clean</span>

@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>loop_step package &#8212; SEAMM Loop Plug-in 2026.10.25 documentation</title>
+    <title>loop_step package &#8212; SEAMM Loop Plug-in 2026.10.29 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=c006ead6"></script>
+    <script src="../_static/documentation_options.js?v=1fe4c37e"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.25" />
+  <meta name="docsearch:version" content="2026.10.29" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -651,7 +651,13 @@ be used as is.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="loop_step.loop.Loop.safe_filename">
 <span class="sig-name descname"><span class="pre">safe_filename</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/loop_step/loop.html#Loop.safe_filename"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#loop_step.loop.Loop.safe_filename" title="Link to this definition">#</a></dt>
-<dd></dd></dl>
+<dd><p>A directory name for an iteration from a value or a system’s or
+configuration’s name: only letters, digits and <code class="docutils literal notranslate"><span class="pre">.</span> <span class="pre">_</span> <span class="pre">+</span> <span class="pre">&#64;</span> <span class="pre">,</span> <span class="pre">-</span></code>, with
+anything else (spaces, ‘=’, quotes, slashes, shell characters) as ‘_’, so
+that the path is safe in batch scripts. Names can hold anything, e.g. an
+extended-XYZ title read as ‘Li_toO=pbc=F F F’, and a path with spaces
+stops a job sent to a cluster’s queue.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="loop_step.loop.Loop.set_id">
