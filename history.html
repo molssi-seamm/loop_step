@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM Loop Plug-in 2026.10.30.1 documentation</title>
+    <title>History &#8212; SEAMM Loop Plug-in 2026.10.30.2 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=c9685da4"></script>
+    <script src="_static/documentation_options.js?v=fe90d7ce"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.30.1" />
+  <meta name="docsearch:version" content="2026.10.30.2" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,15 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.30.2 – Bugfix: Foreach values lost their backslashes (Z double bonds in SMILES)</dt><dd><ul class="simple">
+<li><p>The values of a Foreach loop were split with <code class="docutils literal notranslate"><span class="pre">shlex.split</span></code>, which treats a
+backslash as an escape and drops it. A SMILES with a Z double bond such as
+<code class="docutils literal notranslate"><span class="pre">C/C=C\N</span></code> became <code class="docutils literal notranslate"><span class="pre">C/C=CN</span></code>, and the molecule was built as the E isomer (or
+with the stereo unspecified) under the Z name. The values are now split with
+<code class="docutils literal notranslate"><span class="pre">seamm_util.split_values</span></code>, which keeps backslashes; quotes work as before, and
+‘#’ is not taken as a comment. Quoting each value was the workaround.</p></li>
+</ul>
+</dd>
 <dt>2026.10.30.1 – Separate-task iterations: where the resources go, and a warning</dt><dd><ul class="simple">
 <li><p>With “Calculations run: separate tasks” the cores and memory per iteration now go
 to the calculations each iteration submits, and the iteration itself runs in one
