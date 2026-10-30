@@ -1,6 +1,15 @@
 =======
 History
 =======
+2026.10.30.1 -- Separate-task iterations: where the resources go, and a warning
+    * With "Calculations run: separate tasks" the cores and memory per iteration now go
+      to the calculations each iteration submits, and the iteration itself runs in one
+      core and 4 GB (seamm-exec 2026.10.30). The description and the help say so.
+    * Checking the flowchart warns about steps that run their code in the iteration,
+      as an MDI engine (Thermochemistry, Normal Mode Sampling, Dimer Builder): with
+      separate tasks they would get only the small share. The fix offered is
+      "inline".
+
 2026.10.30 -- The description says what a failed iteration does
     * The Loop's description now says what happens when an iteration fails. For
       iterations run in parallel with "On resume, rerun failed iterations" set, it says

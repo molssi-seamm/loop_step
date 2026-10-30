@@ -102,3 +102,16 @@ def test_description_says_what_a_failed_parallel_iteration_does():
     assert "skipped and the job carries on, unless every iteration fails" in text()
     P["parallel"] = "no"
     assert "skipped and the loop continues" in text()
+
+
+def test_separate_placement_is_described_and_engines_warned():
+    """With separate tasks the description says where the resources go, and a step
+    running an MDI engine in the iteration is warned about (Paul, 2026-10-30)."""
+    flowchart = seamm.Flowchart()
+    loop = loop_step.Loop(flowchart=flowchart)
+    loop._id = ("1",)
+    P = loop.parameters.values_to_dict()
+    P.update({"parallel": "yes", "placement": "separate tasks"})
+    text = " ".join(loop.description_text(P).split())
+    assert "separate tasks of the cores and memory per iteration" in text
+    assert loop_step.loop.ENGINE_STEPS >= {"Thermochemistry"}

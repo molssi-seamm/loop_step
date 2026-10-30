@@ -139,6 +139,12 @@ def iteration_cores(
     return max(1, int(job_cores) // shared), shared
 
 
+#: Steps that run their code in the step itself, as an MDI engine driven over a
+#: warm connection, rather than submitting it as tasks: with separate-task
+#: iterations they get only the iteration's own small allocation.
+ENGINE_STEPS = {"Thermochemistry", "Normal Mode Sampling", "Dimer Builder"}
+
+
 def _yes(value):
     """A boolean parameter's value, as text or as a bool."""
     if isinstance(value, str):
@@ -294,7 +300,14 @@ class Loop(seamm.Node):
             if "exit" in errors:
                 return "An iteration that fails ends the loop.\n"
             return "An iteration that fails stops the job.\n"
-        text = "The iterations run in parallel. "
+        text = "The iterations run in parallel"
+        if "separate" in str(P.get("placement", "")):
+            text += (
+                ", each submitting its calculations as separate tasks of the cores "
+                "and memory per iteration, while the iteration itself runs in one "
+                "core and 4 GB"
+            )
+        text += ". "
         if "stop" in errors:
             return text + "An iteration that fails stops the job.\n"
         if _yes(P.get("rerun failed", "no")):
@@ -1472,7 +1485,47 @@ class Loop(seamm.Node):
         [str]
             The warnings, as seamm.Problem with their fixes; empty if none.
         """
-        return self._overwriting_steps() + self._fixed_seeds()
+        return (
+            self._overwriting_steps()
+            + self._fixed_seeds()
+            + self._engines_in_separate_iterations()
+        )
+
+    def _engines_in_separate_iterations(self):
+        """Warnings for steps that run a code in the iteration itself (an MDI
+        engine) when its calculations run as separate tasks: such an iteration gets
+        one core and a few GB, and only the tasks it submits get the cores and
+        memory per iteration (Paul, 2026-10-30)."""
+        try:
+            from seamm.problems import WARNING, Edit, Fix, Problem
+        except ImportError:  # seamm before 2026.10.17
+            return []
+        P = self.parameters
+        if not _yes(_static(P, "parallel") or "no"):
+            return []
+        if "separate" not in str(_static(P, "placement") or ""):
+            return []
+        problems = []
+        for node in self._body_nodes():
+            if node.extension not in ENGINE_STEPS:
+                continue
+            problems.append(
+                Problem(
+                    f"'{node.title}' in the loop '{self.title}' runs its code in the "
+                    "iteration itself (as an MDI engine), but the iterations' "
+                    "calculations run as separate tasks: each iteration has one "
+                    "core and 4 GB, and only the tasks it submits get the cores and "
+                    "memory per iteration. Run the calculations inline.",
+                    severity=WARNING,
+                    fixes=[
+                        Fix(
+                            "Run the iterations' calculations inline",
+                            [Edit(self, "placement", "inline")],
+                        )
+                    ],
+                )
+            )
+        return problems
 
     def _overwriting_steps(self):
         """The warnings for the body's steps that overwrite the shared structure."""
