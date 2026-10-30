@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM Loop Plug-in 2026.10.29.1 documentation</title>
+    <title>History &#8212; SEAMM Loop Plug-in 2026.10.30 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=923375ad"></script>
+    <script src="_static/documentation_options.js?v=fcc0a42c"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.29.1" />
+  <meta name="docsearch:version" content="2026.10.30" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.30 – The description says what a failed iteration does</dt><dd><ul class="simple">
+<li><p>The Loop’s description now says what happens when an iteration fails. For
+iterations run in parallel with “On resume, rerun failed iterations” set, it says
+that any failure stops the job at the end of the loop, so that a resume runs the
+failed iterations again, and the steps after the loop run only then. Before, only
+the help of that option said so, and a job could stop after a loop whose “On
+errors” was “continue to next iteration”.</p></li>
+<li><p>The help of “On errors” explains how it works with parallel iterations.</p></li>
+</ul>
+</dd>
 <dt>2026.10.29.1 – Bugfix: a system-name regexp with braces stopped the job</dt><dd><ul class="simple">
 <li><p>A Loop over systems whose system name is a regular expression with a <code class="docutils literal notranslate"><span class="pre">{m}</span></code> or
 <code class="docutils literal notranslate"><span class="pre">{m,n}</span></code> quantifier, such as <code class="docutils literal notranslate"><span class="pre">^(CBH:)?C{6,8}$</span></code>, stopped the job before it ran
