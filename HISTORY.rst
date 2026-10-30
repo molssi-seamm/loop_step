@@ -1,6 +1,14 @@
 =======
 History
 =======
+2026.10.30.2 -- Bugfix: Foreach values lost their backslashes (Z double bonds in SMILES)
+    * The values of a Foreach loop were split with ``shlex.split``, which treats a
+      backslash as an escape and drops it. A SMILES with a Z double bond such as
+      ``C/C=C\N`` became ``C/C=CN``, and the molecule was built as the E isomer (or
+      with the stereo unspecified) under the Z name. The values are now split with
+      ``seamm_util.split_values``, which keeps backslashes; quotes work as before, and
+      '#' is not taken as a comment. Quoting each value was the workaround.
+
 2026.10.30.1 -- Separate-task iterations: where the resources go, and a warning
     * With "Calculations run: separate tasks" the cores and memory per iteration now go
       to the calculations each iteration submits, and the iteration itself runs in one
