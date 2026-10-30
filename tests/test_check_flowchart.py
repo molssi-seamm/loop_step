@@ -156,3 +156,24 @@ def test_a_fixed_seed_in_a_loop(parallel):
 def test_no_seed_warning(seed, kind):
     flowchart, step = seeded(seed, kind=kind)
     assert validate(flowchart, warnings=True) == []
+
+
+def test_engine_step_in_separate_iterations_is_warned():
+    """A step that runs an MDI engine in the iteration gets only the iteration's
+    small allocation when its calculations run as separate tasks (Paul,
+    2026-10-30), so the check warns and offers 'inline'."""
+    flowchart = seamm.Flowchart()
+    loop = loop_step.Loop(flowchart=flowchart)
+    flowchart.add_node(loop)
+    _connect(flowchart, flowchart.get_node("1"), loop, "next")
+    body = seamm.Node(flowchart=flowchart, title="Thermo", extension="Thermochemistry")
+    flowchart.add_node(body)
+    _connect(flowchart, loop, body, "loop")
+    _connect(flowchart, body, loop, "next")
+    loop.parameters["parallel"].value = "yes"
+    loop.parameters["placement"].value = "separate tasks"
+    problems = [p for p in validate(flowchart, warnings=True) if "MDI engine" in p]
+    assert len(problems) == 1 and problems[0].severity == "warning"
+    assert problems[0].fixes[0].edits[0].value == "inline"
+    loop.parameters["placement"].value = "inline"
+    assert not [p for p in validate(flowchart, warnings=True) if "MDI engine" in p]

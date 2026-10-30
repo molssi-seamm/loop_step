@@ -303,7 +303,10 @@ class LoopParameters(seamm.Parameters):
             "help_text": (
                 "Where each iteration's calculations run: inline, in the "
                 "iteration's own share of the machine, or as separate tasks on "
-                "the job's target."
+                "the job's target, each of the cores and memory per iteration "
+                "while the iteration itself runs in one core and 4 GB. Steps that "
+                "run their code in the iteration, as an MDI engine (e.g. "
+                "Thermochemistry), need 'inline'."
             ),
         },
         "max queued": {
