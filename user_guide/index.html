@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>User Guide &#8212; SEAMM Loop Plug-in 2026.10.30 documentation</title>
+    <title>User Guide &#8212; SEAMM Loop Plug-in 2026.10.30.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../_static/documentation_options.js?v=fcc0a42c"></script>
+    <script src="../_static/documentation_options.js?v=c9685da4"></script>
     <script src="../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -64,7 +64,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.30" />
+  <meta name="docsearch:version" content="2026.10.30.1" />
   
     
     <script src="../_static/searchtools.js"></script>
@@ -635,8 +635,11 @@ structures. Every iteration’s copy is written when the loop starts, so a
 long loop over a large database needs that much disk space.</p>
 </dd>
 <dt>Calculations run</dt><dd><p><em>inline</em> (the default): each iteration’s calculations run in its own share
-of the machine. <em>Separate tasks</em> (experimental, not yet tested on a cluster):
-they go to the job’s target like any job’s.</p>
+of the machine. <em>Separate tasks</em>: they go to the job’s target as tasks, each
+with the cores and memory per iteration, while the iteration itself runs in
+one core and 4 GB. Steps that run their code in the iteration, as an MDI
+engine (Thermochemistry, Normal Mode Sampling, Dimer Builder), get only that
+small share, so they need <em>inline</em>; checking the flowchart warns about them.</p>
 </dd>
 <dt>Queued at most</dt><dd><p>When the iterations go to a cluster’s queue: the most of this loop’s queue
 jobs waiting or running at once (default no limit). The queue’s own limit,

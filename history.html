@@ -7,7 +7,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>History &#8212; SEAMM Loop Plug-in 2026.10.30 documentation</title>
+    <title>History &#8212; SEAMM Loop Plug-in 2026.10.30.1 documentation</title>
   
   
   
@@ -48,7 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="_static/documentation_options.js?v=fcc0a42c"></script>
+    <script src="_static/documentation_options.js?v=c9685da4"></script>
     <script src="_static/doctools.js?v=fd6eb6e6"></script>
     <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -63,7 +63,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.30" />
+  <meta name="docsearch:version" content="2026.10.30.1" />
   
     
     <script src="_static/searchtools.js"></script>
@@ -506,6 +506,16 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <section id="history">
 <h1>History<a class="headerlink" href="#history" title="Link to this heading">#</a></h1>
 <dl class="simple">
+<dt>2026.10.30.1 – Separate-task iterations: where the resources go, and a warning</dt><dd><ul class="simple">
+<li><p>With “Calculations run: separate tasks” the cores and memory per iteration now go
+to the calculations each iteration submits, and the iteration itself runs in one
+core and 4 GB (seamm-exec 2026.10.30). The description and the help say so.</p></li>
+<li><p>Checking the flowchart warns about steps that run their code in the iteration,
+as an MDI engine (Thermochemistry, Normal Mode Sampling, Dimer Builder): with
+separate tasks they would get only the small share. The fix offered is
+“inline”.</p></li>
+</ul>
+</dd>
 <dt>2026.10.30 – The description says what a failed iteration does</dt><dd><ul class="simple">
 <li><p>The Loop’s description now says what happens when an iteration fails. For
 iterations run in parallel with “On resume, rerun failed iterations” set, it says

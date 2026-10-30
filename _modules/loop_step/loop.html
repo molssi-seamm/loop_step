@@ -6,7 +6,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2026.10.30 documentation</title>
+    <title>loop_step.loop &#8212; SEAMM Loop Plug-in 2026.10.30.1 documentation</title>
   
   
   
@@ -47,7 +47,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 })(window,document,'script','dataLayer','GTM-PQXXTJ2');</script>
 <!-- End Google Tag Manager -->
 
-    <script src="../../_static/documentation_options.js?v=fcc0a42c"></script>
+    <script src="../../_static/documentation_options.js?v=c9685da4"></script>
     <script src="../../_static/doctools.js?v=fd6eb6e6"></script>
     <script src="../../_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,7 +61,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="light dark"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="2026.10.30" />
+  <meta name="docsearch:version" content="2026.10.30.1" />
   
     
     <script src="../../_static/searchtools.js"></script>
@@ -630,6 +630,12 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 
 
+<span class="c1">#: Steps that run their code in the step itself, as an MDI engine driven over a</span>
+<span class="c1">#: warm connection, rather than submitting it as tasks: with separate-task</span>
+<span class="c1">#: iterations they get only the iteration's own small allocation.</span>
+<span class="n">ENGINE_STEPS</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"Thermochemistry"</span><span class="p">,</span> <span class="s2">"Normal Mode Sampling"</span><span class="p">,</span> <span class="s2">"Dimer Builder"</span><span class="p">}</span>
+
+
 <span class="k">def</span><span class="w"> </span><span class="nf">_yes</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">"""A boolean parameter's value, as text or as a bool."""</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
@@ -808,7 +814,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
             <span class="k">if</span> <span class="s2">"exit"</span> <span class="ow">in</span> <span class="n">errors</span><span class="p">:</span>
                 <span class="k">return</span> <span class="s2">"An iteration that fails ends the loop.</span><span class="se">\n</span><span class="s2">"</span>
             <span class="k">return</span> <span class="s2">"An iteration that fails stops the job.</span><span class="se">\n</span><span class="s2">"</span>
-        <span class="n">text</span> <span class="o">=</span> <span class="s2">"The iterations run in parallel. "</span>
+        <span class="n">text</span> <span class="o">=</span> <span class="s2">"The iterations run in parallel"</span>
+        <span class="k">if</span> <span class="s2">"separate"</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"placement"</span><span class="p">,</span> <span class="s2">""</span><span class="p">)):</span>
+            <span class="n">text</span> <span class="o">+=</span> <span class="p">(</span>
+                <span class="s2">", each submitting its calculations as separate tasks of the cores "</span>
+                <span class="s2">"and memory per iteration, while the iteration itself runs in one "</span>
+                <span class="s2">"core and 4 GB"</span>
+            <span class="p">)</span>
+        <span class="n">text</span> <span class="o">+=</span> <span class="s2">". "</span>
         <span class="k">if</span> <span class="s2">"stop"</span> <span class="ow">in</span> <span class="n">errors</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">text</span> <span class="o">+</span> <span class="s2">"An iteration that fails stops the job.</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">_yes</span><span class="p">(</span><span class="n">P</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"rerun failed"</span><span class="p">,</span> <span class="s2">"no"</span><span class="p">)):</span>
@@ -1994,8 +2007,48 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <span class="sd">        [str]</span>
 <span class="sd">            The warnings, as seamm.Problem with their fixes; empty if none.</span>
 <span class="sd">        """</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_overwriting_steps</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_seeds</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_overwriting_steps</span><span class="p">()</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_fixed_seeds</span><span class="p">()</span>
+            <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_engines_in_separate_iterations</span><span class="p">()</span>
+        <span class="p">)</span></div>
 
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_engines_in_separate_iterations</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">"""Warnings for steps that run a code in the iteration itself (an MDI</span>
+<span class="sd">        engine) when its calculations run as separate tasks: such an iteration gets</span>
+<span class="sd">        one core and a few GB, and only the tasks it submits get the cores and</span>
+<span class="sd">        memory per iteration (Paul, 2026-10-30)."""</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="kn">from</span><span class="w"> </span><span class="nn">seamm.problems</span><span class="w"> </span><span class="kn">import</span> <span class="n">WARNING</span><span class="p">,</span> <span class="n">Edit</span><span class="p">,</span> <span class="n">Fix</span><span class="p">,</span> <span class="n">Problem</span>
+        <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>  <span class="c1"># seamm before 2026.10.17</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">P</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">_yes</span><span class="p">(</span><span class="n">_static</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="s2">"parallel"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">"no"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="s2">"separate"</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">_static</span><span class="p">(</span><span class="n">P</span><span class="p">,</span> <span class="s2">"placement"</span><span class="p">)</span> <span class="ow">or</span> <span class="s2">""</span><span class="p">):</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">problems</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_body_nodes</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">extension</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ENGINE_STEPS</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">problems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">Problem</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">"'</span><span class="si">{</span><span class="n">node</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">' in the loop '</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">title</span><span class="si">}</span><span class="s2">' runs its code in the "</span>
+                    <span class="s2">"iteration itself (as an MDI engine), but the iterations' "</span>
+                    <span class="s2">"calculations run as separate tasks: each iteration has one "</span>
+                    <span class="s2">"core and 4 GB, and only the tasks it submits get the cores and "</span>
+                    <span class="s2">"memory per iteration. Run the calculations inline."</span><span class="p">,</span>
+                    <span class="n">severity</span><span class="o">=</span><span class="n">WARNING</span><span class="p">,</span>
+                    <span class="n">fixes</span><span class="o">=</span><span class="p">[</span>
+                        <span class="n">Fix</span><span class="p">(</span>
+                            <span class="s2">"Run the iterations' calculations inline"</span><span class="p">,</span>
+                            <span class="p">[</span><span class="n">Edit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">"placement"</span><span class="p">,</span> <span class="s2">"inline"</span><span class="p">)],</span>
+                        <span class="p">)</span>
+                    <span class="p">],</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">problems</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_overwriting_steps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">"""The warnings for the body's steps that overwrite the shared structure."""</span>

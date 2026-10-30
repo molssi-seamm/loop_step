@@ -136,8 +136,11 @@ Each iteration gets
    long loop over a large database needs that much disk space.
 Calculations run
    *inline* (the default): each iteration's calculations run in its own share
-   of the machine. *Separate tasks* (experimental, not yet tested on a cluster):
-   they go to the job's target like any job's.
+   of the machine. *Separate tasks*: they go to the job's target as tasks, each
+   with the cores and memory per iteration, while the iteration itself runs in
+   one core and 4 GB. Steps that run their code in the iteration, as an MDI
+   engine (Thermochemistry, Normal Mode Sampling, Dimer Builder), get only that
+   small share, so they need *inline*; checking the flowchart warns about them.
 Queued at most
    When the iterations go to a cluster's queue: the most of this loop's queue
    jobs waiting or running at once (default no limit). The queue's own limit,
