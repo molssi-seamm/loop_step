@@ -202,7 +202,12 @@ class LoopParameters(seamm.Parameters):
             ),
             "format_string": "s",
             "description": "On errors",
-            "help_text": ("How to handle errors"),
+            "help_text": (
+                "What to do when an iteration fails. For iterations run in "
+                "parallel, 'On resume, rerun failed iterations' and a loop whose "
+                "iterations all fail stop the job at the end of the loop instead, "
+                "so that a resume runs the failed iterations again."
+            ),
         },
         # Parallel iterations (phase 6 of the parallel-execution campaign)
         "parallel": {
