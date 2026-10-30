@@ -81,3 +81,24 @@ def test_description_keeps_braces_in_a_regexp():
     P["source system name"] = "^(CBH:)?C{6,8}$"
     text = loop.description_text(P)
     assert "^(CBH:)?C{6,8}$" in text
+
+
+def test_description_says_what_a_failed_parallel_iteration_does():
+    """With "rerun failed" a parallel loop stops the job after the loop, whatever
+    "On errors" says; the description says so (thermo, ChemAI 5445/5456)."""
+    flowchart = seamm.Flowchart()
+    loop = loop_step.Loop(flowchart=flowchart)
+    loop._id = ("1",)
+    P = loop.parameters.values_to_dict()
+    P["parallel"] = "yes"
+    P["errors"] = "continue to next iteration"
+    P["rerun failed"] = "yes"
+
+    def text():
+        return " ".join(loop.description_text(P).split())
+
+    assert "the job stops at the end of the loop" in text()
+    P["rerun failed"] = "no"
+    assert "skipped and the job carries on, unless every iteration fails" in text()
+    P["parallel"] = "no"
+    assert "skipped and the loop continues" in text()

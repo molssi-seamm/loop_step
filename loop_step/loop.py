@@ -282,6 +282,36 @@ class Loop(seamm.Node):
 
         return self.exit_node()
 
+    @staticmethod
+    def _errors_description(P):
+        """What happens when an iteration fails, for the description: in parallel,
+        "rerun failed" (and a loop whose iterations all fail) stops the job after
+        the loop, whatever "On errors" says."""
+        errors = str(P.get("errors", "continue to next iteration"))
+        if not _yes(P.get("parallel", "no")):
+            if "continue" in errors:
+                return "An iteration that fails is skipped and the loop continues.\n"
+            if "exit" in errors:
+                return "An iteration that fails ends the loop.\n"
+            return "An iteration that fails stops the job.\n"
+        text = "The iterations run in parallel. "
+        if "stop" in errors:
+            return text + "An iteration that fails stops the job.\n"
+        if _yes(P.get("rerun failed", "no")):
+            return (
+                text + "If any iteration fails, the job stops at the end of the "
+                "loop, so that resuming it runs the failed iterations again; the "
+                "steps after the loop run only then.\n"
+            )
+        if "exit" in errors:
+            text += "An iteration that fails ends the loop"
+        else:
+            text += "An iteration that fails is skipped and the job carries on"
+        return (
+            text + ", unless every iteration fails: then the job stops at the end "
+            "of the loop, so that resuming it runs them again.\n"
+        )
+
     def description_text(self, P=None):
         """Return a short description of this step.
 
@@ -330,6 +360,7 @@ class Loop(seamm.Node):
             subtext = subtext.replace("{", "{{").replace("}", "}}") + "\n"
         else:
             subtext = "Loop type defined by {type}\n"
+        subtext += "\n" + self._errors_description(P)
 
         text += self.header + "\n" + __(subtext, **P, indent=4 * " ").__str__()
 

@@ -1,6 +1,15 @@
 =======
 History
 =======
+2026.10.30 -- The description says what a failed iteration does
+    * The Loop's description now says what happens when an iteration fails. For
+      iterations run in parallel with "On resume, rerun failed iterations" set, it says
+      that any failure stops the job at the end of the loop, so that a resume runs the
+      failed iterations again, and the steps after the loop run only then. Before, only
+      the help of that option said so, and a job could stop after a loop whose "On
+      errors" was "continue to next iteration".
+    * The help of "On errors" explains how it works with parallel iterations.
+
 2026.10.29.1 -- Bugfix: a system-name regexp with braces stopped the job
     * A Loop over systems whose system name is a regular expression with a ``{m}`` or
       ``{m,n}`` quantifier, such as ``^(CBH:)?C{6,8}$``, stopped the job before it ran
