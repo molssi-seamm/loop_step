@@ -7,7 +7,6 @@ import logging
 import os
 from pathlib import Path
 import re
-import shlex
 import shutil
 import sqlite3
 import sys
@@ -19,10 +18,13 @@ import pprint
 import loop_step
 import seamm
 import seamm_util
+from seamm_util import split_values
 import seamm_util.printing as printing
 from seamm_util.printing import FormattedText as __
 
 logger = logging.getLogger(__name__)
+
+
 job = printing.getPrinter()
 
 
@@ -349,7 +351,7 @@ class Loop(seamm.Node):
                 subtext = f"Foreach {P['variable']} in {P['values']}\n"
             else:
                 if isinstance(P["values"], str):
-                    values = [str(v) for v in shlex.split(P["values"])]
+                    values = [str(v) for v in split_values(P["values"])]
                 else:
                     values = [str(v) for v in P["values"]]
                 if len(values) > 5:
@@ -543,7 +545,7 @@ class Loop(seamm.Node):
                 self._push_loop_indices(self._loop_value)
         elif P["type"] == "Foreach":
             if isinstance(P["values"], str):
-                values = shlex.split(P["values"])
+                values = split_values(P["values"])
             else:
                 values = list(P["values"])
             context["values"] = values
