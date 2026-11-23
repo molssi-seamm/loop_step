@@ -819,6 +819,7 @@ class Loop(seamm.Node):
         ran = False
         iter_dir = None
         n_failed = 0  # in this run; a checkpoint also has those of earlier runs
+        failed_names = []  # the directories of those iterations
         while next_node is not None:
             if next_node is self:
                 if only and ran:
@@ -829,6 +830,7 @@ class Loop(seamm.Node):
                     k += 1
                 if k > length:
                     self._end_loop(P, context)
+                    self._report_failures(length, checkpointer, failed_names)
                     if self._all_failed(length, checkpointer, n_failed):
                         if checkpointer is not None:
                             # Back to the loop's start, so a resume runs it again
@@ -877,6 +879,16 @@ class Loop(seamm.Node):
             try:
                 node = next_node
                 next_node = next_node.run()
+                if next_node is None:
+                    # Every step in the body leads back to the loop, so a step
+                    # that returns None stopped without raising an error. Before,
+                    # this ended the loop quietly: the remaining iterations were
+                    # skipped and the job "finished".
+                    raise RuntimeError(
+                        f"The step '{getattr(node, 'title', node)}' stopped without "
+                        "an error message, which counts as a failure of the "
+                        "iteration."
+                    )
                 seamm.step_completed(node, next_node)
             except DeprecationWarning as e:
                 printer.normal("\nDeprecation warning: " + str(e))
@@ -904,6 +916,7 @@ class Loop(seamm.Node):
                     # The parent decides what a failed iteration means
                     raise
                 n_failed += 1
+                failed_names.append(tmp)
                 if "continue" in P["errors"]:
                     next_node = self
                 elif "exit" in P["errors"]:
@@ -926,6 +939,33 @@ class Loop(seamm.Node):
         # Return to the normally scheduled step, i.e. fall out of the loop.
         if checkpointer is not None:
             checkpointer.leave_loop(self)
+
+    def _report_failures(self, length, checkpointer, failed_names):
+        """Say at the end of a serial loop how many iterations failed, and which.
+
+        Each failure was printed as it happened, but in a long loop they are easy
+        to miss, and the job still ends "finished" when the loop carries on past
+        them. (A parallel loop says the same in its "Merged ... of ..." line.)
+        """
+        n_failed = len(failed_names)
+        if checkpointer is not None:
+            level = checkpointer._level(self)
+            if level is not None:
+                # Includes the failures before a resume
+                n_failed = max(
+                    n_failed, len(checkpointer.frames[level].get("failed", []))
+                )
+        if n_failed == 0:
+            return
+        text = f"{n_failed} of {length} iterations of the loop failed"
+        if len(failed_names) > 0:
+            text += ": " + ", ".join(failed_names)
+            if len(failed_names) < n_failed:
+                text += " (and others before the job was resumed)"
+        # To job.out, where the "Caught exception" lines are: while the loop runs,
+        # it takes only job-level messages, and the last iteration's file is done.
+        self._close_iteration_output()
+        printer.job(__(text + ".", indent=self.indent + 4 * " "))
 
     def _all_failed(self, length, checkpointer, n_failed):
         """Whether every iteration of a loop that ran to its end failed.
