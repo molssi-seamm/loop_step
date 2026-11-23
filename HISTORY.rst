@@ -1,7 +1,16 @@
 =======
 History
 =======
-2026.10.30.2 -- Bugfix: Foreach values lost their backslashes (Z double bonds in SMILES)
+2026.11.23 -- Bugfix: a step that stopped without an error ended the loop quietly
+    * A step in the loop body that stopped without raising an error (returning
+      nothing, as the MOPAC step did when its calculation failed) ended the whole
+      loop: the remaining iterations were skipped, no failure was counted, and the
+      job ended "finished". Such a step now fails its iteration like any other
+      error, following the loop's "On errors" setting.
+    * At the end of a loop that ran its iterations one after another, job.out now
+      says how many iterations failed and which, as a parallel loop already does.
+
+2026.10.30.2 --Bugfix: Foreach values lost their backslashes (Z double bonds in SMILES)
     * The values of a Foreach loop were split with ``shlex.split``, which treats a
       backslash as an escape and drops it. A SMILES with a Z double bond such as
       ``C/C=C\N`` became ``C/C=CN``, and the molecule was built as the E isomer (or

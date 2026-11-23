@@ -32,6 +32,7 @@ def fresh(monkeypatch):
     Step.runs = []
     Step.crash = None
     Step.fail = set()
+    Step.quiet = set()
 
 
 class Step(seamm.Node):
@@ -41,6 +42,7 @@ class Step(seamm.Node):
     runs = []
     crash = None  # (title, indices) to crash at, once
     fail = set()  # (title, indices) that raise an ordinary error
+    quiet = set()  # (title, indices) that stop without an error: return None
 
     def run(self):
         indices = self._indices()
@@ -54,6 +56,8 @@ class Step(seamm.Node):
             raise Crash(f"crash at {key}")
         if key in Step.fail:
             raise RuntimeError(f"failed at {key}")
+        if key in Step.quiet:
+            return None
         self.extra(db)
         return self.next()
 
@@ -517,3 +521,63 @@ def test_an_empty_loop_completes(tmp_path):
 
     execute(tmp_path, make(tmp_path))
     assert Step.runs == [("After", ())]
+
+
+def test_step_returning_none_fails_the_iteration(tmp_path, caplog):
+    """A step in the body that stops without an error (returns None, as MOPAC did
+    when its task failed) ended the loop quietly: the later iterations were
+    skipped and the job "finished". Now it is a failed iteration like any other."""
+
+    def make(root):
+        return build(
+            root,
+            ["A", "B"],
+            type="For",
+            variable="i",
+            start=1,
+            end=3,
+            errors="continue to next iteration",
+        )
+
+    Step.quiet = {("A", (2,))}
+    execute(tmp_path, make(tmp_path))
+    assert Step.runs == [
+        ("A", (1,)),
+        ("B", (1,)),
+        ("A", (2,)),
+        ("A", (3,)),
+        ("B", (3,)),
+        ("After", ()),
+    ]
+    out = caplog.text
+    assert "Caught exception in loop iteration" in out
+    assert "stopped without an error message" in out
+    assert "1 of 3 iterations of the loop failed" in out
+
+
+def test_step_returning_none_with_stop_stops_the_job(tmp_path):
+    def make(root):
+        return build(
+            root,
+            ["A"],
+            type="For",
+            variable="i",
+            start=1,
+            end=3,
+            errors="stop the job",
+        )
+
+    Step.quiet = {("A", (2,))}
+    with pytest.raises(Exception, match="stopped without an error message"):
+        execute(tmp_path, make(tmp_path))
+    assert ("A", (3,)) not in Step.runs
+    assert ("After", ()) not in Step.runs
+
+
+def test_no_failure_summary_when_all_succeed(tmp_path, caplog):
+    def make(root):
+        return build(root, ["A"], type="For", variable="i", start=1, end=2)
+
+    execute(tmp_path, make(tmp_path))
+    assert "1 of 2" not in caplog.text
+    assert "iterations of the loop failed" not in caplog.text
